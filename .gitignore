@@ -1,0 +1,5 @@
+/vendor/
+/cache/
+/safecache/
+!/cache/.gitkeep
+/config.php.local
