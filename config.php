@@ -2,5 +2,6 @@
 $usernames = array();
 $safeusernames = array();
 
-include('config.php.local');
-?>
+if (file_exists(__DIR__ . '/config.local.php')) {
+  include(__DIR__ . '/config.local.php');
+}
