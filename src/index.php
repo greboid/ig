@@ -1,6 +1,8 @@
 <?php
 
 require __DIR__ . '/../vendor/autoload.php';
+require __DIR__ . '/../config.php';
+require __DIR__ . '/../shared.php';
 
 try {
   $loader = new Twig_Loader_Filesystem('../templates');

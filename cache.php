@@ -1,7 +1,8 @@
 <?php
 
-require __DIR__ . '/../vendor/autoload.php';
-require __DIR__ . '/../config.php';
+require __DIR__ . '/vendor/autoload.php';
+require __DIR__ . '/config.php';
+require __DIR__ . '/shared.php';
 
 $dir = realpath(dirname(__FILE__));
 
@@ -10,7 +11,7 @@ $instagram = new \InstagramScraper\Instagram();
 
 echo date("Y-m-d H:i:s").' Checking files to cache.'.PHP_EOL;
 foreach ($usernames as $username) {
-        $filename = $dir.'/../cache/'.$username;
+        $filename = $dir.'/cache/'.$username;
         $checktime = strtotime ('-'.$cachetime.' minutes');
         if (!file_exists($filename) || filemtime($filename) - $checktime <= $cachetime) {
 		echo date("Y-m-d H:i:s")." Caching: ".$username.PHP_EOL;
