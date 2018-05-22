@@ -4,76 +4,68 @@ require __DIR__ . '/../vendor/autoload.php';
 require __DIR__ . '/../config.php';
 require __DIR__ . '/../shared.php';
 
+$filename = __DIR__ . '/../cache/database.sqlite3';
+
 try {
-  $loader = new Twig_Loader_Filesystem('../templates');
-  $twig = new Twig_Environment($loader);
-  $twig = new Twig_Environment($loader, array(
-    'debug' => true,
-  ));
-  $twig->addExtension(new Twig_Extension_Debug());
+	$loader = new Twig_Loader_Filesystem('../templates');
+	$twig = new Twig_Environment($loader);
+	$twig = new Twig_Environment($loader, array(
+		'debug' => true,
+	));
+	$twig->addExtension(new Twig_Extension_Debug());
 
-  if (!filter_has_var(INPUT_GET, 'w') || !filter_has_var(INPUT_GET, 'h') || !filter_has_var(INPUT_GET, 'd')) {
-    $template = $twig->loadTemplate('redirect.tpl');
-    echo $template->render(array());
-    die();
-  }
-  $width = filter_input(INPUT_GET, 'w', FILTER_VALIDATE_INT);
-  $height = filter_input(INPUT_GET, 'h', FILTER_VALIDATE_INT);
-  $dpi = filter_input(INPUT_GET, 'd', FILTER_VALIDATE_INT);
-  $area = $width * $height;
-  $imagearea = $dpi * $dpi;
-  if ($imagearea == 0) {
-    $imagearea = 1;
-  }
-  if ($area == 0) {
-    $area = 0;
-  }
-  $number = $area / $imagearea;
-  $number = round($number + 1);
-  $ip = filter_input(INPUT_SERVER, 'REMOTE_ADDR', FILTER_VALIDATE_IP);
-  if (isset($_GET['safemode']) && $_GET['safemode'] == 'off') {
-    $dir = '../cache/';
-    $usernames = array_diff(scandir($dir), array('..', '.'));
-  } else if (isset($_GET['safemode'])) {
-    $dir = $dir = '../safecache/';
-    $usernames = array_diff(scandir($dir), array('..', '.'));
-  } else if ($ip == '51.148.129.108') {
-    $dir = '../cache/';
-    $usernames = array_diff(scandir($dir), array('..', '.'));
-  } else {
-    $dir = '../safecache/';
-    $usernames = array_diff(scandir($dir), array('..', '.'));
-  }
-  $images = array();
-  foreach ($usernames as $id=>$username) {
-    $filename = $dir.$username;
-    $filecontents = file_get_contents($filename);
-    if (strlen($filecontents) == 0) {
-      continue;
-    }
-    $response = unserialize($filecontents);
-    if ($response === FALSE) {
-      continue;
-    }
-    $medias = array();
-    foreach ($response as $media) {
-      $media = array('datetime'=>$media->getCreatedTime(), 'thumb'=>$media->getImageThumbnailUrl(), 'url'=>$media->getImageHighResolutionUrl(), 'source'=>$username, 'caption'=>$media->getCaption());
-      $medias[] = $media;
-    }
-    $images[$username] = $medias;
-  }
-  $images = array_flatten(rotate90($images));
-  uasort($images, 'epoch_cmp');
+	if (!filter_has_var(INPUT_GET, 'w') || !filter_has_var(INPUT_GET, 'h') || !filter_has_var(INPUT_GET, 'd')) {
+		$template = $twig->loadTemplate('redirect.tpl');
+		echo $template->render(array());
+		die();
+	}
+	$width = filter_input(INPUT_GET, 'w', FILTER_VALIDATE_INT);
+	$height = filter_input(INPUT_GET, 'h', FILTER_VALIDATE_INT);
+	$dpi = filter_input(INPUT_GET, 'd', FILTER_VALIDATE_INT);
+	$area = $width * $height;
+	$imagearea = $dpi * $dpi;
+	if ($imagearea == 0) {
+		$imagearea = 1;
+	}
+	if ($area == 0) {
+		$area = 0;
+	}
+	$number = $area / $imagearea;
+	$number = round($number + 1);
+	$ip = filter_input(INPUT_SERVER, 'REMOTE_ADDR', FILTER_VALIDATE_IP);
+	if (isset($_GET['safemode']) && $_GET['safemode'] == 'off') {
+		$safemode = 0;
+	} else if (isset($_GET['safemode'])) {
+		$safemode = 1;
+	} else if ($ip == '51.148.129.108') {
+		$safemode = 0;
+	} else {
+		$safemode = 1;
+	}
+	$images = array();
 
+	try {
+		$file_db = new PDO('sqlite:'.$filename);
+		$stmt = $file_db->prepare('SELECT shortcode, medias.username as source, thumbnailURL as thumb, imageURL as url, caption as caption, timestamp
+						FROM medias
+						LEFT JOIN users on users.username=medias.username
+						WHERE users.safemode=:safemode
+						ORDER BY timestamp DESC
+					');
+		$stmt->bindValue(':safemode', $safemode);
+		$stmt->execute();
+		$results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+	} catch(PDOException $e) {
+		echo date("Y-m-d H:i:s").' Error: '.$e->getMessage().PHP_EOL;
+	}
+	$images = $results;
 
-  $template = $twig->loadTemplate('index.tpl');
-
-  echo $template->render(array(
-    'images' => $images,
-  ));
-
+	$template = $twig->loadTemplate('index.tpl');
+	echo $template->render(array(
+		'images' => $images,
+	));
 } catch (Exception $e) {
-  die ('ERROR: ' . $e->getMessage());
+	die ('ERROR: ' . $e->getMessage());
 }
 
 function epoch_cmp($a, $b) {
@@ -84,26 +76,5 @@ function epoch_cmp($a, $b) {
         } else {
                 return 0;
         }
-}
-
-
-function array_flatten($array) {
-  $result = array();
-  foreach ($array as $key=>$value) {
-    foreach ($value as $subkey=>$subvalue) {
-      $result[] = $subvalue;
-    }
-  }
-  return $result;
-}
-
-function rotate90($array_one) {
-  $array_two = [];
-  foreach ($array_one as $key => $item) {
-    foreach ($item as $subkey => $subitem) {
-      $array_two[$subkey][$key] = $subitem;
-    }
-  }
-  return $array_two;
 }
 ?>
