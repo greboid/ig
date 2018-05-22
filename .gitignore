@@ -1,4 +1,4 @@
 /vendor/
 /cache/
 /safecache/
-/config.php.local
+/config.local.php
