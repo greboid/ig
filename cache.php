@@ -43,7 +43,7 @@ try {
 	$stmt->execute();
 	$users = $stmt->fetchAll(PDO::FETCH_ASSOC);
 	$lastpollstmt = $file_db->prepare('UPDATE users set lastpoll=:lastpoll');
-	$mediastmt = $file_db->prepare('INSERT INTO medias (shortcode, username, thumbnailURL, imageURL, caption, timestamp) VALUES (:shortcode, :username, :thumbnailURL, :imageURL, :caption, :timestamp)');
+	$mediastmt = $file_db->prepare('INSERT OR IGNORE INTO medias (shortcode, username, thumbnailURL, imageURL, caption, timestamp) VALUES (:shortcode, :username, :thumbnailURL, :imageURL, :caption, :timestamp)');
 	foreach ($users as $id => $user) {
 		echo date("Y-m-d H:i:s").' Checking user: '.$user['username'].PHP_EOL;
 		$checktime = strtotime ('-'.$cachetime.' minutes');
