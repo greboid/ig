@@ -162,7 +162,3 @@ timeline = Timeline('hrvy', 24)
 print('Starting')
 print(timeline.get_timelime())
 print('Finished')
-
-# requests.get('http://youraddress.com', params=evt.fields)
-# params=[('name1','value11'), ('name1','value12'), ('name2','value21')]
-# https://www.instagram.com/graphql/query/?query_id=17888483320059182&variables={"id":"%s","first":12,"after":"%s"}
