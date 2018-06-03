@@ -1,6 +1,0 @@
-{
-	"require": {
-		"raiym/instagram-php-scraper": "0.8.21",
-		"twig/twig": "^2.0"
-	}
-}
