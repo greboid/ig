@@ -3,6 +3,7 @@ import json
 from enum import Enum, auto
 from typing import List, Dict
 
+import yaml
 from bs4 import BeautifulSoup
 from requests import Session
 
@@ -60,7 +61,7 @@ class Timeline:
         currentcount = 0
         self.data = self.get_shareddata(self.username)
         print('Entering loop.')
-        while currentcount < self.count:
+        while currentcount <= self.count:
             print('Current count: ' + str(currentcount))
             print('Data: ', end='\t')
             print(self.data)
@@ -81,7 +82,11 @@ class Timeline:
                     else:
                         raise TypeError('Unknown edge type.')
                 currentcount = len(self.medias)
-                self.data = self.get_more(self.data['entry_data']['ProfilePage'][0]['graphql']['user']['edge_owner_to_timeline_media']['page_info']['end_cursor'])
+                print('Current count: ' + str(currentcount))
+                if currentcount < self.count:
+                    self.data = self.get_more(
+                        self.data['entry_data']['ProfilePage'][0]['graphql']['user']['edge_owner_to_timeline_media'][
+                            'page_info']['end_cursor'])
             else:
                 raise EnvironmentError('Unable to get data.')
 
@@ -120,7 +125,7 @@ class Timeline:
         media.addmedia(data['entry_data']['PostPage'][0]['graphql']['shortcode_media']['display_url'])
         return media
 
-    def get_url(self, id: str, path:None):
+    def get_url(self, id: str, path: None):
         if path is None:
             return 'https://www.instagram.com/{0}'.format(id)
         else:
@@ -157,8 +162,26 @@ class Timeline:
             )
         })
 
+    def __repr__(self):
+        return "<Timeline username:%s max:%s>" % (self.username, self.count)
 
-timeline = Timeline('hrvy', 24)
+    def __str__(self):
+        return "username:%s - max count:%s" % (self.username, self.count)
+
+
+try:
+    with open("config.yml", 'r') as ymlfile:
+        cfg = yaml.load(ymlfile)
+except FileNotFoundError:
+    print('Unable to find config file.')
+    raise SystemExit
+
+timelines = []
+for user in cfg['users']:
+    timelines.append(Timeline(user, 12))
+
+print(timelines)
 print('Starting')
-print(timeline.get_timelime())
+for timeline in timelines:
+    print(timeline.get_timelime())
 print('Finished')
