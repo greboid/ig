@@ -140,7 +140,7 @@ class Timeline:
         return data
 
     def get_more(self, after: str):
-        self.update_ig_gis_header({('id', self.userid), ('first', 12), ('after', after)})
+        self.update_ig_gis_header('{{"id", "{0}", "first", "{1}", "after", "{2}"}}'.format(self.userid, 12, after))
         params = [('query_id', '17888483320059182'), ('id', self.userid), ('first', 12), ('after', after)]
         response = self.session.get('https://www.instagram.com/graphql/query/', params=params)
         return json.loads(response.content)
