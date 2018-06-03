@@ -135,8 +135,8 @@ class Timeline:
         if data is None:
             raise ValueError('Unable to find shared data.')
         self.rhx_gis = data['rhx_gis']
-        print(json.dumps(data, indent=2))
-        self.userid = data['entry_data']['ProfilePage'][0]['graphql']['user']['id']
+        if path is None:
+            self.userid = data['entry_data']['ProfilePage'][0]['graphql']['user']['id']
         return data
 
     def get_more(self, after: str):
