@@ -1,5 +1,6 @@
 import hashlib
 import json
+import pprint
 from enum import Enum, auto
 from typing import List, Dict
 
@@ -60,29 +61,23 @@ class Timeline:
     def get_timelime(self):
         currentcount = 0
         self.data = self.get_shareddata(self.username)
-        print('Entering loop.')
-        while currentcount <= self.count:
-            print('Current count: ' + str(currentcount))
-            print('Data: ', end='\t')
-            print(self.data)
+        while currentcount < self.count:
             if self.data is not None:
-                edges = self.data['entry_data']['ProfilePage'][0]['graphql']['user']['edge_owner_to_timeline_media'][
-                    'edges']
+                if 'entry_data' in self.data:
+                    edges = self.data['entry_data']['ProfilePage'][0]['graphql']['user']['edge_owner_to_timeline_media']['edges']
+                else:
+                    edges = self.data['data']['user']['edge_owner_to_timeline_media']['edges']
                 for edge in edges:
                     node = edge['node']
                     if node['__typename'] == 'GraphImage':
-                        print('Adding an image')
                         self.addmedia(self.get_image(node['shortcode']))
                     elif node['__typename'] == 'GraphSidecar':
-                        print('Adding a sidecar')
                         self.addmedia(self.get_sidecars(node['shortcode']))
                     elif node['__typename'] == 'GraphVideo':
-                        print('Adding a video')
                         self.addmedia(self.get_video(node['shortcode']))
                     else:
                         raise TypeError('Unknown edge type.')
                 currentcount = len(self.medias)
-                print('Current count: ' + str(currentcount))
                 if currentcount < self.count:
                     self.data = self.get_more(
                         self.data['entry_data']['ProfilePage'][0]['graphql']['user']['edge_owner_to_timeline_media'][
@@ -133,7 +128,8 @@ class Timeline:
 
     def get_shareddata(self, id: str, path=None):
         data = None
-        html = BeautifulSoup((self.session.get(self.get_url(id, path))).content, 'html.parser')
+        response = (self.session.get(self.get_url(id, path)))
+        html = BeautifulSoup(response.content, 'html.parser')
         for script in html.select('script'):
             if script.text.startswith('window._sharedData'):
                 data = json.loads(script.text.split(' = ')[1][:-1])
@@ -145,22 +141,17 @@ class Timeline:
         return data
 
     def get_more(self, after: str):
-        self.update_ig_gis_header('{{"id", "{0}", "first", "{1}", "after", "{2}"}}'.format(self.userid, 12, after))
-        params = [('query_id', '17888483320059182'), ('id', self.userid), ('first', 12), ('after', after)]
-        response = self.session.get('https://www.instagram.com/graphql/query/', params=params)
+        variables = '{{"id":"{0}","first":"{1}","after":"{2}"}}'.format(self.userid, 12, after)
+        params = [('query_id', '17888483320059182'), ('variables', variables)]
+        response = self.session.get('https://www.instagram.com/graphql/query/', params=params, headers={'x-instagram-gis': self.get_ig_gis(
+                self.rhx_gis,
+            variables
+            )})
         return json.loads(response.content)
 
-    def get_ig_gis(self, rhx_gis, params):
+    def get_ig_gis(self, rhx_gis: str, params: str):
         data = rhx_gis + ":" + params
         return hashlib.md5(data.encode('utf-8')).hexdigest()
-
-    def update_ig_gis_header(self, params):
-        self.session.headers.update({
-            'x-instagram-gis': self.get_ig_gis(
-                self.rhx_gis,
-                params
-            )
-        })
 
     def __repr__(self):
         return "<Timeline username:%s max:%s>" % (self.username, self.count)
@@ -178,10 +169,10 @@ except FileNotFoundError:
 
 timelines = []
 for user in cfg['users']:
-    timelines.append(Timeline(user, 12))
+    timelines.append(Timeline(user, 13))
 
-print(timelines)
 print('Starting')
 for timeline in timelines:
-    print(timeline.get_timelime())
+    timeline.get_timelime()
+    print(timeline.medias)
 print('Finished')
