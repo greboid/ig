@@ -96,10 +96,14 @@ class Timeline:
 
     def get_video(self, username: str, shortcode: str) -> MediaObject:
         data = self.get_shareddata(shortcode, 'p')
+        caption = ''
+        if len(data['entry_data']['PostPage'][0]['graphql']['shortcode_media']['edge_media_to_caption'][
+                'edges']) > 0:
+            caption = data['entry_data']['PostPage'][0]['graphql']['shortcode_media']['edge_media_to_caption'][
+                'edges'][0]['node']['text']
         media = MediaObject(username, shortcode,
                             MediaType.VIDEO,
-                            data['entry_data']['PostPage'][0]['graphql']['shortcode_media']['edge_media_to_caption'][
-                                'edges'][0]['node']['text'],
+                            caption,
                             data['entry_data']['PostPage'][0]['graphql']['shortcode_media']['display_url'],
                             data['entry_data']['PostPage'][0]['graphql']['shortcode_media']['taken_at_timestamp'])
         media.addmedia(data['entry_data']['PostPage'][0]['graphql']['shortcode_media']['video_url'])
@@ -107,10 +111,14 @@ class Timeline:
 
     def get_sidecars(self, username: str, shortcode: str) -> MediaObject:
         data = self.get_shareddata(shortcode, 'p')
+        caption = ''
+        if len(data['entry_data']['PostPage'][0]['graphql']['shortcode_media']['edge_media_to_caption'][
+                                'edges']) > 0:
+            caption = data['entry_data']['PostPage'][0]['graphql']['shortcode_media']['edge_media_to_caption'][
+                                'edges'][0]['node']['text']
         media = MediaObject(username, shortcode,
                             MediaType.SIDECAR,
-                            data['entry_data']['PostPage'][0]['graphql']['shortcode_media']['edge_media_to_caption'][
-                                'edges'][0]['node']['text'],
+                            caption,
                             data['entry_data']['PostPage'][0]['graphql']['shortcode_media']['display_url'],
                             data['entry_data']['PostPage'][0]['graphql']['shortcode_media']['taken_at_timestamp'])
         for edge in data['entry_data']['PostPage'][0]['graphql']['shortcode_media']['edge_sidecar_to_children'][
@@ -120,10 +128,14 @@ class Timeline:
 
     def get_image(self, username: str, shortcode: str) -> MediaObject:
         data = self.get_shareddata(shortcode, 'p')
+        caption = ''
+        if len(data['entry_data']['PostPage'][0]['graphql']['shortcode_media']['edge_media_to_caption'][
+                                'edges']) > 0:
+            caption = data['entry_data']['PostPage'][0]['graphql']['shortcode_media']['edge_media_to_caption'][
+                                'edges'][0]['node']['text']
         media = MediaObject(username, shortcode,
                             MediaType.IMAGE,
-                            data['entry_data']['PostPage'][0]['graphql']['shortcode_media']['edge_media_to_caption'][
-                                'edges'][0]['node']['text'],
+                            caption,
                             data['entry_data']['PostPage'][0]['graphql']['shortcode_media']['display_url'],
                             data['entry_data']['PostPage'][0]['graphql']['shortcode_media']['taken_at_timestamp'])
         media.addmedia(data['entry_data']['PostPage'][0]['graphql']['shortcode_media']['display_url'])
@@ -176,9 +188,9 @@ class DBA:
 
     def init(self):
         self.conn = sqlite3.connect(self.path + '/database.sqlite')
-        self.initTables()
+        self.inittables()
 
-    def initTables(self):
+    def inittables(self):
         c = self.conn.cursor()
         c.execute('''CREATE TABLE IF NOT EXISTS users (
                                 id INTEGER PRIMARY KEY,
@@ -212,8 +224,9 @@ class DBA:
 
     def addmedia(self, media: MediaObject):
         for imageurl in media.medias:
-            self.conn.cursor().execute('''insert or replace into medias(shortcode,username,thumbnailURL,imageURL,caption,timestamp) values (?,?,?,?,?,?)''',
-                              (media.shortcode, media.username, media.thumbnail, imageurl, media.caption, media.timestamp))
+            self.conn.cursor().execute(
+                '''insert or replace into medias(shortcode,username,thumbnailURL,imageURL,caption,timestamp) values (?,?,?,?,?,?)''',
+                (media.shortcode, media.username, media.thumbnail, imageurl, media.caption, media.timestamp))
             self.conn.commit()
 
 
