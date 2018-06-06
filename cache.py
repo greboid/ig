@@ -166,64 +166,78 @@ class Timeline:
         return "username:%s - max count:%s" % (self.username, self.count)
 
 
-def db_addusers(conn: sqlite3.Connection, users: dict):
-    for user in users:
-        conn.cursor().execute('''insert or replace into users(username) values (?)''', (user,))
-        conn.commit()
+class DBA:
+    path: str
+    conn: sqlite3.Connection
+
+    def __init__(self, dbpath: str):
+        self.conn = None
+        self.path = dbpath
+
+    def init(self):
+        self.conn = sqlite3.connect(self.path + '/database.sqlite')
+        self.initTables()
+
+    def initTables(self):
+        c = self.conn.cursor()
+        c.execute('''CREATE TABLE IF NOT EXISTS users (
+                                id INTEGER PRIMARY KEY,
+                                username TEXT UNIQUE,
+                                lastpoll INTEGER
+                                )''')
+        c.execute('''CREATE TABLE IF NOT EXISTS medias (
+                                shortcode TEXT PRIMARY KEY,
+                                username TEXT,
+                                thumbnailURL TEXT,
+                                imageURL TEXT,
+                                caption TEXT,
+                                timestamp INTEGER
+                            )''')
+        self.conn.commit()
+
+    def close(self):
+        self.conn.close()
+
+    def addusers(self, users: dict):
+        for user in users:
+            self.conn.cursor().execute('''insert or replace into users(username) values (?)''', (user,))
+            self.conn.commit()
+
+    def pruneusers(self, users: dict):
+        prunes = set(users) - set(x[0] for x in self.conn.cursor().execute('''select username from users''').fetchall())
+        if len(prunes) > 0:
+            self.conn.cursor().executemany('''delete from users where username=?''', [prunes])
+            self.conn.cursor().execute('''delete from medias where username not in (select username from users)''')
+            self.conn.commit()
+
+    def addmedia(self, media: MediaObject):
+        for imageurl in media.medias:
+            self.conn.cursor().execute('''insert or replace into medias(shortcode,username,thumbnailURL,imageURL,caption,timestamp) values (?,?,?,?,?,?)''',
+                              (media.shortcode, media.username, media.thumbnail, imageurl, media.caption, media.timestamp))
+            self.conn.commit()
 
 
-def db_pruneusers(conn: sqlite3.Connection, users: dict):
-    prunes = set(users) - set(x[0] for x in conn.cursor().execute('''select username from users''').fetchall())
-    if len(prunes) > 0:
-        conn.cursor().executemany('''delete from users where username=?''', [prunes])
-        conn.cursor().execute('''delete from medias where username not in (select username from users)''')
-        conn.commit()
+def getconfig() -> Dict:
+    try:
+        with open('config.yml', 'r') as ymlfile:
+            config = yaml.load(ymlfile)
+            return config
+    except FileNotFoundError:
+        print('Unable to find config file.')
+        raise SystemExit
 
 
-def db_addmedia(conn: sqlite3.Connection, media: MediaObject):
-    for imageurl in media.medias:
-        conn.cursor().execute('''insert or replace into medias(shortcode,username,thumbnailURL,imageURL,caption,timestamp) values (?,?,?,?,?,?)''',
-                          (media.shortcode, media.username, media.thumbnail, imageurl, media.caption, media.timestamp))
-        conn.commit()
+cfg = getconfig()
+db = DBA('.')
+db.init()
+db.addusers(cfg['users'])
+db.pruneusers(cfg['users'])
 
-try:
-    with open('config.yml', 'r') as ymlfile:
-        cfg = yaml.load(ymlfile)
-except FileNotFoundError:
-    print('Unable to find config file.')
-    raise SystemExit
+timelines = []
+for user in cfg['users']:
+    timelines.append(Timeline(user, 13))
 
-conn = None
-try:
-    conn = sqlite3.connect('database.sqlite')
-    c = conn.cursor()
-    c.execute('''CREATE TABLE IF NOT EXISTS users (
-                id INTEGER PRIMARY KEY,
-                username TEXT UNIQUE,
-                lastpoll INTEGER
-                )''')
-    c.execute('''CREATE TABLE IF NOT EXISTS medias (
-                shortcode TEXT PRIMARY KEY,
-                username TEXT,
-                thumbnailURL TEXT,
-                imageURL TEXT,
-                caption TEXT,
-                timestamp INTEGER
-            )''')
-    db_addusers(conn, cfg['users'])
-    db_pruneusers(conn, cfg['users'])
-
-    timelines = []
-    for user in cfg['users']:
-        timelines.append(Timeline(user, 13))
-
-    for timeline in timelines:
-        timeline.get_timelime()
-        for media in timeline.medias:
-            print(media)
-            db_addmedia(conn, media)
-except sqlite3.Error as error:
-    print('An SQL error occurred: ', error.args[0])
-finally:
-    if conn is not None:
-        conn.close()
+for timeline in timelines:
+    timeline.get_timelime()
+    for media in timeline.medias:
+        db.addmedia(media)
