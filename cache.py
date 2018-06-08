@@ -223,10 +223,11 @@ class DBA:
             self.conn.commit()
 
     def addmedia(self, media: MediaObject):
-        for imageurl in media.medias:
+        for index, imageurl in enumerate(media.medias):
+            print(index)
             self.conn.cursor().execute(
                 '''insert or replace into medias(shortcode,username,thumbnailURL,imageURL,caption,timestamp) values (?,?,?,?,?,?)''',
-                (media.shortcode, media.username, media.thumbnail, imageurl, media.caption, media.timestamp))
+                (media.shortcode + str(index), media.username, media.thumbnail, imageurl, media.caption, media.timestamp))
             self.conn.commit()
 
 
