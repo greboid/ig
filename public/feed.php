@@ -32,14 +32,4 @@ try {
 } catch (Exception $e) {
 	die ('ERROR: ' . $e->getMessage());
 }
-
-function epoch_cmp($a, $b) {
-        if ($a['datetime'] < $b['datetime']) {
-                return 1;
-        } else if ($a['datetime'] > $b['datetime']) {
-                return -1;
-        } else {
-                return 0;
-        }
-}
 ?>
