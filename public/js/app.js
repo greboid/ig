@@ -13,6 +13,7 @@ Vue.component('lightbox', {
       data: {
         images: [],
 	newimages: [],
+        busy: false,
       },
       methods: {
         checkAdd: function() {
@@ -28,6 +29,8 @@ Vue.component('lightbox', {
           }
         },
         fetchImages: function(start, count) {
+          if (this.busy) { return }
+          this.busy = true
 	  fetch('/lechery/feed.php?start='+start+'&count='+count)
           .then(response => response.json())
           .then(json => {
@@ -35,6 +38,7 @@ Vue.component('lightbox', {
 			this.images.push(json[item])
 		}
           })
+          this.busy = false
         },
       },
       created() {
