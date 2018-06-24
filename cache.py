@@ -1,10 +1,15 @@
 import hashlib
 import json
+import pathlib
 import sqlite3
+import tempfile
 from enum import Enum, auto
+from io import BytesIO
 from typing import List, Dict
 
+import requests
 import yaml
+from PIL import Image
 from bs4 import BeautifulSoup
 from requests import Session
 
@@ -224,11 +229,21 @@ class DBA:
 
     def addmedia(self, media: MediaObject):
         for index, imageurl in enumerate(media.medias):
-            print(index)
             self.conn.cursor().execute(
                 '''insert or replace into medias(shortcode,username,thumbnailURL,imageURL,caption,timestamp) values (?,?,?,?,?,?)''',
-                (media.shortcode + str(index), media.username, media.thumbnail, imageurl, media.caption, media.timestamp))
+                (media.shortcode + str(index), media.username, "/thumbs/"+ media.shortcode + str(index) + ".jpg", imageurl, media.caption, media.timestamp))
             self.conn.commit()
+
+def createthumbnail(shortcode, url):
+    pathlib.Path('public/thumbs').mkdir(parents=True, exist_ok=True)
+    try:
+        with tempfile.TemporaryFile() as fp:
+            response = requests.get(url)
+            fp = Image.open(BytesIO(response.content))
+            fp.thumbnail((200,200))
+            fp.save("public/thumbs/" + shortcode + ".jpg", "JPEG")
+    except IOError:
+        print("cannot create thumbnail for", shortcode)
 
 
 def getconfig() -> Dict:
