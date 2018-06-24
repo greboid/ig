@@ -2,17 +2,14 @@
 <html>
 <head>
   <title>Instagram</title>
-  <link rel="stylesheet" href="/lechery/css/main.css" />
-  <script src="/lechery/js/vue.js" type="text/javascript" charset="utf-8" nonce="uXhb3jHDu7bM9z4P"></script>
+  <link rel="stylesheet" href="/css/main.css" />
+  <script src="/js/vue.js" type="text/javascript" charset="utf-8" nonce="uXhb3jHDu7bM9z4P"></script>
   <meta http-equiv="Content-Type"  content="text/html charset=UTF-8" />
 </head>
 <body>
   <div id="app" class="container">
-    <lightbox v-for="image in images" :image="image"></lightbox>
-<!--
-    <a v-for="image in images" class="item" v-bind:title="image.source + '<br>' + image.caption" v-bind:href="image.url"><img class="itemimage" v-bind:src="image.thumb" v-bind:title="image.source + ' - '+ image.shortcode"></a>
--->
+    <lightbox v-for="image in images" :key="image.shortcode" :image="image"></lightbox>
   </div>
-  <script src="/lechery/js/app.js" type="text/javascript" charset="utf-8" nonce="uXhb3jHDu7bM9z4P"></script>
+  <script src="/js/app.js" type="text/javascript" charset="utf-8" nonce="uXhb3jHDu7bM9z4P"></script>
 </body>
 </html>
