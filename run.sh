@@ -1,3 +1,3 @@
 #!/bin/sh
-pip install -r requirements.txt --user
+pip install -r /app/requirements.txt --user
 python /app/cache.py
