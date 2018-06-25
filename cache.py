@@ -229,6 +229,7 @@ class DBA:
 
     def addmedia(self, media: MediaObject):
         for index, imageurl in enumerate(media.medias):
+            createthumbnail(media.shortcode + str(index), imageurl)
             self.conn.cursor().execute(
                 '''insert or replace into medias(shortcode,username,thumbnailURL,imageURL,caption,timestamp) values (?,?,?,?,?,?)''',
                 (media.shortcode + str(index), media.username, "/thumbs/"+ media.shortcode + str(index) + ".jpg", imageurl, media.caption, media.timestamp))
