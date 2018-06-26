@@ -6,7 +6,7 @@ import tempfile
 from enum import Enum, auto
 from io import BytesIO
 from typing import List, Dict
-
+import datetime
 import requests
 import yaml
 from PIL import Image
@@ -26,20 +26,17 @@ class MediaObject:
     type: str
     caption: str
     thumbnail: str
-    medias: List[str]
+    media: str
     timestamp: int
 
-    def __init__(self, username: str, shortcode: str, type: MediaType, caption: str, thumbnail: str, timestamp: int):
+    def __init__(self, username: str, shortcode: str, type: MediaType, caption: str, thumbnail: str, url: str, timestamp: int):
         self.username = username
         self.shortcode = shortcode
         self.type = type
         self.caption = caption
         self.thumbnail = thumbnail
-        self.medias = []
+        self.media = url
         self.timestamp = timestamp
-
-    def addmedia(self, media):
-        self.medias.append(media)
 
     def __repr__(self):
         return "<MediaObject shortcode:%s type:%s>" % (self.shortcode, self.type)
@@ -99,52 +96,56 @@ class Timeline:
     def addmedia(self, media):
         self.medias.append(media)
 
-    def get_video(self, username: str, shortcode: str) -> MediaObject:
+    def get_video(self, username: str, shortcode: str) -> List[MediaObject]:
         data = self.get_shareddata(shortcode, 'p')
         caption = ''
         if len(data['entry_data']['PostPage'][0]['graphql']['shortcode_media']['edge_media_to_caption'][
                 'edges']) > 0:
             caption = data['entry_data']['PostPage'][0]['graphql']['shortcode_media']['edge_media_to_caption'][
                 'edges'][0]['node']['text']
-        media = MediaObject(username, shortcode,
+        return [MediaObject(username, shortcode,
                             MediaType.VIDEO,
                             caption,
                             data['entry_data']['PostPage'][0]['graphql']['shortcode_media']['display_url'],
-                            data['entry_data']['PostPage'][0]['graphql']['shortcode_media']['taken_at_timestamp'])
-        media.addmedia(data['entry_data']['PostPage'][0]['graphql']['shortcode_media']['video_url'])
-        return media
+                            data['entry_data']['PostPage'][0]['graphql']['shortcode_media']['video_url'],
+                            data['entry_data']['PostPage'][0]['graphql']['shortcode_media']['taken_at_timestamp'])]
 
-    def get_sidecars(self, username: str, shortcode: str) -> MediaObject:
+    def get_sidecars(self, username: str, shortcode: str) -> List[MediaObject]:
         data = self.get_shareddata(shortcode, 'p')
         caption = ''
         if len(data['entry_data']['PostPage'][0]['graphql']['shortcode_media']['edge_media_to_caption'][
                                 'edges']) > 0:
             caption = data['entry_data']['PostPage'][0]['graphql']['shortcode_media']['edge_media_to_caption'][
                                 'edges'][0]['node']['text']
-        media = MediaObject(username, shortcode,
-                            MediaType.SIDECAR,
-                            caption,
-                            data['entry_data']['PostPage'][0]['graphql']['shortcode_media']['display_url'],
-                            data['entry_data']['PostPage'][0]['graphql']['shortcode_media']['taken_at_timestamp'])
-        for edge in data['entry_data']['PostPage'][0]['graphql']['shortcode_media']['edge_sidecar_to_children'][
-            'edges']:
-            media.addmedia(edge['node']['display_url'])
-        return media
+        medias = []
+        for index, edge in enumerate(data['entry_data']['PostPage'][0]['graphql']['shortcode_media']['edge_sidecar_to_children']['edges']):
+            createthumbnail(shortcode, edge['node']['display_url'])
 
-    def get_image(self, username: str, shortcode: str) -> MediaObject:
+            medias.append(MediaObject(username, shortcode,
+                        MediaType.IMAGE,
+                        caption,
+                        "/thumbs/" + shortcode + str(index) + ".jpg",
+                        edge['node']['display_url'],
+                        data['entry_data']['PostPage'][0]['graphql']['shortcode_media'][
+                            'taken_at_timestamp']))
+        return medias
+
+    def get_image(self, username: str, shortcode: str) -> List[MediaObject]:
         data = self.get_shareddata(shortcode, 'p')
         caption = ''
         if len(data['entry_data']['PostPage'][0]['graphql']['shortcode_media']['edge_media_to_caption'][
                                 'edges']) > 0:
             caption = data['entry_data']['PostPage'][0]['graphql']['shortcode_media']['edge_media_to_caption'][
                                 'edges'][0]['node']['text']
-        media = MediaObject(username, shortcode,
-                            MediaType.IMAGE,
-                            caption,
-                            data['entry_data']['PostPage'][0]['graphql']['shortcode_media']['display_url'],
-                            data['entry_data']['PostPage'][0]['graphql']['shortcode_media']['taken_at_timestamp'])
-        media.addmedia(data['entry_data']['PostPage'][0]['graphql']['shortcode_media']['display_url'])
-        return media
+        createthumbnail(shortcode, data['entry_data']['PostPage'][0]['graphql']['shortcode_media']['display_url'])
+        return [MediaObject(username, shortcode,
+                                           MediaType.IMAGE,
+                                           caption,
+                                           "/thumbs/" + shortcode + ".jpg",
+                                           data['entry_data']['PostPage'][0]['graphql']['shortcode_media'][
+                                               'display_url'],
+                                           data['entry_data']['PostPage'][0]['graphql']['shortcode_media'][
+                                               'taken_at_timestamp'])]
 
     def get_url(self, id: str, path: None):
         if path is None:
@@ -227,12 +228,11 @@ class DBA:
             self.conn.cursor().execute('''delete from medias where username not in (select username from users)''')
             self.conn.commit()
 
-    def addmedia(self, media: MediaObject):
-        for index, imageurl in enumerate(media.medias):
-            createthumbnail(media.shortcode + str(index), imageurl)
+    def addmedia(self, medias: MediaObject):
+        for media in medias:
             self.conn.cursor().execute(
                 '''insert or replace into medias(shortcode,username,thumbnailURL,imageURL,caption,timestamp) values (?,?,?,?,?,?)''',
-                (media.shortcode + str(index), media.username, "/thumbs/"+ media.shortcode + str(index) + ".jpg", imageurl, media.caption, media.timestamp))
+                (media.shortcode, media.username, media.thumbnail, media.media, media.caption, media.timestamp))
             self.conn.commit()
 
 def createthumbnail(shortcode, url):
@@ -243,8 +243,8 @@ def createthumbnail(shortcode, url):
             fp = Image.open(BytesIO(response.content))
             fp.thumbnail((200,200))
             fp.save("public/thumbs/" + shortcode + ".jpg", "JPEG")
-    except IOError:
-        print("cannot create thumbnail for", shortcode)
+    except IOError as e:
+        print("{} - cannot create thumbnail for {}: {}".format(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), shortcode, e))
 
 
 def getconfig() -> Dict:
