@@ -20,6 +20,8 @@ services:
     ports:
       - "8049:80"
     volumes:
-        - ./site.conf:/etc/nginx/conf.d/default.conf
+        - ${PWD}/site.conf:/etc/nginx/conf.d/default.conf
+        - ${PWD}/static/:/app/
+        - ${PWD}/thumbs:/app/thumbs
     depends_on:
       - feed

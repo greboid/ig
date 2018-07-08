@@ -29,6 +29,5 @@ RUN \
 USER pythonuser
 
 COPY feed.py /app/feed.py
-COPY static /app/static/
 
 ENTRYPOINT ["gunicorn", "--forwarded-allow-ips", "0.0.0.0/0", "-k", "eventlet", "-b", "0.0.0.0:8000", "feed:app"]

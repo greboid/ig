@@ -60,25 +60,5 @@ def feed():
     rows = cursor.fetchall()
     return jsonify(rows)
 
-
-@app.route('/')
-def index():
-    return app.send_static_file('index.html')
-
-
-@app.route('/js/<path:filename>')
-def js(filename):
-    print(filename)
-    return send_from_directory('./static/js/', filename)
-
-@app.route('/css/<path:filename>')
-def css(filename):
-    return send_from_directory('./static/css/', filename)
-
-@app.route('/thumbs/<path:filename>')
-def thumbs(filename):
-    return send_from_directory('./static/thumbs/', filename)
-
-
 if __name__ == '__main__':
     app.run(debug=True)
