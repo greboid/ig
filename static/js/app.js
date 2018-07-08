@@ -34,7 +34,7 @@ var app = new Vue({
         return
       }
       this.busy = true
-      fetch('/feed.php?start='+start+'&count='+count)
+      fetch('/feed?start='+start+'&count='+count)
       .then(response => response.json())
       .then(json => {
         for(var item in json) {

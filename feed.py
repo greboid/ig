@@ -2,10 +2,11 @@ from flask import Flask
 from flask import jsonify
 from flask import request
 from flask import g
+from flask import send_from_directory
 
 import sqlite3
 
-DATABASE = '../database.sqlite'
+DATABASE = './database.sqlite'
 
 
 def get_db():
@@ -43,8 +44,8 @@ def dict_factory(cursor, row):
 inittables()
 app = Flask(__name__)
 
-@app.route('/')
-def index():
+@app.route('/feed')
+def feed():
     start = request.args.get('start', default=0, type=int)
     count = request.args.get('count', default=5, type=int)
     get_db().row_factory = dict_factory
@@ -59,5 +60,26 @@ def index():
     rows = cursor.fetchall()
     return jsonify(rows)
 
+
+@app.route('/')
+def index():
+    return app.send_static_file('index.html')
+
+
+@app.route('/js/<path:filename>')
+def js(filename):
+    print(filename)
+    return send_from_directory('./static/js/', filename)
+
+@app.route('/css/<path:filename>')
+def css(filename):
+    print(filename)
+    return send_from_directory('./static/css/', filename)
+
+@app.route('/css/<path:filename>')
+def thumbs(filename):
+    return send_from_directory('./static/thumbs/', filename)
+
+
 if __name__ == '__main__':
-    app.run(debug=False,host='0.0.0.0')
+    app.run(debug=True)

@@ -252,11 +252,11 @@ def createthumbnail(shortcode, url):
             else:
                 fp = Image.open(BytesIO(response.content))
                 fp.thumbnail((200,200))
-                fp.save("public/thumbs/" + shortcode + ".jpg", "JPEG")
+                fp.save("static/thumbs/" + shortcode + ".jpg", "JPEG")
     except IOError as e:
         print("{} - cannot create thumbnail for {}: {}".format(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), shortcode, e))
         response = requests.get(url)
-        file = open("public/broken/" + shortcode + ".jpg", "wb")
+        file = open("broken/" + shortcode + ".jpg", "wb")
         file.write(response.content)
 
 

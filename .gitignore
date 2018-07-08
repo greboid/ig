@@ -10,3 +10,4 @@ database.sqlite
 /.local
 /public/thumbs
 /public/broken
+/static/thumbs
