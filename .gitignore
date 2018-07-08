@@ -9,3 +9,4 @@ database.sqlite
 /.cache
 /.local
 /public/thumbs
+/public/broken
