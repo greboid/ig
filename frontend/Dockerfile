@@ -19,7 +19,7 @@ WORKDIR /app
 COPY requirements.txt /app/requirements.txt
 RUN pip install -r /app/requirements.txt
 
-RUN pip install gunicorn
+RUN pip install gunicorn eventlet
 
 RUN \
   addgroup -g 9999 -S pythonuser && \
@@ -30,4 +30,4 @@ USER pythonuser
 COPY feed.py /app/feed.py
 COPY static /app/static/
 
-ENTRYPOINT ["gunicorn"  , "-b", "0.0.0.0:8000", "feed:app"]
+ENTRYPOINT ["gunicorn", "--forwarded-allow-ips", "0.0.0.0/0", "-k", "eventlet", "-b", "0.0.0.0:8000", "feed:app"]

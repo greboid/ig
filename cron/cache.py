@@ -244,6 +244,7 @@ class DBA:
 
 def createthumbnail(shortcode, url):
     pathlib.Path('static/thumbs').mkdir(parents=True, exist_ok=True)
+    pathlib.Path('broken/').mkdir(parents=True, exist_ok=True)
     try:
         with tempfile.TemporaryFile() as fp:
             response = requests.get(url)

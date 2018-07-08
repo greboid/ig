@@ -75,7 +75,7 @@ def js(filename):
 def css(filename):
     return send_from_directory('./static/css/', filename)
 
-@app.route('/css/<path:filename>')
+@app.route('/thumbs/<path:filename>')
 def thumbs(filename):
     return send_from_directory('./static/thumbs/', filename)
 
