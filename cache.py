@@ -1,3 +1,4 @@
+import os
 import hashlib
 import json
 import pathlib
@@ -69,12 +70,18 @@ class Timeline:
         self.data = self.get_shareddata(self.username)
         while currentcount < self.count:
             if self.data is not None:
-                if 'entry_data' in self.data:
-                    edges = \
-                        self.data['entry_data']['ProfilePage'][0]['graphql']['user']['edge_owner_to_timeline_media'][
-                            'edges']
-                else:
-                    edges = self.data['data']['user']['edge_owner_to_timeline_media']['edges']
+                try:
+                    if 'entry_data' in self.data:
+                        edges = \
+                            self.data['entry_data']['ProfilePage'][0]['graphql']['user']['edge_owner_to_timeline_media'][
+                                'edges']
+                    elif 'data' in self.data:
+                        edges = self.data['data']['user']['edge_owner_to_timeline_media']['edges']
+                    else:
+                        edges = self.data['node']['edge_media_to_caption']['edges']
+                except KeyError as e:
+                    print("Key error")
+                    print(edges)
                 for edge in edges:
                     node = edge['node']
                     if node['__typename'] == 'GraphImage':
@@ -87,9 +94,10 @@ class Timeline:
                         raise TypeError('Unknown edge type.')
                 currentcount = len(self.medias)
                 if currentcount < self.count:
-                    self.data = self.get_more(
-                        self.data['entry_data']['ProfilePage'][0]['graphql']['user']['edge_owner_to_timeline_media'][
-                            'page_info']['end_cursor'])
+                    if 'entry_data' in self.data:
+                        self.data = self.get_more(self.data['entry_data']['ProfilePage'][0]['graphql']['user']['edge_owner_to_timeline_media']['page_info']['end_cursor'])
+                    else:
+                        self.data = self.get_more(self.data['data']['user']['edge_owner_to_timeline_media']['page_info']['end_cursor'])
             else:
                 raise EnvironmentError('Unable to get data.')
 
@@ -119,9 +127,8 @@ class Timeline:
                                 'edges'][0]['node']['text']
         medias = []
         for index, edge in enumerate(data['entry_data']['PostPage'][0]['graphql']['shortcode_media']['edge_sidecar_to_children']['edges']):
-            createthumbnail(shortcode, edge['node']['display_url'])
-
-            medias.append(MediaObject(username, shortcode,
+            createthumbnail(shortcode + str(index), edge['node']['display_url'])
+            medias.append(MediaObject(username, shortcode + str(index),
                         MediaType.IMAGE,
                         caption,
                         "/thumbs/" + shortcode + str(index) + ".jpg",
@@ -240,11 +247,17 @@ def createthumbnail(shortcode, url):
     try:
         with tempfile.TemporaryFile() as fp:
             response = requests.get(url)
-            fp = Image.open(BytesIO(response.content))
-            fp.thumbnail((200,200))
-            fp.save("public/thumbs/" + shortcode + ".jpg", "JPEG")
+            if response.status_code != requests.codes.ok:
+                print("{} - File doesn't exist {} - {}".format(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), shortcode, url))
+            else:
+                fp = Image.open(BytesIO(response.content))
+                fp.thumbnail((200,200))
+                fp.save("public/thumbs/" + shortcode + ".jpg", "JPEG")
     except IOError as e:
         print("{} - cannot create thumbnail for {}: {}".format(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), shortcode, e))
+        response = requests.get(url)
+        file = open("public/broken/" + shortcode + ".jpg", "wb")
+        file.write(response.content)
 
 
 def getconfig() -> Dict:
