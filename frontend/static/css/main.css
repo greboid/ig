@@ -1,0 +1,32 @@
+html, body {
+  margin: 0;
+  margin-left:0;
+  padding: 0;
+}
+.container {
+  margin: 0;
+  padding: 0;
+  min-height: 400px;
+  display: flex;
+  display: -webkit-flex;
+  flex-wrap: wrap;
+  flex-direction: row;
+  justify-content: center;
+  align-items: stretch;
+  align-content: stretch;
+}
+.item {
+  flex: 0 0 auto;
+  margin: 0px;
+}
+.itemimage {
+  width: 100px;
+  height: 100px;
+  display: block;
+}
+@media	only screen and (min-resolution: 100dpi) {
+	.itemimage {
+		width: 200px;
+                height: 200px;
+	}
+}
