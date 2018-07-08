@@ -1,0 +1,25 @@
+version: "3.5"
+services:
+  cron:
+    image: greboid/ig-cron
+    build: cron
+    volumes:
+      - ${PWD}/database.sqlite:/app/database.sqlite
+      - ${PWD}/config.yml:/app/config.yml
+      - ${PWD}/thumbs:/app/static/thumbs
+    environment:
+      - DELAY=900
+  feed:
+    image: greboid/ig-frontend
+    build: frontend
+    volumes:
+      - ${PWD}/database.sqlite:/app/database.sqlite
+      - ${PWD}/thumbs:/app/static/thumbs
+  web:
+    image: "nginx:latest"
+    ports:
+      - "8049:80"
+    volumes:
+        - ./site.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - feed

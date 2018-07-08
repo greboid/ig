@@ -1,13 +1,4 @@
-/vendor/
-/cache/
-/safecache/
-/config.local.php
-venv
-.idea
+/thumbs
+docker-compose.override.yml
 config.yml
 database.sqlite
-/.cache
-/.local
-/public/thumbs
-/public/broken
-/static/thumbs
