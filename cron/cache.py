@@ -244,7 +244,6 @@ class DBA:
 
 def createthumbnail(shortcode, url):
     pathlib.Path('static/thumbs').mkdir(parents=True, exist_ok=True)
-    pathlib.Path('broken/').mkdir(parents=True, exist_ok=True)
     try:
         with tempfile.TemporaryFile() as fp:
             response = requests.get(url)
@@ -256,9 +255,6 @@ def createthumbnail(shortcode, url):
                 fp.save("static/thumbs/" + shortcode + ".jpg", "JPEG")
     except IOError as e:
         print("{} - cannot create thumbnail for {}: {}".format(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), shortcode, e))
-        response = requests.get(url)
-        file = open("broken/" + shortcode + ".jpg", "wb")
-        file.write(response.content)
 
 
 def getconfig() -> Dict:
@@ -272,7 +268,7 @@ def getconfig() -> Dict:
 
 
 cfg = getconfig()
-db = DBA('.')
+db = DBA('/app')
 db.init()
 db.addusers(cfg['users'])
 db.pruneusers(cfg['users'])

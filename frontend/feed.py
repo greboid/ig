@@ -6,7 +6,7 @@ from flask import send_from_directory
 
 import sqlite3
 
-DATABASE = './database.sqlite'
+DATABASE = '/app/database.sqlite'
 
 
 def get_db():
