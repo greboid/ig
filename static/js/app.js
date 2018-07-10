@@ -1,59 +1,30 @@
-Vue.component('lightbox', {
-  props: ['image'],
-  data: function () {
-    return {
-      instanceImage: this.image,
-    }
-  },
-  template: '<a class="item" :title="image.source" :href="image.url"><img class="itemimage" :src="image.thumb"></a>'
-})
+scrolling = false;
 
-var app = new Vue({
-  el: '#app',
-  data: {
-    images: [],
-    newimages: [],
-    busy: false,
-    showModal: false,
-  },
-  methods: {
-    checkAdd: function() {
-      if (window.innerHeight + window.scrollY >= (document.body.offsetHeight)) {
-        this.fetchImages(this.images.length, 5)
-      }
-    },
-    scroll: function() {
-      window.onscroll = ev => {
-       if (window.innerHeight + window.scrollY >= (document.body.offsetHeight)) {
-          this.fetchImages(this.images.length, 5)
-        }
-      }
-    },
-    fetchImages: function(start, count) {
-      if (this.busy) {
-        return
-      }
-      this.busy = true
-      fetch('/feed?start='+start+'&count='+count)
-      .then(response => response.json())
-      .then(json => {
-        for(var item in json) {
-         this.images.push(json[item])
-       }
-     })
-      this.busy = false
-    },
-  },
-  created() {
-    this.fetchImages(0, 5)
-  },
-  mounted() {
-    this.scroll()
-  },
-  watch: {
-    images: function () {
-      this.checkAdd()
-    }
+getImages()
+$(window).scroll(function() {
+  if (!scrolling && ($(window).scrollTop() + $(window).height() == $(document).height())) {
+    getImages()
   }
-})
-Vue.config.devtools=true
+});
+$( window ).resize(function() {
+  if (!scrolling && $('#app').height() < $(window).height()) {
+    getImages()
+  }
+});
+
+function getImages() {
+  scrolling = true;
+  offset = $("#app img").length
+  $.getJSON('/feed?start='+offset+'&count=19', {}, function(data) {
+    $.each(data, function(index, image) {
+      $('#app').append($('<a data-fancybox="images" class="item" title="'+image.source+'" data-source="'+image.source+'" data-caption="'+image.source+' - '+image.shortcode+'<br>'+image.caption+'" href="' + image.url + '"><img class="itemimage" alt="'+image.source+'" src="' + image.thumb + '"/></a>'));
+    })
+  }).done(function() {
+    scrolling = false;
+    if ($('#app').height() < $(window).height()) {
+      getImages()
+    }
+  })
+}
+
+
