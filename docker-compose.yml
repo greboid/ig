@@ -10,8 +10,8 @@ services:
     environment:
       - DELAY=900
   feed:
-    image: greboid/ig-frontend
-    build: frontend
+    image: greboid/ig-feed
+    build: feed
     volumes:
       - ${PWD}/database.sqlite:/app/database.sqlite
       - ${PWD}/thumbs:/app/static/thumbs
