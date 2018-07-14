@@ -111,10 +111,11 @@ class Timeline:
                 'edges']) > 0:
             caption = data['entry_data']['PostPage'][0]['graphql']['shortcode_media']['edge_media_to_caption'][
                 'edges'][0]['node']['text']
+        createthumbnail(shortcode, data['entry_data']['PostPage'][0]['graphql']['shortcode_media']['display_url'])
         return [MediaObject(username, shortcode,
                             MediaType.VIDEO,
                             caption,
-                            data['entry_data']['PostPage'][0]['graphql']['shortcode_media']['display_url'],
+                            "/thumbs/" + shortcode + ".jpg",
                             data['entry_data']['PostPage'][0]['graphql']['shortcode_media']['video_url'],
                             data['entry_data']['PostPage'][0]['graphql']['shortcode_media']['taken_at_timestamp'])]
 
