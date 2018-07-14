@@ -15,7 +15,13 @@ $( window ).resize(function() {
 function getImages() {
   scrolling = true;
   offset = $("#app img").length
-  $.getJSON('/feed?start='+offset+'&count=19', {}, function(data) {
+  if ($(window).width() / parseFloat($("body").css("font-size")) > 120) {
+    imgwidth = 200;
+  } else {
+    imgwidth = 100;
+  }
+  count = Math.floor($(window).width() / imgwidth)
+  $.getJSON('/feed?start='+offset+'&count='+count, {}, function(data) {
     $.each(data, function(index, image) {
       $('#app').append($('<a data-fancybox="images" class="item" title="'+image.source+'" data-source="'+image.source+'" data-caption="'+image.source+' - '+image.shortcode+'<br>'+image.caption+'" href="' + image.url + '"><img class="itemimage" src="' + image.thumb + '"/></a>'));
     })
