@@ -9,7 +9,7 @@ from flask import url_for
 
 import sqlite3
 
-DATABASE = '../database.sqlite'
+DATABASE = '/app/database.sqlite'
 
 
 def get_db():
