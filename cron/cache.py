@@ -314,7 +314,7 @@ def getconfig() -> Dict:
 
 
 cfg = getconfig()
-db = DBA('/app')
+db = DBA('/app/db/')
 db.init()
 db.addprofiles(cfg['profiles'])
 db.pruneprofiles(cfg['profiles'])

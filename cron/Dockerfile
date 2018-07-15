@@ -13,9 +13,9 @@ RUN apk --no-cache add \
                        tcl-dev \
                        harfbuzz-dev \
                        fribidi-dev
-
+RUN mkdir -p /app/db
 WORKDIR /app
-RUN touch /app/database.sqlite
+RUN touch /app/db/database.sqlite
 
 COPY requirements.txt /app/requirements.txt
 RUN pip install -r /app/requirements.txt
@@ -23,6 +23,8 @@ RUN pip install -r /app/requirements.txt
 RUN \
   addgroup -g 9999 -S pythonuser && \
   adduser -S -G pythonuser -u 9999 -s /bin/bash -h /app pythonuser
+
+RUN chown -R 9999:9999 /app
 
 USER pythonuser
 
