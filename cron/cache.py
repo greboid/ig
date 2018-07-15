@@ -205,6 +205,16 @@ class DBA:
 
     def inittables(self):
         c = self.conn.cursor()
+        c.execute('''CREATE TABLE IF NOT EXISTS profiles (
+                                    id INTEGER PRIMARY KEY,
+                                    name TEXT UNIQUE
+                                    )''')
+        c.execute('''CREATE TABLE IF NOT EXISTS profile_users (
+                                    id INTEGER PRIMARY KEY,
+                                    userID INT,
+                                    profileID INT,
+                                    UNIQUE(userID, profileID)
+                                    )''')
         c.execute('''CREATE TABLE IF NOT EXISTS users (
                                 id INTEGER PRIMARY KEY,
                                 username TEXT UNIQUE,
@@ -223,17 +233,44 @@ class DBA:
     def close(self):
         self.conn.close()
 
-    def addusers(self, users: dict):
-        for user in users:
-            self.conn.cursor().execute('''insert or replace into users(username) values (?)''', (user,))
+    def addprofiles(self, profiles: dict):
+        if profiles is not None:
+            for profile in profiles:
+                for key, users in profile.items():
+                    self.conn.cursor().execute('''insert or ignore into profiles(name) values (?)''', (key,))
+                    for user in users:
+                        self.conn.cursor().execute('''insert or ignore into users(username) values (?)''', (user,))
+                        profileid = self.conn.cursor().execute('''select id from profiles where name=?''', (key,)).fetchone()[0]
+                        userid = self.conn.cursor().execute('''select id from users where username=?''', (user,)).fetchone()[0]
+                        self.conn.cursor().execute('''insert or ignore into profile_users (profileid, userid) values (?, ?)''', (profileid, userid,))
             self.conn.commit()
 
-    def pruneusers(self, users: dict):
-        prunes = set(users) - set(x[0] for x in self.conn.cursor().execute('''select username from users''').fetchall())
-        if len(prunes) > 0:
-            self.conn.cursor().executemany('''delete from users where username=?''', [prunes])
-            self.conn.cursor().execute('''delete from medias where username not in (select username from users)''')
+    def pruneprofiles(self, profiles: dict):
+        if profiles is None:
+            self.conn.cursor().execute('''delete from profiles''')
+            self.conn.cursor().execute('''delete from profile_users''')
+            self.conn.cursor().execute('''delete from users''')
+            self.conn.cursor().execute('''delete from medias''')
             self.conn.commit()
+        else:
+            allusers = []
+            allprofiles = []
+            for profile in profiles:
+                for key, users in profile.items():
+                    allprofiles.append(key)
+                    for user in users:
+                        allusers.append(user)
+            pruneusers = set(x[0] for x in self.conn.cursor().execute('''select username from users''').fetchall()) - set(allusers)
+            pruneprofiles = set(x[0] for x in self.conn.cursor().execute('''select name from profiles''').fetchall()) - set(allprofiles)
+            if len(pruneprofiles) > 0:
+                for prune in pruneprofiles:
+                    self.conn.cursor().execute('''delete from profiles where name=?''', (prune,))
+                self.conn.cursor().execute('''delete from profile_users where profileid not in (select profileid from profiles)''')
+            if len(pruneusers) > 0:
+                for prune in pruneusers:
+                    self.conn.cursor().execute('''delete from users where username=?''', (prune,))
+                self.conn.cursor().execute('''delete from medias where username not in (select username from users)''')
+                self.conn.commit()
 
     def addmedia(self, medias: MediaObject):
         for media in medias:
@@ -241,6 +278,14 @@ class DBA:
                 '''insert or replace into medias(shortcode,username,thumbnailURL,imageURL,caption,timestamp) values (?,?,?,?,?,?)''',
                 (media.shortcode, media.username, media.thumbnail, media.media, media.caption, media.timestamp))
             self.conn.commit()
+
+    def getusers(self) -> List:
+        users = []
+        cursor = self.conn.cursor()
+        cursor.execute('''select username from users''')
+        for user in cursor.fetchall():
+            users.append(user[0])
+        return users
 
 def createthumbnail(shortcode, url):
     pathlib.Path('static/thumbs').mkdir(parents=True, exist_ok=True)
@@ -270,11 +315,11 @@ def getconfig() -> Dict:
 cfg = getconfig()
 db = DBA('/app')
 db.init()
-db.addusers(cfg['users'])
-db.pruneusers(cfg['users'])
+db.addprofiles(cfg['profiles'])
+db.pruneprofiles(cfg['profiles'])
 
 timelines = []
-for user in cfg['users']:
+for user in db.getusers():
     timelines.append(Timeline(user, 13))
 
 for timeline in timelines:
