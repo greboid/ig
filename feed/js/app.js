@@ -21,8 +21,7 @@ function getImages() {
     imgwidth = 100;
   }
   count = Math.floor($(window).width() / imgwidth)
-  console.log($(location).attr('protocol'))
-  $.getJSON($(location).attr('protocol') + '//' + $(location).attr('host') + '/feed?start='+offset+'&count='+count, {}, function(data) {
+  $.getJSON($(location).attr('protocol') + '//' + $(location).attr('host') + '/feed?start='+offset+'&count='+count+'&profile='+$(location).attr('pathname').substr(1), {}, function(data) {
     $.each(data, function(index, image) {
       $('#app').append($('<a data-fancybox="images" class="item" title="'+image.source+'" data-source="'+image.source+'" data-caption="'+image.source+' - '+image.shortcode+'<br>'+image.caption+'" href="' + image.url + '"><img class="itemimage" src="' + image.thumb + '"/></a>'));
     })

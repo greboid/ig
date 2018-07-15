@@ -9,7 +9,7 @@ from flask import url_for
 
 import sqlite3
 
-DATABASE = '/app/database.sqlite'
+DATABASE = '../database.sqlite'
 
 
 def get_db():
@@ -83,6 +83,7 @@ def js(filename):
 def feed():
     start = request.args.get('start', default=0, type=int)
     count = request.args.get('count', default=5, type=int)
+    profile = request.args.get('profile', default=None)
     get_db().row_factory = dict_factory
     cursor = get_db().cursor()
     cursor.execute(
@@ -90,10 +91,11 @@ def feed():
         FROM medias 
         LEFT JOIN users on users.username=medias.username
         LEFT JOIN profile_users on profile_users.userid=users.id
-        WHERE profile_users.profileID=1
+        LEFT JOIN profiles on profile_users.profileid=profiles.id
+        WHERE profiles.name=?
         ORDER BY timestamp 
         DESC LIMIT ? 
-        OFFSET ?''', (count, start))
+        OFFSET ?''', (profile, count, start,))
     rows = cursor.fetchall()
     return jsonify(rows)
 
