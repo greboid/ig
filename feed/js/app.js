@@ -1,5 +1,19 @@
 scrolling = false;
 
+$('#app').before('<div id="menu"></div>')
+
+$.getJSON($(location).attr('protocol') + '//' + $(location).attr('host') + '/profiles', {}, function(data) {
+  $.each(data, function(index, profile) {
+    active = $(location).attr('pathname').substr(1) == profile.name
+    console.log(active)
+    if ($(location).attr('pathname').substr(1) == profile.name) {
+      $('#menu').append('<li><a href="/'+profile.name+'" class="active">'+profile.name+'</a></li>')
+    } else {
+      $('#menu').append('<li><a href="/'+profile.name+'">'+profile.name+'</a></li>')
+    }
+  })
+})
+
 getImages()
 $(window).scroll(function() {
   if (!scrolling && ($(window).scrollTop() + $(window).height() == $(document).height())) {
