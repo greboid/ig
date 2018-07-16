@@ -75,7 +75,7 @@ app = Flask(__name__)
 def index():
     profile = None
     results = get_db().cursor().execute('''select name from profiles limit 1''').fetchone()
-    if len(results) > 0:
+    if results is not None and len(results) > 0:
         profile = results[0]
     return redirect(url_for('profile', profile=profile))
 
