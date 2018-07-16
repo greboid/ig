@@ -1,26 +1,39 @@
+import sqlite3
+from typing import Dict
+
+import yaml
 from flask import Flask
 from flask import g
-from flask import request
 from flask import jsonify
-from flask import send_from_directory
-from flask import render_template
 from flask import redirect
+from flask import render_template
+from flask import request
+from flask import send_from_directory
 from flask import url_for
 
-import sqlite3
 
-DATABASE = '/app/db/database.sqlite'
+def getconfig() -> Dict:
+    try:
+        with open('config.yml', 'r') as ymlfile:
+            config = yaml.load(ymlfile)
+            return config
+    except FileNotFoundError:
+        print('Unable to find config file.')
+        raise SystemExit
+
+
+cfg = getconfig()
 
 
 def get_db():
     db = getattr(g, '_database', None)
     if db is None:
-        db = g._database = sqlite3.connect(DATABASE)
+        db = g._database = sqlite3.connect(cfg['db'])
     return db
 
 
 def inittables():
-    db = sqlite3.connect(DATABASE)
+    db = sqlite3.connect(cfg['db'])
     c = db.cursor()
     c.execute('''CREATE TABLE IF NOT EXISTS profiles (
                                         id INTEGER PRIMARY KEY,

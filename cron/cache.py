@@ -193,15 +193,15 @@ class Timeline:
 
 
 class DBA:
-    path: str
+    db: str
     conn: sqlite3.Connection
 
-    def __init__(self, dbpath: str):
+    def __init__(self, db: str):
         self.conn = None
-        self.path = dbpath
+        self.db = db
 
     def init(self):
-        self.conn = sqlite3.connect(self.path + '/database.sqlite')
+        self.conn = sqlite3.connect(self.db)
         self.inittables()
 
     def inittables(self):
@@ -314,7 +314,7 @@ def getconfig() -> Dict:
 
 
 cfg = getconfig()
-db = DBA('/app/db/')
+db = DBA(cfg['db'])
 db.init()
 db.addprofiles(cfg['profiles'])
 db.pruneprofiles(cfg['profiles'])
