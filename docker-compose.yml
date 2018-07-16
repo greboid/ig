@@ -4,26 +4,27 @@ services:
     image: greboid/ig-cron
     build: cron
     volumes:
-      - ${PWD}/database.sqlite:/app/db/database.sqlite
-      - ${PWD}/config.yml:/app/config.yml
-      - ${PWD}/thumbs:/app/static/thumbs
+      - ./database.sqlite:/app/db/database.sqlite
+      - ./config.yml:/app/config.yml
+      - ./thumbs:/app/static/thumbs
     environment:
       - DELAY=900
   feed:
     image: greboid/ig-feed
     build: feed
     volumes:
-      - ${PWD}/database.sqlite:/app/db/database.sqlite
-      - ${PWD}/thumbs:/app/static/thumbs
-      - ${PWD}/feed/templates:/app/templates
+      - ./database.sqlite:/app/db/database.sqlite
+      - ./thumbs:/app/static/thumbs
+      - ./feed/templates:/app/templates
+      - ./config.yml:/app/config.yml
   web:
     image: "nginx:latest"
     ports:
       - "8049:80"
     volumes:
-        - ${PWD}/site.conf:/etc/nginx/conf.d/default.conf
-        - ${PWD}/feed/js:/app/js
-        - ${PWD}/feed/css:/app/css
-        - ${PWD}/thumbs:/app/thumbs
+        - ./site.conf:/etc/nginx/conf.d/default.conf
+        - ./feed/js:/app/js
+        - ./feed/css:/app/css
+        - ./thumbs:/app/thumbs
     depends_on:
       - feed
