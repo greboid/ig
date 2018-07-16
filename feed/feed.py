@@ -113,5 +113,15 @@ def feed():
     return jsonify(rows)
 
 
+@app.route('/profiles')
+def profiles():
+    get_db().row_factory = dict_factory
+    cursor = get_db().cursor()
+    cursor.execute(
+        '''SELECT id, name from profiles''')
+    rows = cursor.fetchall()
+    return jsonify(rows)
+
+
 if __name__ == '__main__':
     app.run(debug=True)
