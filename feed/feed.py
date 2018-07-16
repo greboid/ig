@@ -73,7 +73,10 @@ app = Flask(__name__)
 
 @app.route('/')
 def index():
-    profile = get_db().cursor().execute('''select name from profiles limit 1''').fetchone()[0]
+    profile = None
+    results = get_db().cursor().execute('''select name from profiles limit 1''').fetchone()
+    if len(results) > 0:
+        profile = results[0]
     return redirect(url_for('profile', profile=profile))
 
 
