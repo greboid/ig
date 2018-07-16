@@ -4,7 +4,7 @@ services:
     image: greboid/ig-cron
     build: cron
     volumes:
-      - ./database.sqlite:/app/db/database.sqlite
+      - ./db:/app/db
       - ./config.yml:/app/config.yml
       - ./thumbs:/app/static/thumbs
     environment:
@@ -13,7 +13,7 @@ services:
     image: greboid/ig-feed
     build: feed
     volumes:
-      - ./database.sqlite:/app/db/database.sqlite
+      - ./db:/app/db
       - ./thumbs:/app/static/thumbs
       - ./feed/templates:/app/templates
       - ./config.yml:/app/config.yml

@@ -15,7 +15,6 @@ RUN apk --no-cache add \
                        fribidi-dev
 RUN mkdir -p /app/db
 WORKDIR /app
-RUN touch /app/db/database.sqlite
 
 COPY requirements.txt /app/requirements.txt
 RUN pip install -r /app/requirements.txt
