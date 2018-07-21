@@ -1,5 +1,6 @@
 initial = true;
 scrolling = false;
+finished = false;
 
 $('#app').before('<div id="menu"></div>')
 
@@ -39,13 +40,20 @@ function getImages() {
     count = count * Math.floor($(window).height() / imgwidth)
   }
   $.getJSON($(location).attr('protocol') + '//' + $(location).attr('host') + '/feed?start='+offset+'&count='+count+'&profile='+$(location).attr('pathname').substr(1), {}, function(data) {
+    var images = [];
     $.each(data, function(index, image) {
+      images.push(image);
+    })
+    if (images.length > 0) {
+      finished = true;
+    }
+    $.each(images, function(index, image) {
       $('#app').append($('<a data-fancybox="images" class="item" title="'+image.source+'" data-source="'+image.source+'" data-caption="'+image.source+' - '+image.shortcode+'<br>'+image.caption+'" href="' + image.url + '"><img class="itemimage" src="' + image.thumb + '"/></a>'));
     })
   }).done(function() {
     initial = false;
     scrolling = false;
-    if ($('#app').height() < $(window).height()) {
+    if ($('#app').height() < $(window).height() || !finished) {
       getImages()
     }
   })
