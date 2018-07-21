@@ -23,11 +23,11 @@ RUN \
   addgroup -g 9999 -S pythonuser && \
   adduser -S -G pythonuser -u 9999 -s /bin/bash -h /app pythonuser
 
+COPY entrypoint.py /usr/local/bin/entrypoint.py
+COPY cache.py /app/cache.py
+
 RUN chown -R 9999:9999 /app
 
 USER pythonuser
-
-COPY entrypoint.py /usr/local/bin/entrypoint.py
-COPY cache.py /app/cache.py
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.py"]
