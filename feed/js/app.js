@@ -48,7 +48,7 @@ function getImages() {
       finished = true;
     }
     $.each(images, function(index, image) {
-      $('#app').append($('<a data-fancybox="images" class="item" title="'+image.source+'" data-source="'+image.source+'" data-caption="'+image.source+' - '+image.shortcode+'<br>'+image.caption+'" href="' + image.url + '"><img class="itemimage" src="' + image.thumb + '"/></a>'));
+      $('#app').append($('<a data-fancybox="images" class="item" title="'+image.source+'" data-shortcode="'+image.shortcode+'" data-source="'+image.source+'" data-caption="<a href=\'https://instagram.com/'+image.source+'\'>'+image.source+'</a> - <a href=\'https://instagram.com/p/'+image.shortcode+'\'>'+image.shortcode+'</a><br>'+image.caption+'" href="' + image.url + '"><img class="itemimage" src="' + image.thumb + '"/></a>'));
     })
   }).done(function() {
     initial = false;
