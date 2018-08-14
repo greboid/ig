@@ -70,26 +70,46 @@ class Timeline:
         self.data = self.get_shareddata(self.username)
         while currentcount < self.count:
             if self.data is not None:
+                print("\tData exists")
                 try:
                     if 'entry_data' in self.data:
+                        print("\t\tUsing: entry_data")
                         edges = \
                             self.data['entry_data']['ProfilePage'][0]['graphql']['user']['edge_owner_to_timeline_media'][
                                 'edges']
                     elif 'data' in self.data:
+                        print("\t\tUsing: data")
                         edges = self.data['data']['user']['edge_owner_to_timeline_media']['edges']
                     else:
+                        print("Using: node")
                         edges = self.data['node']['edge_media_to_caption']['edges']
                 except KeyError as e:
                     print("Key error")
-                    print(edges)
+                    print(self.data)
+                print("\t\t\tLooping edges: " + str(len(edges)))
+                if len(edges) == 0:
+                    print("\t\tNo edges, exiting.")
+                    return
                 for edge in edges:
                     node = edge['node']
                     if node['__typename'] == 'GraphImage':
-                        self.addmedia(self.get_image(self.username, node['shortcode']))
+                        print("\t\t\t\tFound image: " + node['shortcode'])
+                        try:
+                            self.addmedia(self.get_image(self.username, node['shortcode']))
+                        except:
+                            print("\t\t\t\t\tUnable to get post data")
                     elif node['__typename'] == 'GraphSidecar':
-                        self.addmedia(self.get_sidecars(self.username, node['shortcode']))
+                        print("\t\t\t\tFound sidecar: " + node['shortcode'])
+                        try:
+                            self.addmedia(self.get_sidecars(self.username, node['shortcode']))
+                        except:
+                            print("\t\t\t\t\tUnable to get post data")
                     elif node['__typename'] == 'GraphVideo':
-                        self.addmedia(self.get_video(self.username, node['shortcode']))
+                        print("\t\t\t\tFound video: " + node['shortcode'])
+                        try:
+                            self.addmedia(self.get_video(self.username, node['shortcode']))
+                        except:
+                            print("\t\t\t\t\tUnable to get post data")
                     else:
                         raise TypeError('Unknown edge type.')
                 currentcount = len(self.medias)
@@ -126,8 +146,10 @@ class Timeline:
                                 'edges']) > 0:
             caption = data['entry_data']['PostPage'][0]['graphql']['shortcode_media']['edge_media_to_caption'][
                                 'edges'][0]['node']['text']
+        print("\t\t\t\t\tNumber of entries: " + str(len(data['entry_data']['PostPage'][0]['graphql']['shortcode_media']['edge_sidecar_to_children']['edges'])))
         medias = []
         for index, edge in enumerate(data['entry_data']['PostPage'][0]['graphql']['shortcode_media']['edge_sidecar_to_children']['edges']):
+            print("\t\t\t\t\t\tEntry #"+str(index))
             createthumbnail(shortcode + str(index), edge['node']['display_url'])
             medias.append(MediaObject(username, shortcode + str(index),
                         MediaType.IMAGE,
@@ -321,9 +343,10 @@ db.pruneprofiles(cfg['profiles'])
 
 timelines = []
 for user in db.getusers():
-    timelines.append(Timeline(user, 13))
+    timelines.append(Timeline(user, 12))
 
 for timeline in timelines:
+    print("Getting timeline for: " + timeline.username)
     timeline.get_timelime()
     for media in timeline.medias:
         db.addmedia(media)
