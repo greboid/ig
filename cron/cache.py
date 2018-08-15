@@ -314,7 +314,11 @@ def createthumbnail(shortcode, url):
     pathlib.Path('static/thumbs').mkdir(parents=True, exist_ok=True)
     try:
         with tempfile.TemporaryFile() as fp:
-            response = requests.get(url)
+            try:
+                response = requests.get(url)
+            except requests.exceptions.RequestException as e:
+                print("{} - Error getting thumbnail: {}".format(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), e))
+                return
             if response.status_code != requests.codes.ok:
                 print("{} - File doesn't exist {} - {}".format(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), shortcode, url))
             else:
