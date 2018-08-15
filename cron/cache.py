@@ -316,7 +316,7 @@ def createthumbnail(shortcode, url):
         with tempfile.TemporaryFile() as fp:
             try:
                 response = requests.get(url)
-            except requests.exceptions.RequestException as e:
+            except IOError as e:
                 print("{} - Error getting thumbnail: {}".format(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), e))
                 return
             if response.status_code != requests.codes.ok:
