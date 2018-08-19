@@ -67,6 +67,7 @@ def dict_factory(cursor, row):
         d[col[0]] = row[idx]
     return d
 
+
 inittables()
 app = Flask(__name__)
 
@@ -93,6 +94,7 @@ def css(filename):
 @app.route('/js/<path:filename>')
 def js(filename):
     return send_from_directory('js', filename)
+
 
 @app.route('/thumbs/<path:filename>')
 def thumbs(filename):
