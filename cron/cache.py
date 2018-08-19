@@ -13,7 +13,11 @@ import yaml
 from PIL import Image
 from bs4 import BeautifulSoup
 from requests import Session
+import logging
 
+logging.basicConfig(level=logging.DEBUG)
+logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
 class MediaType(Enum):
     IMAGE = auto()
@@ -70,46 +74,46 @@ class Timeline:
         self.data = self.get_shareddata(self.username)
         while currentcount < self.count:
             if self.data is not None:
-                print("\tData exists")
+                logger.debug("Data exists")
                 try:
                     if 'entry_data' in self.data:
-                        print("\t\tUsing: entry_data")
+                        logger.debug("Using: entry_data")
                         edges = \
                             self.data['entry_data']['ProfilePage'][0]['graphql']['user']['edge_owner_to_timeline_media'][
                                 'edges']
                     elif 'data' in self.data:
-                        print("\t\tUsing: data")
+                        logger.debug("Using: data")
                         edges = self.data['data']['user']['edge_owner_to_timeline_media']['edges']
                     else:
-                        print("Using: node")
+                        logger.debug("Using: node")
                         edges = self.data['node']['edge_media_to_caption']['edges']
                 except KeyError as e:
-                    print("Key error")
-                    print(self.data)
-                print("\t\t\tLooping edges: " + str(len(edges)))
+                    logger.error('Key Error', exc_info=True)
+                    return
+                logger.debug("Looping edges: " + str(len(edges)))
                 if len(edges) == 0:
-                    print("\t\tNo edges, exiting.")
+                    logger.debug("No edges, exiting.")
                     return
                 for edge in edges:
                     node = edge['node']
                     if node['__typename'] == 'GraphImage':
-                        print("\t\t\t\tFound image: " + node['shortcode'])
+                        logger.debug("Found image: " + node['shortcode'])
                         try:
                             self.addmedia(self.get_image(self.username, node['shortcode']))
                         except:
-                            print("\t\t\t\t\tUnable to get post data")
+                            logger.debug("Unable to get post data")
                     elif node['__typename'] == 'GraphSidecar':
-                        print("\t\t\t\tFound sidecar: " + node['shortcode'])
+                        logger.debug("Found sidecar: " + node['shortcode'])
                         try:
                             self.addmedia(self.get_sidecars(self.username, node['shortcode']))
                         except:
-                            print("\t\t\t\t\tUnable to get post data")
+                            logger.debug("Unable to get post data")
                     elif node['__typename'] == 'GraphVideo':
-                        print("\t\t\t\tFound video: " + node['shortcode'])
+                        logger.debug("Found video: " + node['shortcode'])
                         try:
                             self.addmedia(self.get_video(self.username, node['shortcode']))
                         except:
-                            print("\t\t\t\t\tUnable to get post data")
+                            logger.error("Unable to get post data", exc_info=True)
                     else:
                         raise TypeError('Unknown edge type.')
                 currentcount = len(self.medias)
@@ -146,10 +150,10 @@ class Timeline:
                                 'edges']) > 0:
             caption = data['entry_data']['PostPage'][0]['graphql']['shortcode_media']['edge_media_to_caption'][
                                 'edges'][0]['node']['text']
-        print("\t\t\t\t\tNumber of entries: " + str(len(data['entry_data']['PostPage'][0]['graphql']['shortcode_media']['edge_sidecar_to_children']['edges'])))
+            logger.debug("Number of entries: " + str(len(data['entry_data']['PostPage'][0]['graphql']['shortcode_media']['edge_sidecar_to_children']['edges'])))
         medias = []
         for index, edge in enumerate(data['entry_data']['PostPage'][0]['graphql']['shortcode_media']['edge_sidecar_to_children']['edges']):
-            print("\t\t\t\t\t\tEntry #"+str(index))
+            logger.debug("Entry #"+str(index))
             createthumbnail(shortcode + str(index), edge['node']['display_url'])
             medias.append(MediaObject(username, shortcode + str(index),
                         MediaType.IMAGE,
@@ -317,16 +321,16 @@ def createthumbnail(shortcode, url):
             try:
                 response = requests.get(url)
             except IOError as e:
-                print("{} - Error getting thumbnail: {}".format(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), e))
+                logger.error("IOError getting URL", exc_info=True)
                 return
             if response.status_code != requests.codes.ok:
-                print("{} - File doesn't exist {} - {}".format(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), shortcode, url))
+                logger.error("URL not found", exc_info=True)
             else:
                 fp = Image.open(BytesIO(response.content))
                 fp.thumbnail((200,200))
                 fp.save("static/thumbs/" + shortcode + ".jpg", "JPEG")
     except IOError as e:
-        print("{} - cannot create thumbnail for {}: {}".format(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), shortcode, e))
+        logger.error("IOError creating thumbnail", exc_info=True)
 
 
 def getconfig() -> Dict:
@@ -335,7 +339,7 @@ def getconfig() -> Dict:
             config = yaml.load(ymlfile)
             return config
     except FileNotFoundError:
-        print('Unable to find config file.')
+        logger.error("Unable to find config file.")
         raise SystemExit
 
 
@@ -350,7 +354,7 @@ for user in db.getusers():
     timelines.append(Timeline(user, 12))
 
 for timeline in timelines:
-    print("Getting timeline for: " + timeline.username)
+    logger.debug("Getting timeline for: " + timeline.username)
     timeline.get_timelime()
     for media in timeline.medias:
         db.addmedia(media)
