@@ -94,6 +94,10 @@ def css(filename):
 def js(filename):
     return send_from_directory('js', filename)
 
+@app.route('/thumbs/<path:filename>')
+def thumbs(filename):
+    return send_from_directory('../cron/static/thumbs', filename)
+
 
 @app.route('/feed')
 def feed():
