@@ -1,8 +1,15 @@
 package com.greboid.scraper
 
+import org.sqlite.SQLiteConfig
 import java.sql.Connection
 import java.sql.PreparedStatement
 import java.sql.ResultSet
+
+fun getDatabase(path: String): Connection {
+    val conn = SQLiteConfig().createConnection("jdbc:sqlite:$path")
+    conn.createStatement().executeUpdate(Schema.createAllTables)
+    return conn
+}
 
 fun addProfiles(profiles: Map<String, List<String>>, conn: Connection) {
     profiles.forEach { profileName, usernames ->

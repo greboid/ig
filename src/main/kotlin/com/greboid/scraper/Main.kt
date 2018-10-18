@@ -4,8 +4,7 @@ import org.sqlite.SQLiteConfig
 
 fun main(args: Array<String>) {
     val config = getConfig("defaults.yml")
-    val conn = SQLiteConfig().createConnection("jdbc:sqlite:" + config.db)
-    conn.createStatement().executeUpdate(Schema.createAllTables)
+    val conn = getDatabase(config.db)
     addProfiles(config.profiles, conn)
     pruneProfiles(config.profiles, conn)
 }
