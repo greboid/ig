@@ -7,11 +7,7 @@ import java.io.File
 
 fun main(args: Array<String>) {
     val config = getConfig("defaults.yml")
-    File(config.db).delete()
-    val sqliteconfig = SQLiteConfig()
-    sqliteconfig.transactionMode = SQLiteConfig.TransactionMode.IMMEDIATE
-    sqliteconfig.setJournalMode(SQLiteConfig.JournalMode.OFF)
-    val conn = sqliteconfig.createConnection("jdbc:sqlite:" + config.db)
+    val conn = SQLiteConfig().createConnection("jdbc:sqlite:" + config.db)
     conn.createStatement().executeUpdate(Schema.createAllTables)
     conn.autoCommit = false
     addProfiles(config.profiles, conn)
