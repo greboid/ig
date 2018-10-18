@@ -114,5 +114,5 @@ object Schema {
         timestamp INTEGER
         )
     """.trimIndent().replace("[\n\r]".toRegex(), "")
-    val createAllTables = "PRAGMA foreign_keys=OFF;\r\nBEGIN TRANSACTION;\r\n$createProfiles;\r\n$createProfileUsers;\r\n$createUsers;\r\n$createCategories;\r\nCOMMIT;"
+    val createAllTables = "$createProfiles;\r\n$createProfileUsers;\r\n$createUsers;\r\n$createCategories;"
 }
