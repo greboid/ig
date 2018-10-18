@@ -24,7 +24,7 @@ fun addProfiles(profiles: Map<String, List<String>>, conn: Connection) {
             }
 
             val userid = conn.prepareStatement("select id from users where username=?").use { ps ->
-                ps.setString(1, profileName)
+                ps.setString(1, username)
                 ps.executeQuery().getInt("id")
             }
 
