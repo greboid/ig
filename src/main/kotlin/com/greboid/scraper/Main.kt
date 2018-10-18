@@ -1,7 +1,5 @@
 package com.greboid.scraper
 
-import org.sqlite.SQLiteConfig
-
 fun main(args: Array<String>) {
     val config = getConfig("defaults.yml")
     val conn = getDatabase(config.db)
