@@ -35,7 +35,6 @@ fun addProfiles(profiles: Map<String, List<String>>, conn: Connection) {
             }
         }
     }
-    conn.commit()
 }
 
 fun pruneProfiles(profiles: Map<String, List<String>>, conn: Connection) {

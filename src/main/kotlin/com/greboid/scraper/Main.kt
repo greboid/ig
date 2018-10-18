@@ -9,7 +9,6 @@ fun main(args: Array<String>) {
     val config = getConfig("defaults.yml")
     val conn = SQLiteConfig().createConnection("jdbc:sqlite:" + config.db)
     conn.createStatement().executeUpdate(Schema.createAllTables)
-    conn.autoCommit = false
     addProfiles(config.profiles, conn)
     pruneProfiles(config.profiles, conn)
 }
