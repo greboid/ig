@@ -22,14 +22,10 @@ fun addProfiles(profiles: Map<String, List<String>>, conn: Connection) {
                 ps.setString(1, profileName)
                 ps.executeQuery().getInt("id")
             }
-            println(conn.isClosed)
 
-            val userid = conn.prepareStatement("select id from users where username=?").run {
-                setString(1, profileName)
-                val results = executeQuery()
-                val id = results.getInt("id")
-                close()
-                return@run id
+            val userid = conn.prepareStatement("select id from users where username=?").use { ps ->
+                ps.setString(1, profileName)
+                ps.executeQuery().getInt("id")
             }
 
             conn.prepareStatement("insert or ignore into profile_users (profileid, userid) values (?, ?)").use { ps ->
