@@ -19,9 +19,3 @@ fun getConfig(fileName: String) : Config {
     return Yaml(Constructor(Config::class.java))
             .load(File(fileName).reader()) as Config
 }
-
-fun examplegetConfig() {
-    val config = getConfig("defaults.yml")
-    println(config.db)
-    println(config.profiles)
-}
