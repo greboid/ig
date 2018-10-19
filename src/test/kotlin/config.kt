@@ -1,11 +1,10 @@
-import com.greboid.scraper.Config
-import com.greboid.scraper.getConfig
+package com.greboid.scraper
+
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 import java.io.File
-import java.lang.IllegalStateException
 
 internal class ConfigTest {
 
@@ -30,5 +29,11 @@ internal class ConfigTest {
     fun `test loading database from invalid file`() {
         val config = getConfig(File(this.javaClass.getResource("broken.yml").toURI()).reader())
         assertNull(config)
+    }
+
+    @Test
+    fun `test no profiles in file`() {
+        val config = getConfig(File(this.javaClass.getResource("noprofiles.yml").toURI()).reader())
+        assertEquals(2, config)
     }
 }

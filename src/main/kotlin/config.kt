@@ -13,9 +13,9 @@ fun getConfig(fileName: String) : Config? {
 }
 
 fun getConfig(stream: Reader) : Config? {
-    try {
-        return Yaml(Constructor(Config::class.java)).load(stream) as Config
+    return try {
+        Yaml(Constructor(Config::class.java)).load(stream) as Config
     } catch (e: YAMLException) {
-        return null
+        null
     }
 }
