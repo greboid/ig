@@ -17,17 +17,17 @@ internal class DbTest {
 
     @Test
     fun `test connect without username or password returns a connection`() {
-        assertTrue(Database("jdbc:sqlite:foo").connect() is Connection)
+        assertTrue(Database("jdbc:sqlite::memory:").connect() is Connection)
     }
 
     @Test
     fun `test connect without password returns a connection`() {
-        assertTrue(Database("jdbc:sqlite:foo", "bar").connect() is Connection)
+        assertTrue(Database("jdbc:sqlite::memory:", "bar").connect() is Connection)
     }
 
     @Test
     fun `test connect returns a connection`() {
-        assertTrue(Database("jdbc:sqlite:foo", "bar", "baz").connect() is Connection)
+        assertTrue(Database("jdbc:sqlite::memory:", "bar", "baz").connect() is Connection)
     }
 
     @Test

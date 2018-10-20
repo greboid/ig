@@ -6,7 +6,7 @@ import java.sql.*
 import javax.sql.DataSource
 
 class Database(val url: String, val username: String = "", val password: String = "") {
-    var connection: Connection? = null
+    private var connection: Connection? = null
 
     fun connect(): Connection? {
         if (connection == null) {
@@ -17,7 +17,6 @@ class Database(val url: String, val username: String = "", val password: String 
                 null
             }
         } else {
-            println("Rar")
             throw IllegalStateException("Unable to connect again")
         }
         return connection
