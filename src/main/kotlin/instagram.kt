@@ -7,38 +7,71 @@ import java.net.URL
 
 val ig: String = "https://www.instagram.com"
 
-fun getProfile(username: String) {
+fun getProfile(username: String): Profile {
     val doc = Jsoup.connect("${ig}/${username}").get()
     val jsonData = doc.select("script:containsData(window._sharedData)").find {
         element ->  element.data().startsWith("window._sharedData")
     }?.data()?.substringBeforeLast(';')?.substringAfter("=")?.trim()
     val data = Gson().fromJson(jsonData, InstagramSharedData::class.java)
-    println(data.entry_data.ProfilePage[0]
-            .graphql.user.edge_owner_to_timeline_media.edges[0]
-            .node.__typename)
-    println(data.entry_data.ProfilePage[0]
-            .graphql.user.edge_owner_to_timeline_media.edges[0]
-            .node.edge_media_to_caption.edges[0].node.text)
+    println(jsonData)
+    return Profile(
+            data.entry_data.ProfilePage[0].graphql.user.username,
+            data.entry_data.ProfilePage[0].graphql.user.id,
+            data.entry_data.ProfilePage[0].graphql.user.biography,
+            data.entry_data.ProfilePage[0].graphql.user.external_url,
+            data.entry_data.ProfilePage[0].graphql.user.profile_pic_url,
+            data.entry_data.ProfilePage[0].graphql.user.profile_pic_url_hd,
+            emptyList()
+    )
 }
 
-fun getPost(shortcode: String) {
+fun getPost(shortcode: String): Post {
     val doc = Jsoup.connect("${ig}/p/${shortcode}").get()
     val jsonData = doc.select("script:containsData(window._sharedData)").find {
         element ->  element.data().startsWith("window._sharedData")
     }?.data()?.substringBeforeLast(';')?.substringAfter("=")?.trim()
     val data = Gson().fromJson(jsonData, InstagramSharedData::class.java)
-    println(data.entry_data.PostPage[0].graphql.shortcode_media.owner.username)
-    println(data.entry_data.PostPage[0].graphql.shortcode_media.display_url)
-    println(data.entry_data.PostPage[0].graphql.shortcode_media.edge_media_to_caption.edges[0].node.text)
+    return Post(
+            data.entry_data.PostPage[0].graphql.shortcode_media.id,
+            when (data.entry_data.PostPage[0].graphql.shortcode_media.__typename) {
+                "GraphImage" -> PostType.IMAGE
+                "GraphSidecar" -> PostType.SIDECAR
+                "GraphVideo" -> PostType.VIDEO
+                else -> PostType.UNKNOWN
+            },
+            data.entry_data.PostPage[0].graphql.shortcode_media.shortcode,
+            data.entry_data.PostPage[0].graphql.shortcode_media.display_url,
+            data.entry_data.PostPage[0].graphql.shortcode_media.edge_media_to_caption.edges[0].node.text,
+            data.entry_data.PostPage[0].graphql.shortcode_media.owner.id,
+            data.entry_data.PostPage[0].graphql.shortcode_media.owner.username
+    )
 }
 
 class Profile(
         val username: String,
-        val id: String
+        val id: String,
+        val biography: String,
+        val external_url: URL,
+        val profile_pic_url: URL,
+        val profile_pic_url_hd: URL,
+        val posts: List<Post>
 )
 
-class Post() {
+class Post(
+        val id: String,
+        val type: PostType,
+        val shortcode: String,
+        val displayURL: URL,
+        val caption: String,
+        val ownerID: String,
+        val ownerUsername: String
+)
 
+enum class PostType {
+    IMAGE,
+    VIDEO,
+    SIDECAR,
+    UNKNOWN
 }
 
 internal class InstagramSharedData {
@@ -84,7 +117,11 @@ internal class graphql {
 internal class User {
     lateinit var edge_owner_to_timeline_media: edge_owner_to_timeline_media
     lateinit var username: String
-    var id: Int = 0
+    lateinit var id: String
+    lateinit var biography: String
+    lateinit var external_url: URL
+    lateinit var profile_pic_url: URL
+    lateinit var profile_pic_url_hd: URL
 }
 
 internal class edge_owner_to_timeline_media {
@@ -106,7 +143,14 @@ internal class node {
 }
 
 internal class edge_media_to_caption {
+    lateinit var page_info: page_info
     lateinit var edges: List<captionnodeHolder>
+}
+
+internal class page_info {
+    var count: Int = 0
+    var has_next_page: Boolean = false
+    lateinit var end_cursor: String
 }
 
 internal class captionnodeHolder {
