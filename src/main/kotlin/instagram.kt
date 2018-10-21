@@ -1,58 +1,80 @@
 package com.greboid.scraper
 
 import com.google.gson.Gson
-import com.google.gson.annotations.SerializedName
 import org.jsoup.Jsoup
-import java.lang.IllegalStateException
 import java.net.URL
-import java.util.stream.Collectors
 import kotlin.streams.toList
 
 const val ig: String = "https://www.instagram.com"
 
-fun getProfile(username: String): Profile {
-    val doc = Jsoup.connect("${ig}/${username}").get()
+fun getProfile(username: String): Profile? {
+    val doc = Jsoup.connect("$ig/$username").get()
     val jsonData = doc.select("script:containsData(window._sharedData)").find { element ->
         element.data().startsWith("window._sharedData")
     }?.data()?.substringBeforeLast(';')?.substringAfter("=")?.trim()
     val data = Gson().fromJson(jsonData, InstagramSharedData::class.java)
-    val entryData: EntryData = data?.entry_data ?: throw IllegalStateException("")
-    val user: User = entryData.ProfilePage.firstOrNull()?.graphql?.user ?: throw IllegalStateException("")
+            .checkProfileData()!!.entry_data!!.ProfilePage.first().graphql!!.user ?: return null
     return Profile(
-            user.username ?: throw IllegalStateException(""),
-            user.id ?: throw IllegalStateException(""),
-            user.biography ?: throw IllegalStateException(""),
-            user.external_url ?: throw IllegalStateException(""),
-            user.profile_pic_url ?: throw IllegalStateException(""),
-            user.profile_pic_url_hd ?: throw IllegalStateException(""),
-            user.edge_owner_to_timeline_media?.edges?.stream()
-                    ?.map { getPost(it.node?.shortcode ?: throw IllegalStateException("")) }?.toList()
-                    ?: throw IllegalStateException("")
+            data.username as String,
+            data.id as String,
+            data.biography as String,
+            data.external_url as URL,
+            data.profile_pic_url as URL,
+            data.profile_pic_url_hd as URL,
+            data.edge_owner_to_timeline_media!!.edges!!.stream().map {
+                getPost(it.node!!.shortcode)
+            }.toList().filterNotNull()
     )
 }
 
-fun getPost(shortcode: String): Post {
-    val doc = Jsoup.connect("${ig}/p/${shortcode}").get()
+fun getPost(shortcode: String?): Post? {
+    val doc = Jsoup.connect("$ig/p/$shortcode").get()
     val jsonData = doc.select("script:containsData(window._sharedData)").find { element ->
         element.data().startsWith("window._sharedData")
     }?.data()?.substringBeforeLast(';')?.substringAfter("=")?.trim()
     val data = Gson().fromJson(jsonData, InstagramSharedData::class.java)
-    val entryData: EntryData = data?.entry_data ?: throw IllegalStateException("")
-    val media: shortcode_media = entryData.PostPage.firstOrNull()?.graphql?.shortcode_media ?: throw IllegalStateException("")
+            .checkPostData()!!.entry_data!!.PostPage.firstOrNull()!!.graphql!!.shortcode_media ?: return null
     return Post(
-            media.id ?: throw IllegalStateException(""),
-            when (media.__typename) {
+            data.id as String,
+            when (data.__typename as String) {
                 "GraphImage" -> PostType.IMAGE
                 "GraphSidecar" -> PostType.SIDECAR
                 "GraphVideo" -> PostType.VIDEO
                 else -> PostType.UNKNOWN
             },
-            media.shortcode ?: throw IllegalStateException(""),
-            media.display_url ?: throw IllegalStateException(""),
-            media.edge_media_to_caption?.edges?.firstOrNull()?.node?.text ?: throw IllegalStateException(""),
-            media.owner?.id ?: throw IllegalStateException(""),
-            media.owner?.username ?: throw IllegalStateException("")
+            data.shortcode as String,
+            data.display_url as URL,
+            data.edge_media_to_caption?.edges?.firstOrNull()?.node?.text as String,
+            data.owner?.id as String,
+            data.owner?.username as String
     )
+}
+
+internal fun InstagramSharedData.checkProfileData(): InstagramSharedData? {
+    val entryData: EntryData = this.entry_data ?: return null
+    val user: User = entryData.ProfilePage.firstOrNull()?.graphql?.user ?: return null
+    user.username ?: return null
+    user.id ?: return null
+    user.biography ?: return null
+    user.external_url ?: return null
+    user.profile_pic_url ?: return null
+    user.profile_pic_url_hd = user.profile_pic_url_hd ?: user.profile_pic_url
+    user.edge_owner_to_timeline_media?.edges ?: return null
+    user.edge_owner_to_timeline_media?.edges = user.edge_owner_to_timeline_media?.edges?.stream()
+            ?.filter{it.node?.shortcode != null}?.toList() ?: emptyList()
+    return this
+}
+
+internal fun InstagramSharedData.checkPostData(): InstagramSharedData? {
+    val entryData: EntryData = this.entry_data ?: return null
+    val media: shortcode_media = entryData.PostPage.firstOrNull()?.graphql?.shortcode_media ?: return null
+    media.__typename ?: return null
+    media.shortcode ?: return null
+    media.display_url ?: return null
+    media.edge_media_to_caption?.edges?.firstOrNull()?.node?.text ?: return null
+    media.owner?.id ?: return null
+    media.owner?.username ?: return null
+    return this
 }
 
 class Profile(
