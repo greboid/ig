@@ -3,6 +3,7 @@ package com.greboid.scraper
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import org.jsoup.Jsoup
+import java.lang.IllegalStateException
 import java.net.URL
 import java.util.stream.Collectors
 import kotlin.streams.toList
@@ -15,15 +16,18 @@ fun getProfile(username: String): Profile {
         element.data().startsWith("window._sharedData")
     }?.data()?.substringBeforeLast(';')?.substringAfter("=")?.trim()
     val data = Gson().fromJson(jsonData, InstagramSharedData::class.java)
+    val entryData: EntryData = data?.entry_data ?: throw IllegalStateException("")
+    val user: User = entryData.ProfilePage.firstOrNull()?.graphql?.user ?: throw IllegalStateException("")
     return Profile(
-            data.entry_data.ProfilePage[0].graphql.user.username,
-            data.entry_data.ProfilePage[0].graphql.user.id,
-            data.entry_data.ProfilePage[0].graphql.user.biography,
-            data.entry_data.ProfilePage[0].graphql.user.external_url,
-            data.entry_data.ProfilePage[0].graphql.user.profile_pic_url,
-            data.entry_data.ProfilePage[0].graphql.user.profile_pic_url_hd,
-            data.entry_data.ProfilePage[0].graphql.user.edge_owner_to_timeline_media.edges.stream()
-                    .map { getPost(it.node.shortcode) }.toList()
+            user.username ?: throw IllegalStateException(""),
+            user.id ?: throw IllegalStateException(""),
+            user.biography ?: throw IllegalStateException(""),
+            user.external_url ?: throw IllegalStateException(""),
+            user.profile_pic_url ?: throw IllegalStateException(""),
+            user.profile_pic_url_hd ?: throw IllegalStateException(""),
+            user.edge_owner_to_timeline_media?.edges?.stream()
+                    ?.map { getPost(it.node?.shortcode ?: throw IllegalStateException("")) }?.toList()
+                    ?: throw IllegalStateException("")
     )
 }
 
@@ -33,19 +37,21 @@ fun getPost(shortcode: String): Post {
         element.data().startsWith("window._sharedData")
     }?.data()?.substringBeforeLast(';')?.substringAfter("=")?.trim()
     val data = Gson().fromJson(jsonData, InstagramSharedData::class.java)
+    val entryData: EntryData = data?.entry_data ?: throw IllegalStateException("")
+    val media: shortcode_media = entryData.PostPage.firstOrNull()?.graphql?.shortcode_media ?: throw IllegalStateException("")
     return Post(
-            data.entry_data.PostPage[0].graphql.shortcode_media.id,
-            when (data.entry_data.PostPage[0].graphql.shortcode_media.__typename) {
+            media.id ?: throw IllegalStateException(""),
+            when (media.__typename) {
                 "GraphImage" -> PostType.IMAGE
                 "GraphSidecar" -> PostType.SIDECAR
                 "GraphVideo" -> PostType.VIDEO
                 else -> PostType.UNKNOWN
             },
-            data.entry_data.PostPage[0].graphql.shortcode_media.shortcode,
-            data.entry_data.PostPage[0].graphql.shortcode_media.display_url,
-            data.entry_data.PostPage[0].graphql.shortcode_media.edge_media_to_caption.edges[0].node.text,
-            data.entry_data.PostPage[0].graphql.shortcode_media.owner.id,
-            data.entry_data.PostPage[0].graphql.shortcode_media.owner.username
+            media.shortcode ?: throw IllegalStateException(""),
+            media.display_url ?: throw IllegalStateException(""),
+            media.edge_media_to_caption?.edges?.firstOrNull()?.node?.text ?: throw IllegalStateException(""),
+            media.owner?.id ?: throw IllegalStateException(""),
+            media.owner?.username ?: throw IllegalStateException("")
     )
 }
 
@@ -77,8 +83,8 @@ enum class PostType {
 }
 
 internal class InstagramSharedData {
-    lateinit var rhx_gis: String
-    lateinit var entry_data: EntryData
+    var rhx_gis: String? = null
+    var entry_data: EntryData? = null
 }
 
 internal class EntryData {
@@ -87,79 +93,78 @@ internal class EntryData {
 }
 
 internal class PostPage {
-    lateinit var graphql: postgraphql
+    var graphql: postgraphql? = null
 }
 
 internal class postgraphql {
-    lateinit var shortcode_media: shortcode_media
+    var shortcode_media: shortcode_media? = null
 }
 
 internal class shortcode_media {
-    lateinit var id: String
-    lateinit var __typename: String
-    lateinit var shortcode: String
-    lateinit var display_url: URL
-    lateinit var edge_media_to_caption: edge_media_to_caption
-    lateinit var owner: owner
+    var id: String? = null
+    var __typename: String? = null
+    var shortcode: String? = null
+    var display_url: URL? = null
+    var edge_media_to_caption: edge_media_to_caption? = null
+    var owner: owner? = null
 }
 
 internal class owner {
-    lateinit var id: String
-    lateinit var username: String
+    var id: String? = null
+    var username: String? = null
 }
 
 internal class ProfilePage {
-    lateinit var graphql: graphql
+    var graphql: graphql? = null
 }
 
 internal class graphql {
-    lateinit var user: User
+    var user: User? = null
 }
 
 internal class User {
-    lateinit var edge_owner_to_timeline_media: edge_owner_to_timeline_media
-    lateinit var username: String
-    lateinit var id: String
-    lateinit var biography: String
-    lateinit var external_url: URL
-    lateinit var profile_pic_url: URL
-    lateinit var profile_pic_url_hd: URL
+    var edge_owner_to_timeline_media: edge_owner_to_timeline_media? = null
+    var username: String? = null
+    var id: String? = null
+    var biography: String? = null
+    var external_url: URL? = null
+    var profile_pic_url: URL? = null
+    var profile_pic_url_hd: URL? = null
 }
 
 internal class edge_owner_to_timeline_media {
-    lateinit var edges: List<nodeHolder>
+    var edges: List<nodeHolder>? = null
 
 }
 
 internal class nodeHolder {
-    lateinit var node: node
+    var node: node? = null
 }
 
 internal class node {
-    lateinit var id: String
-    lateinit var __typename: String
-    lateinit var edge_media_to_caption: edge_media_to_caption
-    lateinit var shortcode: String
-    lateinit var display_url: URL
-    lateinit var thumbnail_src: URL
+    var id: String? = null
+    var __typename: String? = null
+    var edge_media_to_caption: edge_media_to_caption? = null
+    var shortcode: String? = null
+    var display_url: URL? = null
+    var thumbnail_src: URL? = null
 }
 
 internal class edge_media_to_caption {
-    lateinit var page_info: page_info
-    lateinit var edges: List<captionnodeHolder>
+    var page_info: page_info? = null
+    var edges: List<captionnodeHolder> = emptyList()
 }
 
 internal class page_info {
     var count: Int = 0
     var has_next_page: Boolean = false
-    lateinit var end_cursor: String
+    var end_cursor: String? = null
 }
 
 internal class captionnodeHolder {
-    lateinit var node: captionnode
+    var node: captionnode? = null
 }
 
 internal class captionnode {
-    @SerializedName("text")
-    lateinit var text: String
+    var text: String? = null
 }
