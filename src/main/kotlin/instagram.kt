@@ -2,25 +2,30 @@ package com.greboid.scraper
 
 import com.google.gson.Gson
 import org.jsoup.Jsoup
+import java.io.IOException
 import java.net.URL
 import kotlin.streams.toList
 
 const val ig: String = "https://www.instagram.com"
 
 fun getProfile(username: String): Profile? {
-    val doc = Jsoup.connect("$ig/$username").get()
+    val doc = try {
+        Jsoup.connect("$ig/$username").get()
+    } catch (e: IOException) {
+        return null
+    }
     val jsonData = doc.select("script:containsData(window._sharedData)").find { element ->
         element.data().startsWith("window._sharedData")
     }?.data()?.substringBeforeLast(';')?.substringAfter("=")?.trim()
     val data = Gson().fromJson(jsonData, InstagramSharedData::class.java)
-            .checkProfileData()!!.entry_data!!.ProfilePage.first().graphql!!.user ?: return null
+            .checkProfileData()?.entry_data?.ProfilePage?.firstOrNull()?.graphql?.user ?: return null
     return Profile(
             data.username as String,
             data.id as String,
             data.biography as String,
-            data.external_url as URL,
-            data.profile_pic_url as URL,
-            data.profile_pic_url_hd as URL,
+            data.external_url,
+            data.profile_pic_url,
+            data.profile_pic_url_hd,
             data.edge_owner_to_timeline_media!!.edges!!.stream().map {
                 getPost(it.node!!.shortcode)
             }.toList().filterNotNull()
@@ -28,12 +33,16 @@ fun getProfile(username: String): Profile? {
 }
 
 fun getPost(shortcode: String?): Post? {
-    val doc = Jsoup.connect("$ig/p/$shortcode").get()
+    val doc = try {
+        Jsoup.connect("$ig/p/$shortcode").get()
+    } catch (e: IOException) {
+        return null
+    }
     val jsonData = doc.select("script:containsData(window._sharedData)").find { element ->
         element.data().startsWith("window._sharedData")
-    }?.data()?.substringBeforeLast(';')?.substringAfter("=")?.trim()
+    }?.data()?.substringBeforeLast(';')?.substringAfter("=")?.trim() ?: return null
     val data = Gson().fromJson(jsonData, InstagramSharedData::class.java)
-            .checkPostData()!!.entry_data!!.PostPage.firstOrNull()!!.graphql!!.shortcode_media ?: return null
+            .checkPostData()?.entry_data?.PostPage?.firstOrNull()?.graphql?.shortcode_media ?: return null
     return Post(
             data.id as String,
             when (data.__typename as String) {
@@ -55,9 +64,6 @@ internal fun InstagramSharedData.checkProfileData(): InstagramSharedData? {
     val user: User = entryData.ProfilePage.firstOrNull()?.graphql?.user ?: return null
     user.username ?: return null
     user.id ?: return null
-    user.biography ?: return null
-    user.external_url ?: return null
-    user.profile_pic_url ?: return null
     user.profile_pic_url_hd = user.profile_pic_url_hd ?: user.profile_pic_url
     user.edge_owner_to_timeline_media?.edges ?: return null
     user.edge_owner_to_timeline_media?.edges = user.edge_owner_to_timeline_media?.edges?.stream()
@@ -81,9 +87,9 @@ class Profile(
         val username: String,
         val id: String,
         val biography: String,
-        val external_url: URL,
-        val profile_pic_url: URL,
-        val profile_pic_url_hd: URL,
+        val external_url: URL?,
+        val profile_pic_url: URL?,
+        val profile_pic_url_hd: URL?,
         val posts: List<Post>
 )
 
