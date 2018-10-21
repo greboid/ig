@@ -4,16 +4,17 @@ import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import org.jsoup.Jsoup
 import java.net.URL
+import java.util.stream.Collectors
+import kotlin.streams.toList
 
-val ig: String = "https://www.instagram.com"
+const val ig: String = "https://www.instagram.com"
 
 fun getProfile(username: String): Profile {
     val doc = Jsoup.connect("${ig}/${username}").get()
-    val jsonData = doc.select("script:containsData(window._sharedData)").find {
-        element ->  element.data().startsWith("window._sharedData")
+    val jsonData = doc.select("script:containsData(window._sharedData)").find { element ->
+        element.data().startsWith("window._sharedData")
     }?.data()?.substringBeforeLast(';')?.substringAfter("=")?.trim()
     val data = Gson().fromJson(jsonData, InstagramSharedData::class.java)
-    println(jsonData)
     return Profile(
             data.entry_data.ProfilePage[0].graphql.user.username,
             data.entry_data.ProfilePage[0].graphql.user.id,
@@ -21,14 +22,15 @@ fun getProfile(username: String): Profile {
             data.entry_data.ProfilePage[0].graphql.user.external_url,
             data.entry_data.ProfilePage[0].graphql.user.profile_pic_url,
             data.entry_data.ProfilePage[0].graphql.user.profile_pic_url_hd,
-            emptyList()
+            data.entry_data.ProfilePage[0].graphql.user.edge_owner_to_timeline_media.edges.stream()
+                    .map { getPost(it.node.shortcode) }.toList()
     )
 }
 
 fun getPost(shortcode: String): Post {
     val doc = Jsoup.connect("${ig}/p/${shortcode}").get()
-    val jsonData = doc.select("script:containsData(window._sharedData)").find {
-        element ->  element.data().startsWith("window._sharedData")
+    val jsonData = doc.select("script:containsData(window._sharedData)").find { element ->
+        element.data().startsWith("window._sharedData")
     }?.data()?.substringBeforeLast(';')?.substringAfter("=")?.trim()
     val data = Gson().fromJson(jsonData, InstagramSharedData::class.java)
     return Post(
