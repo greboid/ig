@@ -2,11 +2,15 @@ package com.greboid.scraper
 
 import com.google.gson.*
 import org.jsoup.Jsoup
+import org.jsoup.nodes.Document
 import java.io.IOException
 import java.lang.reflect.Type
+import java.math.BigInteger
 import java.net.URL
+import java.nio.charset.StandardCharsets
+import java.security.MessageDigest
+import kotlin.math.min
 import kotlin.streams.toList
-
 
 const val ig: String = "https://www.instagram.com"
 
@@ -19,36 +23,35 @@ fun getProfile(username: String): Profile? {
     val jsonData = doc.select("script:containsData(window._sharedData)").find { element ->
         element.data().startsWith("window._sharedData")
     }?.data()?.substringBeforeLast(';')?.substringAfter("=")?.trim()
-
     val gson = GsonBuilder()
             .registerTypeAdapter(User::class.java, AnnotatedDeserializer<User>())
             .create()
-
     val data = gson.fromJson(jsonData, InstagramSharedData::class.java)
-            .entry_data.ProfilePage.first().graphql.user
+    val userData = data.entry_data.ProfilePage.first().graphql.user
     return Profile(
-            data.username,
-            data.id,
-            data.biography,
-            data.external_url,
-            data.profile_pic_url,
-            data.profile_pic_url_hd,
-            data.edge_owner_to_timeline_media.edges.stream().map {
+            userData.username,
+            userData.id,
+            userData.biography,
+            userData.external_url,
+            userData.profile_pic_url,
+            userData.profile_pic_url_hd,
+            userData.edge_owner_to_timeline_media.edges.stream().map {
                 getPost(it.node.shortcode)
-            }.toList().filterNotNull()
+            }.toList().filterNotNull().toMutableList(),
+            data.rhx_gis,
+            userData.edge_owner_to_timeline_media.page_info.end_cursor,
+            userData.edge_owner_to_timeline_media.page_info.has_next_page,
+            userData.edge_owner_to_timeline_media.count
     )
 }
 
 fun getPost(shortcode: String?): Post? {
-    val doc = try {
+    val json = try {
         Jsoup.connect("$ig/p/$shortcode").get()
     } catch (e: IOException) {
         return null
-    }
-    val jsonData = doc.select("script:containsData(window._sharedData)").find { element ->
-        element.data().startsWith("window._sharedData")
-    }?.data()?.substringBeforeLast(';')?.substringAfter("=")?.trim() ?: return null
-    val data = Gson().fromJson(jsonData, InstagramSharedData::class.java)
+    }.toData()
+    val data = Gson().fromJson(json, InstagramSharedData::class.java)
             .entry_data.PostPage.first().graphql.shortcode_media
     return Post(
             data.id,
@@ -68,8 +71,54 @@ class Profile(
         val external_url: URL?,
         val profile_pic_url: URL,
         val profile_pic_url_hd: URL?,
-        val posts: List<Post>
-)
+        val posts: MutableList<Post>,
+        val rhx_gis: String,
+        var end_cursor: String?,
+        var hasMore: Boolean,
+        val count: Int
+) {
+    fun backfill(desiredCapacity: Int) {
+        val targetCapacity = min(desiredCapacity, count)
+        val count = 12;
+        val fullruns: Int = (targetCapacity - posts.size) / count
+        val partRuns: Int = (targetCapacity - posts.size) % count
+        if (fullruns <= 0 && partRuns <= 0) {
+            return
+        }
+        for (i in fullruns downTo 1) {
+            getOlderData(count)
+        }
+        getOlderData(partRuns)
+    }
+
+    private fun getMD5(value: String): String {
+        return String.format("%032x", BigInteger(1, MessageDigest.getInstance("MD5")
+                        .apply { update(StandardCharsets.UTF_8.encode(value)) }
+                        .digest()))
+    }
+
+    fun getOlderData(count: Int) {
+        val soup = Jsoup.connect("$ig/graphql/query/")
+        soup.header("X-Instagram-GIS",
+                getMD5("$rhx_gis:{\"id\":\"$id\",\"first\":${count},\"after\":\"$end_cursor\"}")
+        )
+        soup.data("query_hash", "5b0222df65d7f6659c9b82246780caa7")
+        soup.data("variables", "{\"id\":\"$id\",\"first\":${count},\"after\":\"$end_cursor\"}")
+        val json = soup.ignoreContentType(true).execute().body()
+        val data = Gson().fromJson(json, InstagramData::class.java)
+        end_cursor = data.data.user.edge_owner_to_timeline_media.page_info.end_cursor
+        hasMore = data.data.user.edge_owner_to_timeline_media.page_info.has_next_page
+        posts.addAll(data.data.user.edge_owner_to_timeline_media.edges.stream().map {
+            getPost(it.node.shortcode)
+        }.toList().filterNotNull())
+    }
+}
+
+fun Document.toData(): String? {
+    return select("script:containsData(window._sharedData)").find { element ->
+        element.data().startsWith("window._sharedData")
+    }?.data()?.substringBeforeLast(';')?.substringAfter("=")?.trim()
+}
 
 class Post(
         val id: String,
@@ -126,8 +175,19 @@ internal class AnnotatedDeserializer<T> : JsonDeserializer<T> {
     }
 }
 
+internal class InstagramData {
+    @JsonRequired
+    lateinit var data: data
+}
+
+internal class data {
+    @JsonRequired
+    lateinit var user: User
+}
+
 internal class InstagramSharedData {
-    var rhx_gis: String? = null
+    @JsonRequired
+    lateinit var rhx_gis: String
     @JsonRequired
     lateinit var entry_data: EntryData
 }
@@ -199,6 +259,10 @@ internal class User {
 internal class edge_owner_to_timeline_media {
     @JsonRequired
     lateinit var edges: List<nodeHolder>
+    @JsonRequired
+    lateinit var page_info: page_info
+    @JsonRequired
+    var count: Int = 0
 
 }
 
@@ -224,13 +288,12 @@ internal class node {
 
 internal class edge_media_to_caption {
     @JsonRequired
-    lateinit var page_info: page_info
-    @JsonRequired
     lateinit var edges: List<captionnodeHolder>
 }
 
 internal class page_info {
     var count: Int = 0
+    @JsonRequired
     var has_next_page: Boolean = false
     var end_cursor: String? = null
 }
