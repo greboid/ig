@@ -1,9 +1,4 @@
 buildscript {
-    ext {
-        kotlin_version = '1.3.0-rc-190'
-        fuel_version = '1.15.0'
-    }
-
     repositories {
         mavenCentral()
         jcenter()
@@ -12,7 +7,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.3.0-rc-190"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.3.10"
     }
 }
 
@@ -29,17 +24,21 @@ repositories {
     maven {
         url "https://dl.bintray.com/kotlin/kotlin-eap"
     }
+    maven {
+        url "https://dl.bintray.com/kotlin/ktor"
+    }
 }
 
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.3.0-rc-190"
+    implementation "io.ktor:ktor-server-netty:1.0.0-beta-1"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.3.10"
     implementation "com.github.kittinunf.fuel:fuel:1.15.0"
     runtime "org.xerial:sqlite-jdbc:3.25.2"
     runtime "mysql:mysql-connector-java:5.1.37"
     implementation 'org.jsoup:jsoup:1.11.3'
     implementation 'com.google.code.gson:gson:2.8.5'
 
-    testImplementation "com.nhaarman.mockitokotlin2:mockito-kotlin:2.0.0-RC3"
+    testImplementation "com.nhaarman.mockitokotlin2:mockito-kotlin:2.0.0"
     testCompile "org.junit.jupiter:junit-jupiter-api:5.3.1"
     testCompile "org.junit.jupiter:junit-jupiter-params:5.3.1"
     testRuntime "org.junit.jupiter:junit-jupiter-engine:5.3.1"
@@ -49,7 +48,7 @@ configurations.all {
     resolutionStrategy {
         eachDependency { DependencyResolveDetails details ->
             if (details.requested.group == 'org.jetbrains.kotlin') {
-                details.useVersion "1.3.0-rc-190"
+                details.useVersion "1.3.10"
             }
         }
     }
@@ -65,6 +64,13 @@ test {
 java {
     sourceCompatibility = JavaVersion.VERSION_1_8
     targetCompatibility = JavaVersion.VERSION_1_8
+}
+
+
+kotlin {
+    experimental {
+        coroutines "enable"
+    }
 }
 
 wrapper {
