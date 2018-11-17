@@ -14,6 +14,9 @@ import kotlin.streams.toList
 
 const val ig: String = "https://www.instagram.com"
 
+fun addUsertoDatabase() {
+}
+
 fun getProfile(username: String): Profile? {
     val doc = try {
         Jsoup.connect("$ig/$username").get()
@@ -97,7 +100,7 @@ class Profile(
                         .digest()))
     }
 
-    fun getOlderData(count: Int) {
+    private fun getOlderData(count: Int) {
         val soup = Jsoup.connect("$ig/graphql/query/")
         soup.header("X-Instagram-GIS",
                 getMD5("$rhx_gis:{\"id\":\"$id\",\"first\":${count},\"after\":\"$end_cursor\"}")
