@@ -14,6 +14,10 @@ import kotlin.streams.toList
 
 const val ig: String = "https://www.instagram.com"
 
+public class Instagram(db: Database) {
+
+}
+
 fun addUsertoDatabase() {
 }
 

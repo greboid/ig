@@ -12,7 +12,7 @@ internal class DbTest {
 
     @Test
     fun `test connect with invalid url`() {
-        assertNull(Database("rar").connect())
+        assertNull(Database("foo").connect())
     }
 
     @Test
@@ -38,7 +38,8 @@ internal class DbTest {
         val db = Database("")
         db.setConnection(connection)
         db.initTables()
-        verify(statement).executeUpdate(Schema.createAllTables)
+        verify(statement).executeUpdate(Database.Schema.createAllTables)
+        verifyNoMoreInteractions(statement)
     }
     @Test
     fun `test connect when already connected`() {
