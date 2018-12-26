@@ -4,17 +4,12 @@ import java.lang.IllegalStateException
 import java.sql.*
 
 class Database(val url: String, val username: String = "", val password: String = "") {
-    private var connection: Connection? = null
+    private lateinit var connection: Connection
 
     fun connect(): Connection? {
-        if (connection == null) {
-            connection = try {
-                DriverManager.getConnection(url, username, password)
-            } catch (e: SQLException) {
-                println(e)
-                null
-            }
-        } else {
+        connection = try {
+            DriverManager.getConnection(url, username, password)
+        } catch (e: SQLException) {
             throw IllegalStateException("Unable to connect again")
         }
         return connection
@@ -24,32 +19,40 @@ class Database(val url: String, val username: String = "", val password: String 
         connection = conn
     }
 
-    fun initTables() {
-        connection?.createStatement()?.executeUpdate(Schema.createAllTables)
+    fun init() {
+        connection.createStatement()?.executeUpdate(Schema.createAllTables)
                 ?: throw IllegalStateException("Must be connected to initialise.")
+        connection.createStatement()?.execute("PRAGMA busy_timeout=30000")
     }
 
     fun addProfile(name: String) =
-            connection?.setAndUpdate(Schema.addProfile, mapOf(Pair(1, name))) == 1
+            connection.setAndUpdate(Schema.addProfile, mapOf(Pair(1, name))) == 1
 
     fun delProfile(name: String) =
-            connection?.setAndUpdate(Schema.delProfile, mapOf(Pair(1, name))) == 1
+            connection.setAndUpdate(Schema.delProfile, mapOf(Pair(1, name))) == 1
 
     fun getProfiles() =
-            connection?.getAllString(Schema.getProfiles, "name") ?: emptyList()
+            connection.getAllString(Schema.getProfiles, "name")
 
     fun addUser(name: String) =
-            connection?.setAndUpdate(Schema.addUser, mapOf(Pair(1, name))) == 1
+            connection.setAndUpdate(Schema.addUser, mapOf(Pair(1, name))) == 1
 
     fun delUser(name: String) =
-            connection?.setAndUpdate(Schema.delUser, mapOf(Pair(1, name))) == 1
+            connection.setAndUpdate(Schema.delUser, mapOf(Pair(1, name))) == 1
+
+    fun getUserID(name: String): Int? {
+        val statement = connection.prepareStatement(Schema.getUserID) ?: return null
+        statement.setString(1, name)
+        val result = statement.executeQuery()
+        return result.getInt(1)
+    }
 
     fun getUsers(): List<String> =
-            connection?.getAllString(Schema.getUsers, "username") ?: emptyList()
+            connection.getAllString(Schema.getUsers, "username")
 
     fun addMedia(shortcode: String, userID: Int, thumbnailURL: String,
                  imageURL: String, caption: String, timestamp: Int) =
-            connection?.setAndUpdate(Schema.addMedia, mapOf(
+            connection.setAndUpdate(Schema.addMedia, mapOf(
                     Pair(1, shortcode),
                     Pair(2, userID),
                     Pair(3, thumbnailURL),
@@ -59,10 +62,10 @@ class Database(val url: String, val username: String = "", val password: String 
             )) == 1
 
     fun delMedia(shortcode: String) =
-            connection?.setAndUpdate(Schema.deleteMedia, mapOf(Pair(1, shortcode))) == 1
+            connection.setAndUpdate(Schema.deleteMedia, mapOf(Pair(1, shortcode))) == 1
 
     fun getMedia(profile: String, start: Int = 0, end: Int = 5): List<MediaObject> {
-        val results = connection?.setAndQuery(Schema.selectMedias,
+        val results = connection.setAndQuery(Schema.selectMedias,
                 mapOf(Pair(1, profile), Pair(2, end), Pair(3, start))) ?: return emptyList()
         return sequence {
             while (results.next()) {
@@ -74,33 +77,36 @@ class Database(val url: String, val username: String = "", val password: String 
     }
 
     internal object Schema {
-        val addProfile = """
+        internal val getUserID = """
+            select id from users where username=?
+        """.trimIndent().replace("[\n\r]".toRegex(), "")
+        internal val addProfile = """
             insert or ignore into profiles(name) values ?
         """.trimIndent().replace("[\n\r]".toRegex(), "")
-        val delProfile = """
+        internal val delProfile = """
             delete from profiles where name=?
         """.trimIndent().replace("[\n\r]".toRegex(), "")
-        val getProfiles = """
+        internal val getProfiles = """
             select name from profiles
         """.trimIndent().replace("[\n\r]".toRegex(), "")
-        val addUser = """
+        internal val addUser = """
             insert or ignore into users(username) values ?
         """.trimIndent().replace("[\n\r]".toRegex(), "")
-        val delUser = """
+        internal val delUser = """
             delete from users where name=?
         """.trimIndent().replace("[\n\r]".toRegex(), "")
-        val getUsers = """
+        internal val getUsers = """
             select username from users
         """.trimIndent().replace("[\n\r]".toRegex(), "")
-        val addMedia = """
+        internal val addMedia = """
             insert or replace into medias
             (shortcode,userID,thumbnailURL,imageURL,caption,timestamp)
             values (?,?,?,?,?,?)
         """.trimIndent().replace("[\n\r]".toRegex(), "")
-        val deleteMedia = """
+        internal val deleteMedia = """
             delete from medias where shortcode=?
         """.trimIndent().replace("[\n\r]".toRegex(), "")
-        val selectMedias = """
+        internal val selectMedias = """
             SELECT
             shortcode, medias.username as source, thumbnailURL as thumb, imageURL as url, caption as caption, timestamp
             FROM medias
@@ -135,7 +141,8 @@ class Database(val url: String, val username: String = "", val password: String 
         """.trimIndent().replace("[\n\r]".toRegex(), "")
         private val createMedias = """
             CREATE TABLE IF NOT EXISTS medias (
-            shortcode TEXT PRIMARY KEY,
+            id INTEGER PRIMARY KEY,
+            shortcode TEXT,
             userID INTEGER,
             thumbnailURL TEXT,
             imageURL TEXT,
@@ -160,7 +167,7 @@ fun ResultSet.getAllString(fieldName: String) = sequence {
 }.toList()
 
 fun Connection.getAllString(sql: String, fieldName: String) =
-        prepareStatement(sql)?.executeQuery(sql)?.getAllString(fieldName) ?: emptyList()
+        prepareStatement(sql)?.executeQuery()?.getAllString(fieldName) ?: emptyList()
 
 fun PreparedStatement.setAndUpdate(values: Map<Int, Any>) = use {
     for ((index, value) in values) {
@@ -175,7 +182,6 @@ fun PreparedStatement.setAndUpdate(values: Map<Int, Any>) = use {
 
 fun Connection.setAndUpdate(sql: String, values: Map<Int, Any>) =
         prepareStatement(sql)?.setAndUpdate(values)
-
 
 
 fun PreparedStatement.setAndQuery(values: Map<Int, Any>): ResultSet = use {

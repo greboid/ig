@@ -14,14 +14,14 @@ import kotlin.streams.toList
 
 const val ig: String = "https://www.instagram.com"
 
-public class Instagram(db: Database) {
+class Instagram() {
 
+    fun getUserProfile(username: String): Profile? {
+        return getProfile(username)
+    }
 }
 
-fun addUsertoDatabase() {
-}
-
-fun getProfile(username: String): Profile? {
+internal fun getProfile(username: String): Profile? {
     val doc = try {
         Jsoup.connect("$ig/$username").get()
     } catch (e: IOException) {
@@ -43,7 +43,7 @@ fun getProfile(username: String): Profile? {
             userData.profile_pic_url,
             userData.profile_pic_url_hd,
             userData.edge_owner_to_timeline_media.edges.stream().map {
-                getPost(it.node.shortcode)
+                getShortcodePost(it.node.shortcode)
             }.toList().filterNotNull().toMutableList(),
             data.rhx_gis,
             userData.edge_owner_to_timeline_media.page_info.end_cursor,
@@ -52,7 +52,7 @@ fun getProfile(username: String): Profile? {
     )
 }
 
-fun getPost(shortcode: String?): Post? {
+internal fun getShortcodePost(shortcode: String?): Post? {
     val json = try {
         Jsoup.connect("$ig/p/$shortcode").get()
     } catch (e: IOException) {
@@ -65,9 +65,10 @@ fun getPost(shortcode: String?): Post? {
             data.getPostType(),
             data.shortcode,
             data.display_url,
-            data.edge_media_to_caption.edges.first().node.text,
+            data.edge_media_to_caption.edges.firstOrNull()?.node?.text ?: "",
             data.owner.id,
-            data.owner.username
+            data.owner.username,
+            data.taken_at_timestamp
     )
 }
 
@@ -116,7 +117,7 @@ class Profile(
         end_cursor = data.data.user.edge_owner_to_timeline_media.page_info.end_cursor
         hasMore = data.data.user.edge_owner_to_timeline_media.page_info.has_next_page
         posts.addAll(data.data.user.edge_owner_to_timeline_media.edges.stream().map {
-            getPost(it.node.shortcode)
+            getShortcodePost(it.node.shortcode)
         }.toList().filterNotNull())
     }
 }
@@ -134,7 +135,8 @@ class Post(
         val displayURL: URL,
         val caption: String,
         val ownerID: String,
-        val ownerUsername: String
+        val ownerUsername: String,
+        val timestamp: Int
 )
 
 enum class PostType {
@@ -229,6 +231,8 @@ internal class shortcode_media {
     lateinit var edge_media_to_caption: edge_media_to_caption
     @JsonRequired
     lateinit var owner: owner
+    @JsonRequired
+    var taken_at_timestamp: Int = 0
 }
 
 internal class owner {
