@@ -11,11 +11,8 @@ fun main(args: Array<String>) = runBlocking {
         println("Unable to load config. Exiting.")
         return@runBlocking
     }
-    val database = Database(config.database ?: run {
-        println("Unable to load database. Exiting.")
-        return@runBlocking
-    })
-    database.connect() ?: run { println("Unable to connect to the database. Exiting."); }
+    val database = Database(config.database)
+    database.connect()
     database.init()
     val instagram = Instagram()
     launch {

@@ -14,4 +14,4 @@ fun getConfig(stream: Reader) : Config? {
         null
     }
 }
-class Config(val database: String? = null)
+class Config(val database: String)

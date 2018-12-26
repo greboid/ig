@@ -6,7 +6,7 @@ import java.sql.*
 class Database(val url: String, val username: String = "", val password: String = "") {
     private lateinit var connection: Connection
 
-    fun connect(): Connection? {
+    fun connect(): Connection {
         connection = try {
             DriverManager.getConnection(url, username, password)
         } catch (e: SQLException) {
