@@ -64,6 +64,7 @@ internal fun getShortcodePost(shortcode: String?): Post? {
             data.id,
             data.getPostType(),
             data.shortcode,
+            data.display_url,
             if (data.getPostType() == PostType.SIDECAR) {
                 data.edge_sidecar_to_children?.edges?.map { it.node.display_url }?.toList() ?: emptyList()
             } else if (data.getPostType() == PostType.VIDEO) {
@@ -138,6 +139,7 @@ class Post(
         val id: String,
         val type: PostType,
         val shortcode: String,
+        val thumbnailURL: URL,
         val displayURL: List<URL>,
         val caption: String,
         val ownerID: String,

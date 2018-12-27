@@ -14,11 +14,11 @@ class Retriever {
             it.posts.forEach { post ->
                 if (post.type == PostType.SIDECAR) {
                     post.displayURL.forEachIndexed{ index, url ->
-                        database.addMedia(post.shortcode, index, userID, url.toString(),
+                        database.addMedia(post.shortcode, index, userID, post.thumbnailURL.toString(),
                                 url.toString(), post.caption, post.timestamp)
                     }
                 } else {
-                    database.addMedia(post.shortcode, 0, userID, post.displayURL.first().toString(),
+                    database.addMedia(post.shortcode, 0, userID, post.thumbnailURL.toString(),
                             post.displayURL.first().toString(), post.caption, post.timestamp)
                 }
             }
