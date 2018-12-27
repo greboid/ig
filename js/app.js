@@ -43,7 +43,8 @@ function getImages() {
     $.each(data, function(index, image) {
       images.push(image);
     })
-    if (images.length > 0) {
+    console.log("Length:" + images.length)
+    if (images.length == 0) {
       finished = true;
     }
     $.each(images, function(index, image) {
@@ -52,7 +53,7 @@ function getImages() {
   }).done(function() {
     initial = false;
     scrolling = false;
-    if ($('#app').height() < $(window).height() || !finished) {
+    if ($('#app').height() < $(window).height() && !finished) {
       getImages()
     }
   })

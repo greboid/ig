@@ -64,9 +64,9 @@ class Database(val url: String, val username: String = "", val password: String 
     fun delMedia(shortcode: String) =
             connection.setAndUpdate(Schema.deleteMedia, mapOf(Pair(1, shortcode))) == 1
 
-    fun getMedia(profile: String, start: Int = 0, end: Int = 5): List<MediaObject> {
+    fun getMedia(profile: String, start: Int = 0, count: Int = 5): List<MediaObject> {
         val results = connection.setAndQuery(Schema.selectMedias,
-                mapOf(Pair(1, profile), Pair(2, end), Pair(3, start))) ?: return emptyList()
+                mapOf(Pair(1, profile), Pair(2, count), Pair(3, start))) ?: return emptyList()
         return sequence {
             while (results.next()) {
                 yield(MediaObject(results.getString(1), results.getInt(2),
@@ -107,17 +107,16 @@ class Database(val url: String, val username: String = "", val password: String 
             delete from medias where shortcode=?
         """.trimIndent().replace("[\n\r]".toRegex(), "")
         internal val selectMedias = """
-            SELECT
-            shortcode, medias.username as source, thumbnailURL as thumb, imageURL as url, caption as caption, timestamp
+            SELECT shortcode, users.username as source, thumbnailURL as thumb, imageURL as url, caption as caption, timestamp
             FROM medias
-            LEFT JOIN users on users.username=medias.username
+            LEFT JOIN users on users.id=medias.userID
             LEFT JOIN profile_users on profile_users.userid=users.id
             LEFT JOIN profiles on profile_users.profileid=profiles.id
             WHERE profiles.name=?
             ORDER BY timestamp DESC
             LIMIT ?
             OFFSET ?
-        """.trimIndent().replace("[\n\r]".toRegex(), "")
+        """.trimIndent()
         private val createProfiles = """
             CREATE TABLE IF NOT EXISTS profiles (
             id INTEGER PRIMARY KEY,
