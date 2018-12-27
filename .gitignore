@@ -2,5 +2,6 @@
 /out/
 /build/
 /.idea/
+/thumbs/
 defaults.yml
 database.sqlite

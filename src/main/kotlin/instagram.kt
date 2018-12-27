@@ -21,6 +21,8 @@ class Instagram() {
     }
 }
 
+//          "has_next_page": false,
+//          "end_cursor": null
 internal fun getProfile(username: String): Profile? {
     val doc = try {
         Jsoup.connect("$ig/$username").get()

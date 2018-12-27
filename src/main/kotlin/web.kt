@@ -39,6 +39,9 @@ class Web(val database: Database) {
                 static("/css") {
                     files("css")
                 }
+                static("/thumbs") {
+                    files("thumbs")
+                }
                 get("/feed") {
                     val start: Int = call.request.queryParameters["start"]?.toInt() ?: 0
                     val count: Int = call.request.queryParameters["count"]?.toInt() ?: 5
