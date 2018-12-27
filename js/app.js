@@ -43,7 +43,6 @@ function getImages() {
     $.each(data, function(index, image) {
       images.push(image);
     })
-    console.log("Length:" + images.length)
     if (images.length == 0) {
       finished = true;
     }

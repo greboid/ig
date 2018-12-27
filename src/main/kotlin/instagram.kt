@@ -64,7 +64,13 @@ internal fun getShortcodePost(shortcode: String?): Post? {
             data.id,
             data.getPostType(),
             data.shortcode,
-            data.display_url,
+            if (data.getPostType() == PostType.SIDECAR) {
+                data.edge_sidecar_to_children?.edges?.map { it.node.display_url }?.toList() ?: emptyList()
+            } else if (data.getPostType() == PostType.VIDEO) {
+                listOf(data.video_url ?: URL("http://instagram.com"))
+            } else {
+                listOf(data.display_url)
+            },
             data.edge_media_to_caption.edges.firstOrNull()?.node?.text ?: "",
             data.owner.id,
             data.owner.username,
@@ -132,7 +138,7 @@ class Post(
         val id: String,
         val type: PostType,
         val shortcode: String,
-        val displayURL: URL,
+        val displayURL: List<URL>,
         val caption: String,
         val ownerID: String,
         val ownerUsername: String,
@@ -227,12 +233,24 @@ internal class shortcode_media {
     lateinit var shortcode: String
     @JsonRequired
     lateinit var display_url: URL
+    var video_url: URL? = null
     @JsonRequired
     lateinit var edge_media_to_caption: edge_media_to_caption
+    var edge_sidecar_to_children: edge_sidecar_to_children? = null
     @JsonRequired
     lateinit var owner: owner
     @JsonRequired
     var taken_at_timestamp: Int = 0
+}
+
+internal class edge_sidecar_to_children {
+    @JsonRequired
+    lateinit var edges: List<sidecarnodeHolder>
+}
+
+internal class sidecarnodeHolder {
+    @JsonRequired
+    lateinit var node: node
 }
 
 internal class owner {
@@ -293,6 +311,7 @@ internal class node {
     lateinit var shortcode: String
     @JsonRequired
     lateinit var display_url: URL
+    var video_url: URL? = null
     @JsonRequired
     lateinit var thumbnail_src: URL
 }

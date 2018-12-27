@@ -16,11 +16,9 @@ fun main(args: Array<String>) = runBlocking {
     database.init()
     val instagram = Instagram()
     launch {
-        repeat(5) {
-            while (isActive) {
-                //Retriever().start(database, instagram)
-                delay(Duration.ofMinutes(15))
-            }
+        while (isActive) {
+            Retriever().start(database, instagram)
+            delay(Duration.ofMinutes(15))
         }
     }
     thread {
