@@ -19,7 +19,7 @@ fun main(args: Array<String>) = runBlocking {
         repeat(5) {
             while (isActive) {
                 //Retriever().start(database, instagram)
-                delay(Duration.ofSeconds(30))
+                delay(Duration.ofMinutes(15))
             }
         }
     }

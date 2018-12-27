@@ -13,7 +13,6 @@ import io.ktor.response.respondFile
 import io.ktor.response.respondRedirect
 import io.ktor.response.respondText
 import io.ktor.routing.get
-import io.ktor.routing.header
 import io.ktor.routing.routing
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
@@ -25,7 +24,6 @@ class Web(val database: Database) {
             install(DefaultHeaders)
             install(Compression)
             routing {
-                trace { println(it.buildText()) }
                 static("/js") {
                     files("js")
                 }
