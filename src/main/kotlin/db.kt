@@ -1,5 +1,6 @@
 package com.greboid.scraper
 
+import kotlinx.coroutines.yield
 import java.lang.IllegalStateException
 import java.sql.*
 
@@ -33,6 +34,7 @@ class Database(val url: String, val username: String = "", val password: String 
 
     fun getProfiles() =
             connection.getAllString(Schema.getProfiles, "name")
+                    //.asSequence().withIndex().associateBy({it.index}, {it.value})
 
     fun addUser(name: String) =
             connection.setAndUpdate(Schema.addUser, mapOf(Pair(1, name))) == 1
@@ -164,7 +166,7 @@ fun ResultSet.getAllString(fieldName: String) = sequence {
             yield(getString(fieldName))
         }
     }
-}.toList()
+}.toList().filterNotNull()
 
 fun Connection.getAllString(sql: String, fieldName: String) =
         prepareStatement(sql)?.executeQuery()?.getAllString(fieldName) ?: emptyList()
