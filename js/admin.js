@@ -1,11 +1,12 @@
 $.getJSON($(location).attr('protocol') + '//' + $(location).attr('host') + '/users', {}, function(data) {
     $.each(data, function(index, user) {
-        $("#userList").append("<li data-name=\""+user+"\">"+user+" <a class=\"remove\" href=\"\">Remove</a></li>");
+        $("#userList").append("<li class=\"list-group-item\" data-name=\""+user+"\">"+user+" <a class=\"remove\" href=\"\">Remove</a></li>");
+        $("#userSelect").append("<option value=\""+user+"\">"+user+"</option>");
     })
 })
 $.getJSON($(location).attr('protocol') + '//' + $(location).attr('host') + '/profiles', {}, function(data) {
     $.each(data, function(index, profile) {
-        $("#profileList").append("<li data-name=\""+profile+"\">"+profile+" <a class=\"remove\" href=\"\">Remove</a></li>");
+        $("#profileList").append("<li class=\"list-group-item\" data-name=\""+profile+"\">"+profile+" <a class=\"remove\" href=\"\">Remove</a></li>");
     })
 })
 $('#addUser').on('click', function(event) {
@@ -20,6 +21,18 @@ $(document).on('click','a.remove',function(event){
     $(event.target).parent().remove();
     event.preventDefault();
 });
+$('#userSelect').change(function() {
+    $.getJSON($(location).attr('protocol') + '//' + $(location).attr('host') + '/profiles', {}, function(data) {
+        $.each(data, function(index, profile) {
+            $("#profileSelect").append("<option value=\""+profile+"\">"+profile+"</option>");
+        })
+    })
+    $.getJSON($(location).attr('protocol') + '//' + $(location).attr('host') + '/userprofiles/'+$(this).val(), {}, function(data) {
+        $.each(data, function(index, profile) {
+            $("#profileSelect").find("option[value=\""+profile+"\"]").attr('selected','selected');
+        })
+    })
+});
 
 function addItem(event) {
     var parentDiv = $(event.target).closest("div")[0]
@@ -33,7 +46,7 @@ function addItem(event) {
         }
     });
     if (text != "" && !known) {
-        $(list).append("<li data-name=\""+text+"\">"+text+" <a class=\"remove\" href=\"\">Remove</a></li>");
+        $(list).append("<li class=\"list-group-item\" data-name=\""+text+"\">"+text+" <a class=\"remove\" href=\"\">Remove</a></li>");
     }
     var elems = $(list).find('li').detach().sort(function (a, b) {
         return ($(a).data("name") < $(b).data("name") ? -1 : $(a).data("name") > $(b).data("name") ? 1 : 0);
