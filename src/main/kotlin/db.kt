@@ -28,8 +28,11 @@ class Database(private val url: String, private val username: String = "", priva
     fun addProfile(name: String) =
             connection.setAndUpdate(Schema.addProfile, mapOf(Pair(1, name))) == 1
 
-    fun delProfile(name: String) =
-            connection.setAndUpdate(Schema.delProfile, mapOf(Pair(1, name))) == 1
+    fun delProfile(name: String) {
+        val profileID = getProfileID(name) ?: return
+        connection.setAndUpdate(Schema.deleteProfileFromProfiles, mapOf(Pair(1, profileID)))
+        connection.setAndUpdate(Schema.delProfile, mapOf(Pair(1, name)))
+    }
 
     fun getProfiles() =
             connection.getAllString(Schema.getProfiles, "name")
@@ -65,14 +68,30 @@ class Database(private val url: String, private val username: String = "", priva
     fun addUser(name: String) =
             connection.setAndUpdate(Schema.addUser, mapOf(Pair(1, name))) == 1
 
-    fun delUser(name: String) =
-            connection.setAndUpdate(Schema.delUser, mapOf(Pair(1, name))) == 1
+    fun delUser(name: String) {
+        val userID = getUserID(name) ?: return
+        connection.setAndUpdate(Schema.deleteUserFromProfiles, mapOf(Pair(1, userID)))
+        connection.setAndUpdate(Schema.delUser, mapOf(Pair(1, name)))
+    }
 
     fun getUserID(name: String): Int? {
         val statement = connection.prepareStatement(Schema.getUserID) ?: return null
         statement.setString(1, name)
         val result = statement.executeQuery()
-        return result.getInt(1)
+        val returnValue = result.getInt(1)
+        result.close()
+        statement.close()
+        return returnValue
+    }
+
+    fun getProfileID(name: String): Int? {
+        val statement = connection.prepareStatement(Schema.getProfileID) ?: return null
+        statement.setString(1, name)
+        val result = statement.executeQuery()
+        val returnValue = result.getInt(1)
+        result.close()
+        statement.close()
+        return returnValue
     }
 
     fun getUsers(): List<String> =
@@ -112,6 +131,15 @@ class Database(private val url: String, private val username: String = "", priva
     }
 
     internal object Schema {
+        internal val deleteProfileFromProfiles = """
+            delete from profile_users where profileID=?
+        """.trimIndent()
+        internal val getProfileID = """
+            select id from profiles where name=?
+        """.trimIndent()
+        internal val deleteUserFromProfiles = """
+            delete from profile_users where userID=?
+        """.trimIndent()
         internal val getUserProfiles = """
             select profiles.name
             from profile_users
