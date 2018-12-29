@@ -41,6 +41,16 @@ $('#saveProfiles').on('click', function(event) {
         $($("#userSelect").find("option")[0]).change();
     });
 });
+$('#saveProfileUsers').on('click', function(event) {
+    var profiles = new Object()
+    profiles.selected = $($(userSelect).find(":selected")[0]).val()
+    var selectedProfiles = [];
+    $(profileSelect).find(":selected").each(function(index) {
+        selectedProfiles.push($(this).text());
+    });
+    profiles.profiles = selectedProfiles
+    $.postJSON( "/profileusers", JSON.stringify(profiles))
+});
 $('#userSelect').change(function() {
     $.getJSON($(location).attr('protocol') + '//' + $(location).attr('host') + '/profiles', {}, function(data) {
         $('#profileSelect option').remove();
