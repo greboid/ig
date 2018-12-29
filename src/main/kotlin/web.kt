@@ -69,26 +69,8 @@ class Web(val database: Database, val config: Config) {
                 get("/profiles") {
                     call.respondText(Gson().toJson(database.getProfiles()), ContentType.Application.Json)
                 }
-                post("/profiles") {
-                    val newProfiles = Gson().fromJson(call.receive<String>(), Array<String>::class.java).toList()
-                    val currentProfiles = database.getProfiles()
-                    val propfilesToRemove = currentProfiles.minus(newProfiles)
-                    val profilesToAdd = newProfiles.subtract(currentProfiles)
-                    propfilesToRemove.forEach { database.delProfile(it) }
-                    profilesToAdd.forEach { database.addProfile(it) }
-                    call.respond(HttpStatusCode.OK, "{}")
-                }
                 get("/users") {
                     call.respondText(Gson().toJson(database.getUsers()), ContentType.Application.Json)
-                }
-                post("/users") {
-                    val newUsers = Gson().fromJson(call.receive<String>(), Array<String>::class.java).toList()
-                    val currentUsers = database.getUsers()
-                    val usersToRemove = currentUsers.minus(newUsers)
-                    val usersToAdd = newUsers.subtract(currentUsers)
-                    usersToRemove.forEach { database.delUser(it) }
-                    usersToAdd.forEach { database.addUser(it) }
-                    call.respond(HttpStatusCode.OK, "{}")
                 }
                 get("/profileusers/{profile?}") {
                     val profile = call.parameters.get("profile") ?: ""
@@ -97,16 +79,6 @@ class Web(val database: Database, val config: Config) {
                     } else {
                         call.respondText(Gson().toJson(database.getProfileUsers(profile)), ContentType.Application.Json)
                     }
-                }
-                post ("/profileusers") {
-                    val profileUsers = Gson().fromJson(call.receive<String>(), profileusers::class.java)
-                    val currentProfiles = database.getUserProfiles(profileUsers.selected)
-                    val newProfiles = profileUsers.profiles
-                    val profilesToRemove = currentProfiles.minus(newProfiles)
-                    val profilesToAdd = newProfiles.subtract(currentProfiles)
-                    profilesToRemove.forEach { profile -> database.delUserProfile(profileUsers.selected, profile) }
-                    profilesToAdd.forEach { profile -> database.addUserProfile(profileUsers.selected, profile) }
-                    call.respond(HttpStatusCode.OK, "{}")
                 }
                 get("/userprofiles/{user?}") {
                     val user = call.parameters.get("user") ?: ""
@@ -122,6 +94,34 @@ class Web(val database: Database, val config: Config) {
                     }
                     post("/admin") {
                         call.respondRedirect("/admin")
+                    }
+                    post ("/profileusers") {
+                        val profileUsers = Gson().fromJson(call.receive<String>(), profileusers::class.java)
+                        val currentProfiles = database.getUserProfiles(profileUsers.selected)
+                        val newProfiles = profileUsers.profiles
+                        val profilesToRemove = currentProfiles.minus(newProfiles)
+                        val profilesToAdd = newProfiles.subtract(currentProfiles)
+                        profilesToRemove.forEach { profile -> database.delUserProfile(profileUsers.selected, profile) }
+                        profilesToAdd.forEach { profile -> database.addUserProfile(profileUsers.selected, profile) }
+                        call.respond(HttpStatusCode.OK, "{}")
+                    }
+                    post("/users") {
+                        val newUsers = Gson().fromJson(call.receive<String>(), Array<String>::class.java).toList()
+                        val currentUsers = database.getUsers()
+                        val usersToRemove = currentUsers.minus(newUsers)
+                        val usersToAdd = newUsers.subtract(currentUsers)
+                        usersToRemove.forEach { database.delUser(it) }
+                        usersToAdd.forEach { database.addUser(it) }
+                        call.respond(HttpStatusCode.OK, "{}")
+                    }
+                    post("/profiles") {
+                        val newProfiles = Gson().fromJson(call.receive<String>(), Array<String>::class.java).toList()
+                        val currentProfiles = database.getProfiles()
+                        val propfilesToRemove = currentProfiles.minus(newProfiles)
+                        val profilesToAdd = newProfiles.subtract(currentProfiles)
+                        propfilesToRemove.forEach { database.delProfile(it) }
+                        profilesToAdd.forEach { database.addProfile(it) }
+                        call.respond(HttpStatusCode.OK, "{}")
                     }
                 }
                 get("/{...}") {
