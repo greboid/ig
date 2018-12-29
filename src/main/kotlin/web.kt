@@ -69,6 +69,15 @@ class Web(val database: Database, val config: Config) {
                 get("/profiles") {
                     call.respondText(Gson().toJson(database.getProfiles()), ContentType.Application.Json)
                 }
+                post("/profiles") {
+                    val newProfiles = Gson().fromJson(call.receive<String>(), Array<String>::class.java).toList()
+                    val currentProfiles = database.getProfiles()
+                    val propfilesToRemove = currentProfiles.minus(newProfiles)
+                    val profilesToAdd = newProfiles.subtract(currentProfiles)
+                    propfilesToRemove.forEach { database.delProfile(it) }
+                    profilesToAdd.forEach { database.addProfile(it) }
+                    call.respond(HttpStatusCode.OK, "{}")
+                }
                 get("/users") {
                     call.respondText(Gson().toJson(database.getUsers()), ContentType.Application.Json)
                 }

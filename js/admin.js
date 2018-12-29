@@ -30,6 +30,13 @@ $('#saveUsers').on('click', function(event) {
     });
     $.postJSON( "/users", JSON.stringify(users));
 });
+$('#saveProfiles').on('click', function(event) {
+    var profiles = [];
+    $('#profileList').find('li').each(function(index) {
+        profiles.push($(this).data('name'));
+    });
+    $.postJSON( "/profiles", JSON.stringify(profiles));
+});
 $('#userSelect').change(function() {
     $.getJSON($(location).attr('protocol') + '//' + $(location).attr('host') + '/profiles', {}, function(data) {
         $('#profileSelect option').remove();
