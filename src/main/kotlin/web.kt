@@ -70,6 +70,9 @@ class Web(val database: Database, val config: Config) {
                 get("/users") {
                     call.respondText(Gson().toJson(database.getUsers()), ContentType.Application.Json)
                 }
+                get("/profileusers/{profile}") {
+                    call.respondText(Gson().toJson(database.getProfileUsers(call.parameters.get("profile") ?: "")), ContentType.Application.Json)
+                }
                 authenticate("admin") {
                     get("/admin") {
                         call.respondFile(File("html/admin.html"))

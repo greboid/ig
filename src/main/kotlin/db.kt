@@ -34,6 +34,20 @@ class Database(private val url: String, private val username: String = "", priva
     fun getProfiles() =
             connection.getAllString(Schema.getProfiles, "name")
 
+    fun getProfileUsers(profile: String): List<String> {
+        val s = connection.prepareStatement(Schema.getProfileUsers)
+        s.setString(1, profile)
+        val results: ResultSet = s.executeQuery()
+        val returnValue = sequence {
+            while (results.next()) {
+                yield(results.getString(1))
+            }
+        }.toList()
+        results.close()
+        s.close()
+        return returnValue
+    }
+
     fun addUser(name: String) =
             connection.setAndUpdate(Schema.addUser, mapOf(Pair(1, name))) == 1
 
@@ -84,6 +98,13 @@ class Database(private val url: String, private val username: String = "", priva
     }
 
     internal object Schema {
+        internal val getProfileUsers = """
+            select users.username
+            from profile_users
+            left join profiles on profile_users.profileID=profiles.id
+            left join users on profile_users.userID=users.id
+            where profiles.name=?
+        """.trimIndent()
         internal val getUserID = """
             select id from users where username=?
         """.trimIndent()
