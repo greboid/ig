@@ -1,12 +1,20 @@
-$(function() {
-    $('#addUser').on('click', function(event) {
-        addItem(event);
-        event.preventDefault();
-    });
-    $('#addProfile').on('click', function(event) {
-        addItem(event);
-        event.preventDefault();
-    });
+$.getJSON($(location).attr('protocol') + '//' + $(location).attr('host') + '/users', {}, function(data) {
+    $.each(data, function(index, user) {
+        $("#userList").append("<li>"+user+"</li>");
+    })
+})
+$.getJSON($(location).attr('protocol') + '//' + $(location).attr('host') + '/profiles', {}, function(data) {
+    $.each(data, function(index, profile) {
+        $("#profileList").append("<li>"+profile+"</li>");
+    })
+})
+$('#addUser').on('click', function(event) {
+    addItem(event);
+    event.preventDefault();
+});
+$('#addProfile').on('click', function(event) {
+    addItem(event);
+    event.preventDefault();
 });
 
 function addItem(event) {
