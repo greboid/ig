@@ -78,6 +78,14 @@ class Web(val database: Database, val config: Config) {
                         call.respondText(Gson().toJson(database.getProfileUsers(profile)), ContentType.Application.Json)
                     }
                 }
+                get("/userprofiles/{user?}") {
+                    val user = call.parameters.get("user") ?: ""
+                    if (user.isEmpty()) {
+                        call.respond(HttpStatusCode.NotFound, "Page not found.")
+                    } else {
+                        call.respondText(Gson().toJson(database.getUserProfiles(user)), ContentType.Application.Json)
+                    }
+                }
                 authenticate("admin") {
                     get("/admin") {
                         call.respondFile(File("html/admin.html"))
