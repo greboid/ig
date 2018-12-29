@@ -2,6 +2,8 @@ $.getJSON($(location).attr('protocol') + '//' + $(location).attr('host') + '/use
     $.each(data, function(index, user) {
         $("#userList").append("<li class=\"list-group-item\" data-name=\""+user+"\">"+user+" <a class=\"remove\" href=\"\">Remove</a></li>");
         $("#userSelect").append("<option value=\""+user+"\">"+user+"</option>");
+        $($("#userSelect").find("option")[0]).attr('selected','selected');
+        $($("#userSelect").find("option")[0]).change();
     })
 })
 $.getJSON($(location).attr('protocol') + '//' + $(location).attr('host') + '/profiles', {}, function(data) {
