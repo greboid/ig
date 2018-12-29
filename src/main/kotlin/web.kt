@@ -1,7 +1,6 @@
 package com.greboid.scraper
 
 import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.auth.*
@@ -23,7 +22,7 @@ import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import java.io.File
 
-class Web(val database: Database, val config: Config) {
+class Web(private val database: Database, private val config: Config) {
     fun start() {
         val server = embeddedServer(Netty, port = 8080) {
             install(DefaultHeaders)
@@ -72,8 +71,8 @@ class Web(val database: Database, val config: Config) {
                 get("/users") {
                     call.respondText(Gson().toJson(database.getUsers()), ContentType.Application.Json)
                 }
-                get("/profileusers/{profile?}") {
-                    val profile = call.parameters.get("profile") ?: ""
+                get("/ProfileUsers/{profile?}") {
+                    val profile = call.parameters["profile"] ?: ""
                     if (profile.isEmpty()) {
                         call.respond(HttpStatusCode.NotFound, "Page not found.")
                     } else {
@@ -81,7 +80,7 @@ class Web(val database: Database, val config: Config) {
                     }
                 }
                 get("/userprofiles/{user?}") {
-                    val user = call.parameters.get("user") ?: ""
+                    val user = call.parameters["user"] ?: ""
                     if (user.isEmpty()) {
                         call.respond(HttpStatusCode.NotFound, "Page not found.")
                     } else {
@@ -95,8 +94,8 @@ class Web(val database: Database, val config: Config) {
                     post("/admin") {
                         call.respondRedirect("/admin")
                     }
-                    post ("/profileusers") {
-                        val profileUsers = Gson().fromJson(call.receive<String>(), profileusers::class.java)
+                    post ("/ProfileUsers") {
+                        val profileUsers = Gson().fromJson(call.receive<String>(), ProfileUsers::class.java)
                         val currentProfiles = database.getUserProfiles(profileUsers.selected)
                         val newProfiles = profileUsers.profiles
                         val profilesToRemove = currentProfiles.minus(newProfiles)
@@ -110,8 +109,8 @@ class Web(val database: Database, val config: Config) {
                         val currentUsers = database.getUsers()
                         val usersToRemove = currentUsers.minus(newUsers)
                         val usersToAdd = newUsers.subtract(currentUsers)
-                        usersToRemove.forEach { database.delUser(it) }
-                        usersToAdd.forEach { database.addUser(it) }
+                        usersToRemove.forEach { user -> database.delUser(user) }
+                        usersToAdd.forEach { user -> database.addUser(user) }
                         call.respond(HttpStatusCode.OK, "{}")
                     }
                     post("/profiles") {
@@ -119,8 +118,8 @@ class Web(val database: Database, val config: Config) {
                         val currentProfiles = database.getProfiles()
                         val propfilesToRemove = currentProfiles.minus(newProfiles)
                         val profilesToAdd = newProfiles.subtract(currentProfiles)
-                        propfilesToRemove.forEach { database.delProfile(it) }
-                        profilesToAdd.forEach { database.addProfile(it) }
+                        propfilesToRemove.forEach { profile -> database.delProfile(profile) }
+                        profilesToAdd.forEach { profile -> database.addProfile(profile) }
                         call.respond(HttpStatusCode.OK, "{}")
                     }
                 }
@@ -136,7 +135,7 @@ class Web(val database: Database, val config: Config) {
     }
 }
 
-internal class profileusers(val selected: String = "", val profiles: List<String> = emptyList()) {
+internal class ProfileUsers(val selected: String = "", val profiles: List<String> = emptyList()) {
     override fun toString(): String {
         return "[user=$selected, profiles=$profiles]"
     }

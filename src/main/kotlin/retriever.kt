@@ -20,7 +20,7 @@ class Retriever {
             it.posts.forEach { post ->
                 if (post.type == PostType.SIDECAR) {
                     post.displayURL.forEachIndexed{ index, url ->
-                        val out = File("thumbs/${post.shortcode}${index}.jpg")
+                        val out = File("thumbs/$post.shortcode${index}.jpg")
                         thumbnail(post.thumbnailURL, out)
                         database.addMedia(post.shortcode, index, userID, out.toString(),
                                 url.toString(), post.caption, post.timestamp)
@@ -45,5 +45,5 @@ private fun thumbnail(input: URL, output: File) {
     val resampleOp = ResampleOp((source.width * ratio).toInt(), (source.height * ratio).toInt())
     resampleOp.unsharpenMask = AdvancedResizeOp.UnsharpenMask.Normal
     val scaled = resampleOp.filter(source, null)
-    ImageIO.write(scaled, "jpg", output);
+    ImageIO.write(scaled, "jpg", output)
 }

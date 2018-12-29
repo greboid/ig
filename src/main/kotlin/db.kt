@@ -121,9 +121,6 @@ class Database(private val url: String, private val username: String = "", priva
                     Pair(7, timestamp)
             )) == 1
 
-    fun delMedia(shortcode: String) =
-            connection.setAndUpdate(Schema.deleteMedia, mapOf(Pair(1, shortcode))) == 1
-
     fun getMedia(profile: String, start: Int = 0, count: Int = 5): List<MediaObject> {
         val s = connection.prepareStatement(Schema.selectMedias)
         s.setString(1, profile)
@@ -197,9 +194,6 @@ class Database(private val url: String, private val username: String = "", priva
             insert or replace into medias
             (shortcode,ord,userID,thumbnailURL,imageURL,caption,timestamp)
             values (?,?,?,?,?,?,?)
-        """.trimIndent()
-        internal val deleteMedia = """
-            delete from medias where shortcode=?
         """.trimIndent()
         internal val selectMedias = """
             SELECT shortcode, users.username, thumbnailURL, imageURL, caption, timestamp
