@@ -4,7 +4,6 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.time.delay
 import java.io.File
 import java.time.Duration
-import kotlin.concurrent.thread
 
 fun main(args: Array<String>) = runBlocking {
     val config = getConfig(File("defaults.yml").reader()) ?: run {
@@ -15,13 +14,17 @@ fun main(args: Array<String>) = runBlocking {
     database.connect()
     database.init()
     val instagram = Instagram()
-    launch {
+    val web = launch {
+        Web(database, config).start()
+    }
+    delay(Duration.ofSeconds(2))
+    if (!web.isActive) {
+        return@runBlocking
+    }
+    val retriever = launch {
         while (isActive) {
             Retriever().start(database, instagram)
             delay(Duration.ofMinutes(15))
         }
-    }
-    thread {
-        Web(database, config).start()
     }
 }

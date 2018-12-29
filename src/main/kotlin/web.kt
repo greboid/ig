@@ -18,13 +18,13 @@ import io.ktor.response.respondText
 import io.ktor.routing.get
 import io.ktor.routing.post
 import io.ktor.routing.routing
+import io.ktor.server.cio.CIO
 import io.ktor.server.engine.embeddedServer
-import io.ktor.server.netty.Netty
 import java.io.File
 
 class Web(private val database: Database, private val config: Config) {
     fun start() {
-        val server = embeddedServer(Netty, port = 8080) {
+        val server = embeddedServer(CIO, port = 8080) {
             install(DefaultHeaders)
             install(Compression)
             install(StatusPages) {
