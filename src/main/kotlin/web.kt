@@ -3,12 +3,11 @@ package com.greboid.scraper
 import com.google.gson.Gson
 import io.ktor.application.call
 import io.ktor.application.install
-import io.ktor.application.log
+import io.ktor.auth.*
 import io.ktor.features.Compression
 import io.ktor.features.DefaultHeaders
 import io.ktor.features.StatusPages
 import io.ktor.http.ContentType
-import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.content.*
 import io.ktor.response.respond
@@ -16,12 +15,13 @@ import io.ktor.response.respondFile
 import io.ktor.response.respondRedirect
 import io.ktor.response.respondText
 import io.ktor.routing.get
+import io.ktor.routing.post
 import io.ktor.routing.routing
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import java.io.File
 
-class Web(val database: Database) {
+class Web(val database: Database, val config: Config) {
     fun start() {
         val server = embeddedServer(Netty, port = 8080) {
             install(DefaultHeaders)
@@ -32,6 +32,18 @@ class Web(val database: Database) {
                     println(cause)
                 }
             }
+            install(Authentication) {
+                basic(name = "admin") {
+                    realm = "IG Admin"
+                    validate { credentials ->
+                        if (credentials.name == config.adminUsername && credentials.password == config.adminPassword) {
+                            UserIdPrincipal(credentials.name)
+                        } else {
+                            null
+                        }}
+                }
+            }
+
             routing {
                 static("/js") {
                     files("js")
@@ -54,6 +66,14 @@ class Web(val database: Database) {
                 }
                 get("/profiles") {
                     call.respondText(Gson().toJson(database.getProfiles()), ContentType.Application.Json)
+                }
+                authenticate("admin") {
+                    get("/admin") {
+                        call.respondFile(File("html/admin.html"))
+                    }
+                    post("/admin") {
+                        call.respondRedirect("/admin")
+                    }
                 }
                 get("/{...}") {
                     call.respondFile(File("html/index.html"))

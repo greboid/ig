@@ -36,6 +36,7 @@ dependencies {
     implementation "io.ktor:ktor-server-core:1.1.1"
     implementation "io.ktor:ktor-server-netty:1.1.1"
     implementation "io.ktor:ktor-server-host-common:1.1.1"
+    implementation "io.ktor:ktor-auth:1.1.1"
     implementation "com.mortennobel:java-image-scaling:0.8.6"
     runtime "org.xerial:sqlite-jdbc:3.25.2"
     runtime "mysql:mysql-connector-java:5.1.37"

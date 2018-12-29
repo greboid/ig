@@ -22,6 +22,6 @@ fun main(args: Array<String>) = runBlocking {
         }
     }
     thread {
-        Web(database).start()
+        Web(database, config).start()
     }
 }
