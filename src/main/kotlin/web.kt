@@ -98,6 +98,16 @@ class Web(val database: Database, val config: Config) {
                         call.respondText(Gson().toJson(database.getProfileUsers(profile)), ContentType.Application.Json)
                     }
                 }
+                post ("/profileusers") {
+                    val profileUsers = Gson().fromJson(call.receive<String>(), profileusers::class.java)
+                    val currentProfiles = database.getUserProfiles(profileUsers.selected)
+                    val newProfiles = profileUsers.profiles
+                    val profilesToRemove = currentProfiles.minus(newProfiles)
+                    val profilesToAdd = newProfiles.subtract(currentProfiles)
+                    profilesToRemove.forEach { profile -> database.delUserProfile(profileUsers.selected, profile) }
+                    profilesToAdd.forEach { profile -> database.addUserProfile(profileUsers.selected, profile) }
+                    call.respond(HttpStatusCode.OK, "{}")
+                }
                 get("/userprofiles/{user?}") {
                     val user = call.parameters.get("user") ?: ""
                     if (user.isEmpty()) {
@@ -123,5 +133,11 @@ class Web(val database: Database, val config: Config) {
             }
         }
         server.start(wait = true)
+    }
+}
+
+internal class profileusers(val selected: String = "", val profiles: List<String> = emptyList()) {
+    override fun toString(): String {
+        return "[user=$selected, profiles=$profiles]"
     }
 }

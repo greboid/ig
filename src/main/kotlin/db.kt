@@ -30,7 +30,7 @@ class Database(private val url: String, private val username: String = "", priva
 
     fun delProfile(name: String) {
         val profileID = getProfileID(name) ?: return
-        connection.setAndUpdate(Schema.deleteProfileFromProfiles, mapOf(Pair(1, profileID)))
+        connection.setAndUpdate(Schema.deleteProfileFromProfileUsers, mapOf(Pair(1, profileID)))
         connection.setAndUpdate(Schema.delProfile, mapOf(Pair(1, name)))
     }
 
@@ -65,12 +65,24 @@ class Database(private val url: String, private val username: String = "", priva
         return returnValue
     }
 
+    fun addUserProfile(user: String, profile: String) {
+        val userID = getUserID(user) ?: return
+        val profileID = getProfileID(profile) ?: return
+        connection.setAndUpdate(Schema.addUserToProfile, mapOf(Pair(1, userID), Pair(2, profileID)))
+    }
+
+    fun delUserProfile(user: String, profile: String) {
+        val userID = getUserID(user) ?: return
+        val profileID = getProfileID(profile) ?: return
+        connection.setAndUpdate(Schema.deleteProfileFromUser, mapOf(Pair(1, userID), Pair(2, profileID)))
+    }
+
     fun addUser(name: String) =
             connection.setAndUpdate(Schema.addUser, mapOf(Pair(1, name))) == 1
 
     fun delUser(name: String) {
         val userID = getUserID(name) ?: return
-        connection.setAndUpdate(Schema.deleteUserFromProfiles, mapOf(Pair(1, userID)))
+        connection.setAndUpdate(Schema.deleteUserFromProfileUsers, mapOf(Pair(1, userID)))
         connection.setAndUpdate(Schema.delUser, mapOf(Pair(1, name)))
     }
 
@@ -131,13 +143,19 @@ class Database(private val url: String, private val username: String = "", priva
     }
 
     internal object Schema {
-        internal val deleteProfileFromProfiles = """
+        internal val deleteProfileFromUser = """
+            delete from profile_users where userID=? AND profileID=?
+        """.trimIndent()
+        internal val addUserToProfile = """
+            insert or ignore into profile_users (userID,profileID) values (?,?)
+        """.trimIndent()
+        internal val deleteProfileFromProfileUsers = """
             delete from profile_users where profileID=?
         """.trimIndent()
         internal val getProfileID = """
             select id from profiles where name=?
         """.trimIndent()
-        internal val deleteUserFromProfiles = """
+        internal val deleteUserFromProfileUsers = """
             delete from profile_users where userID=?
         """.trimIndent()
         internal val getUserProfiles = """
