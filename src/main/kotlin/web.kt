@@ -67,6 +67,9 @@ class Web(val database: Database, val config: Config) {
                 get("/profiles") {
                     call.respondText(Gson().toJson(database.getProfiles()), ContentType.Application.Json)
                 }
+                get("/users") {
+                    call.respondText(Gson().toJson(database.getUsers()), ContentType.Application.Json)
+                }
                 authenticate("admin") {
                     get("/admin") {
                         call.respondFile(File("html/admin.html"))
