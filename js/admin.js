@@ -28,14 +28,18 @@ $('#saveUsers').on('click', function(event) {
     $('#userList').find('li').each(function(index) {
         users.push($(this).data('name'));
     });
-    $.postJSON( "/users", JSON.stringify(users));
+    $.postJSON( "/users", JSON.stringify(users), function() {
+        $($("#userSelect").find("option")[0]).change();
+    });
 });
 $('#saveProfiles').on('click', function(event) {
     var profiles = [];
     $('#profileList').find('li').each(function(index) {
         profiles.push($(this).data('name'));
     });
-    $.postJSON( "/profiles", JSON.stringify(profiles));
+    $.postJSON( "/profiles", JSON.stringify(profiles), function() {
+        $($("#userSelect").find("option")[0]).change();
+    });
 });
 $('#userSelect').change(function() {
     $.getJSON($(location).attr('protocol') + '//' + $(location).attr('host') + '/profiles', {}, function(data) {
