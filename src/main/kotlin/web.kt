@@ -1,6 +1,7 @@
 package com.greboid.scraper
 
 import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.auth.*
@@ -10,6 +11,7 @@ import io.ktor.features.StatusPages
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.content.*
+import io.ktor.request.receive
 import io.ktor.response.respond
 import io.ktor.response.respondFile
 import io.ktor.response.respondRedirect
@@ -69,6 +71,15 @@ class Web(val database: Database, val config: Config) {
                 }
                 get("/users") {
                     call.respondText(Gson().toJson(database.getUsers()), ContentType.Application.Json)
+                }
+                post("/users") {
+                    val newUsers = Gson().fromJson(call.receive<String>(), Array<String>::class.java).toList()
+                    val currentUsers = database.getUsers()
+                    val usersToRemove = currentUsers.minus(newUsers)
+                    val usersToAdd = newUsers.subtract(currentUsers)
+                    usersToRemove.forEach { database.delUser(it) }
+                    usersToAdd.forEach { database.addUser(it) }
+                    call.respond(HttpStatusCode.OK, "{}")
                 }
                 get("/profileusers/{profile?}") {
                     val profile = call.parameters.get("profile") ?: ""

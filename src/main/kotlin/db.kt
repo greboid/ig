@@ -130,7 +130,7 @@ class Database(private val url: String, private val username: String = "", priva
             select id from users where username=?
         """.trimIndent()
         internal val addProfile = """
-            insert or ignore into profiles(name) values ?
+            insert or ignore into profiles(name) values (?)
         """.trimIndent()
         internal val delProfile = """
             delete from profiles where name=?
@@ -139,10 +139,10 @@ class Database(private val url: String, private val username: String = "", priva
             select name from profiles
         """.trimIndent()
         internal val addUser = """
-            insert or ignore into users(username) values ?
+            insert or ignore into users(username) values (?)
         """.trimIndent()
         internal val delUser = """
-            delete from users where name=?
+            delete from users where username=?
         """.trimIndent()
         internal val getUsers = """
             select username from users

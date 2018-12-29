@@ -23,8 +23,16 @@ $(document).on('click','a.remove',function(event){
     $(event.target).parent().remove();
     event.preventDefault();
 });
+$('#saveUsers').on('click', function(event) {
+    var users = [];
+    $('#userList').find('li').each(function(index) {
+        users.push($(this).data('name'));
+    });
+    $.postJSON( "/users", JSON.stringify(users));
+});
 $('#userSelect').change(function() {
     $.getJSON($(location).attr('protocol') + '//' + $(location).attr('host') + '/profiles', {}, function(data) {
+        $('#profileSelect option').remove();
         $.each(data, function(index, profile) {
             $("#profileSelect").append("<option value=\""+profile+"\">"+profile+"</option>");
         })
@@ -37,22 +45,33 @@ $('#userSelect').change(function() {
 });
 
 function addItem(event) {
-    var parentDiv = $(event.target).closest("div")[0]
-    var input = $(parentDiv).find("input[type=text]")
-    var list = $(parentDiv).find("ul")
+    var parentDiv = $(event.target).closest('div[class="col"]')[0];
+    var input = $(parentDiv).find("input[type=text]");
+    var list = $(parentDiv).find("ul");
     var text = $(input).val().trim().toLowerCase();
-    var known = false
+    var known = false;
     $(list).find("li").each(function() {
-        if ($(this).text() == text) {
+        if ($(this).data('name') == text) {
             known = true;
         }
     });
     if (text != "" && !known) {
+        console.log($(parentDiv))
         $(list).append("<li class=\"list-group-item\" data-name=\""+text+"\">"+text+" <a class=\"remove\" href=\"\">Remove</a></li>");
+        $(input).val('')
     }
     var elems = $(list).find('li').detach().sort(function (a, b) {
         return ($(a).data("name") < $(b).data("name") ? -1 : $(a).data("name") > $(b).data("name") ? 1 : 0);
     });
     $(list).append(elems);
-    $(input).val('')
 }
+$.postJSON = function(url, data, callback) {
+    return jQuery.ajax({
+        'type': 'POST',
+        'url': url,
+        'contentType': 'application/json',
+        'data': data,
+        'dataType': 'json',
+        'success': callback
+    });
+};
