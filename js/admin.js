@@ -4,9 +4,9 @@ $(function() {
         event.preventDefault();
     });
     $('#addProfile').on('click', function(event) {
-            addItem(event);
-            event.preventDefault();
-        });
+        addItem(event);
+        event.preventDefault();
+    });
 });
 
 function addItem(event) {
