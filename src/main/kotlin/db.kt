@@ -255,9 +255,9 @@ fun Connection.getAllString(sql: String, fieldName: String) =
 fun PreparedStatement.setAndUpdate(values: List<Any>) = use {
     values.forEachIndexed { index, value ->
         when (value) {
-            is String -> setString(index, value)
-            is Int -> setInt(index, value)
-            else -> setObject(index, value)
+            is String -> setString(index+1, value)
+            is Int -> setInt(index+1, value)
+            else -> setObject(index+1, value)
         }
     }
     executeUpdate()

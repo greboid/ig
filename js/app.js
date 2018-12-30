@@ -38,7 +38,7 @@ function getImages() {
   if (initial) {
     count = count * Math.floor($(window).height() / imgwidth)
   }
-  $.getJSON($(location).attr('protocol') + '//' + $(location).attr('host') + '/feed?start='+offset+'&count='+count+'&profile='+$(location).attr('pathname').substr(1), {}, function(data) {
+  $.getJSON($(location).attr('protocol') + '//' + $(location).attr('host') + '/igposts?start='+offset+'&count='+count+'&profile='+$(location).attr('pathname').substr(1), {}, function(data) {
     var images = [];
     $.each(data, function(index, image) {
       images.push(image);

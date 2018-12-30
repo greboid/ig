@@ -58,7 +58,7 @@ class Web(private val database: Database, private val config: Config) {
                 static("/thumbs") {
                     files("thumbs")
                 }
-                get("/feed") {
+                get("/igposts") {
                     val start: Int = call.request.queryParameters["start"]?.toInt() ?: 0
                     val count: Int = call.request.queryParameters["count"]?.toInt() ?: 5
                     val profile: String = call.request.queryParameters["profile"] ?: ""
