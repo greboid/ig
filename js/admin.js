@@ -49,7 +49,7 @@ $('#saveProfileUsers').on('click', function(event) {
         selectedProfiles.push($(this).text());
     });
     profiles.profiles = selectedProfiles
-    $.postJSON( "/profileusers", JSON.stringify(profiles))
+    $.postJSON( "/ProfileUsers", JSON.stringify(profiles))
 });
 $('#userSelect').change(function() {
     $.getJSON($(location).attr('protocol') + '//' + $(location).attr('host') + '/profiles', {}, function(data) {
