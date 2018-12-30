@@ -127,7 +127,12 @@ class Web(private val database: Database, private val config: Config) {
                     call.respondFile(File("html/index.html"))
                 }
                 get("/") {
-                    call.respondRedirect(database.getProfiles().first(), false)
+                    val profiles = database.getProfiles()
+                    if (profiles.isNotEmpty()) {
+                        call.respondRedirect(database.getProfiles().first(), false)
+                    } else {
+                        call.respondRedirect("/admin", false)
+                    }
                 }
             }
         }
