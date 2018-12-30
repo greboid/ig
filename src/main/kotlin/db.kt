@@ -26,12 +26,12 @@ class Database(private val url: String, private val username: String = "", priva
     }
 
     fun addProfile(name: String) =
-            connection.setAndUpdate(Schema.addProfile, mapOf(Pair(1, name))) == 1
+            connection.setAndUpdate(Schema.addProfile, listOf(name)) == 1
 
     fun delProfile(name: String) {
         val profileID = getProfileID(name) ?: return
-        connection.setAndUpdate(Schema.deleteProfileFromProfileUsers, mapOf(Pair(1, profileID)))
-        connection.setAndUpdate(Schema.delProfile, mapOf(Pair(1, name)))
+        connection.setAndUpdate(Schema.deleteProfileFromProfileUsers, listOf(profileID))
+        connection.setAndUpdate(Schema.delProfile, listOf(name))
     }
 
     fun getProfiles() =
@@ -68,22 +68,22 @@ class Database(private val url: String, private val username: String = "", priva
     fun addUserProfile(user: String, profile: String) {
         val userID = getUserID(user) ?: return
         val profileID = getProfileID(profile) ?: return
-        connection.setAndUpdate(Schema.addUserToProfile, mapOf(Pair(1, userID), Pair(2, profileID)))
+        connection.setAndUpdate(Schema.addUserToProfile, listOf(userID, profileID))
     }
 
     fun delUserProfile(user: String, profile: String) {
         val userID = getUserID(user) ?: return
         val profileID = getProfileID(profile) ?: return
-        connection.setAndUpdate(Schema.deleteProfileFromUser, mapOf(Pair(1, userID), Pair(2, profileID)))
+        connection.setAndUpdate(Schema.deleteProfileFromUser, listOf(userID, profileID))
     }
 
     fun addUser(name: String) =
-            connection.setAndUpdate(Schema.addUser, mapOf(Pair(1, name))) == 1
+            connection.setAndUpdate(Schema.addUser, listOf(name)) == 1
 
     fun delUser(name: String) {
         val userID = getUserID(name) ?: return
-        connection.setAndUpdate(Schema.deleteUserFromProfileUsers, mapOf(Pair(1, userID)))
-        connection.setAndUpdate(Schema.delUser, mapOf(Pair(1, name)))
+        connection.setAndUpdate(Schema.deleteUserFromProfileUsers, listOf(userID))
+        connection.setAndUpdate(Schema.delUser, listOf(name))
     }
 
     fun getUserID(name: String): Int? {
@@ -111,15 +111,8 @@ class Database(private val url: String, private val username: String = "", priva
 
     fun addMedia(shortcode: String, ord: Int, userID: Int, thumbnailURL: String,
                  imageURL: String, caption: String, timestamp: Int) =
-            connection.setAndUpdate(Schema.addMedia, mapOf(
-                    Pair(1, shortcode),
-                    Pair(2, ord),
-                    Pair(3, userID),
-                    Pair(4, thumbnailURL),
-                    Pair(5, imageURL),
-                    Pair(6, caption),
-                    Pair(7, timestamp)
-            )) == 1
+            connection.setAndUpdate(Schema.addMedia,
+                    listOf(shortcode, ord, userID, thumbnailURL, imageURL, caption, timestamp)) == 1
 
     fun getMedia(profile: String, start: Int = 0, count: Int = 5): List<MediaObject> {
         val s = connection.prepareStatement(Schema.selectMedias)
@@ -259,8 +252,8 @@ fun ResultSet.getAllString(fieldName: String) = sequence {
 fun Connection.getAllString(sql: String, fieldName: String) =
         prepareStatement(sql)?.executeQuery()?.getAllString(fieldName) ?: emptyList()
 
-fun PreparedStatement.setAndUpdate(values: Map<Int, Any>) = use {
-    for ((index, value) in values) {
+fun PreparedStatement.setAndUpdate(values: List<Any>) = use {
+    values.forEachIndexed { index, value ->
         when (value) {
             is String -> setString(index, value)
             is Int -> setInt(index, value)
@@ -270,5 +263,5 @@ fun PreparedStatement.setAndUpdate(values: Map<Int, Any>) = use {
     executeUpdate()
 }
 
-fun Connection.setAndUpdate(sql: String, values: Map<Int, Any>) =
+fun Connection.setAndUpdate(sql: String, values: List<Any>) =
         prepareStatement(sql)?.setAndUpdate(values)
