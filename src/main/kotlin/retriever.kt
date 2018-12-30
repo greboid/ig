@@ -21,7 +21,7 @@ class Retriever {
                 if (post.type == PostType.SIDECAR) {
                     post.displayURL.forEachIndexed{ index, url ->
                         val out = File("thumbs/${post.shortcode}$index.jpg")
-                        thumbnail(post.thumbnailURL, out)
+                        thumbnail(url, out)
                         database.addMedia(post.shortcode, index, userID, out.toString(),
                                 url.toString(), post.caption, post.timestamp)
                     }
