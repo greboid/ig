@@ -1,10 +1,12 @@
 package com.greboid.scraper
 
+import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.*
 import kotlinx.coroutines.time.delay
 import java.io.File
 import java.time.Duration
 
+@KtorExperimentalAPI
 fun main(args: Array<String>) = runBlocking {
     val config = getConfig(File("defaults.yml").reader()) ?: run {
         println("Unable to load config. Exiting.")

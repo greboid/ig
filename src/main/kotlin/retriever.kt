@@ -8,7 +8,7 @@ import com.mortennobel.imagescaling.ResampleOp
 
 class Retriever {
 
-    fun start(database: Database, instagram: Instagram) {
+    suspend fun start(database: Database, instagram: Instagram) {
         val users = sequence {
             for (user in database.getUsers()) {
                 yield(instagram.getUserProfile(user))
@@ -19,7 +19,7 @@ class Retriever {
                     ?: run { println("Unable to get id for user: ${it.username}"); return }
             it.posts.forEach { post ->
                 if (post.type == PostType.SIDECAR) {
-                    post.displayURL.forEachIndexed{ index, url ->
+                    post.displayURL.forEachIndexed { index, url ->
                         val out = File("thumbs/${post.shortcode}$index.jpg")
                         thumbnail(url, out)
                         database.addMedia(post.shortcode, index, userID, out.toString(),
