@@ -22,13 +22,13 @@ class Retriever {
                     post.displayURL.forEachIndexed { index, url ->
                         val out = File("thumbs/${post.shortcode}$index.jpg")
                         thumbnail(url, out)
-                        database.addMedia(post.shortcode, index, userID, out.toString(),
+                        database.addIGPost(post.shortcode, index, userID, out.toString(),
                                 url.toString(), post.caption, post.timestamp)
                     }
                 } else {
                     val out = File("thumbs/${post.shortcode}.jpg")
                     thumbnail(post.thumbnailURL, out)
-                    database.addMedia(post.shortcode, 0, userID, out.toString(),
+                    database.addIGPost(post.shortcode, 0, userID, out.toString(),
                             post.displayURL.first().toString(), post.caption, post.timestamp)
                 }
             }

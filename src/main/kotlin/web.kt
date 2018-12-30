@@ -19,10 +19,7 @@ import io.ktor.routing.get
 import io.ktor.routing.post
 import io.ktor.routing.routing
 import io.ktor.server.cio.CIO
-import io.ktor.server.cio.CIOApplicationEngine
-import io.ktor.server.engine.ApplicationEngineEnvironment
 import io.ktor.server.engine.embeddedServer
-import io.ktor.server.engine.stopServerOnCancellation
 import io.ktor.util.KtorExperimentalAPI
 import java.io.File
 
@@ -66,7 +63,7 @@ class Web(private val database: Database, private val config: Config) {
                     val count: Int = call.request.queryParameters["count"]?.toInt() ?: 5
                     val profile: String = call.request.queryParameters["profile"] ?: ""
                     if (profile.isNotEmpty()) {
-                        call.respondText(Gson().toJson(database.getMedia(profile, start, count)), ContentType.Application.Json)
+                        call.respondText(Gson().toJson(database.getIGPost(profile, start, count)), ContentType.Application.Json)
                     } else {
                         call.respondText("")
                     }

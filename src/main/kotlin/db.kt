@@ -109,20 +109,20 @@ class Database(private val url: String, private val username: String = "", priva
     fun getUsers(): List<String> =
             connection.getAllString(Schema.getUsers, "username")
 
-    fun addMedia(shortcode: String, ord: Int, userID: Int, thumbnailURL: String,
-                 imageURL: String, caption: String, timestamp: Int) =
-            connection.setAndUpdate(Schema.addMedia,
+    fun addIGPost(shortcode: String, ord: Int, userID: Int, thumbnailURL: String,
+                  imageURL: String, caption: String, timestamp: Int) =
+            connection.setAndUpdate(Schema.addIGPost,
                     listOf(shortcode, ord, userID, thumbnailURL, imageURL, caption, timestamp)) == 1
 
-    fun getMedia(profile: String, start: Int = 0, count: Int = 5): List<MediaObject> {
-        val s = connection.prepareStatement(Schema.selectMedias)
+    fun getIGPost(profile: String, start: Int = 0, count: Int = 5): List<IGPost> {
+        val s = connection.prepareStatement(Schema.selectIGPosts)
         s.setString(1, profile)
         s.setInt(2, count)
         s.setInt(3, start)
         val results: ResultSet = s.executeQuery()
         val returnValue = sequence {
             while (results.next()) {
-                yield(MediaObject(results.getString(1), results.getString(2),
+                yield(IGPost(results.getString(1), results.getString(2),
                         results.getString(3), results.getString(4),
                         results.getString(5), results.getInt(6)))
             }
@@ -183,15 +183,15 @@ class Database(private val url: String, private val username: String = "", priva
         internal val getUsers = """
             select username from users
         """.trimIndent()
-        internal val addMedia = """
-            insert or replace into medias
+        internal val addIGPost = """
+            insert or replace into igposts
             (shortcode,ord,userID,thumbnailURL,imageURL,caption,timestamp)
             values (?,?,?,?,?,?,?)
         """.trimIndent()
-        internal val selectMedias = """
+        internal val selectIGPosts = """
             SELECT shortcode, users.username, thumbnailURL, imageURL, caption, timestamp
-            FROM medias
-            LEFT JOIN users on users.id=medias.userID
+            FROM igposts
+            LEFT JOIN users on users.id=igposts.userID
             LEFT JOIN profile_users on profile_users.userid=users.id
             LEFT JOIN profiles on profile_users.profileid=profiles.id
             WHERE profiles.name=?
@@ -220,8 +220,8 @@ class Database(private val url: String, private val username: String = "", priva
             lastpoll INTEGER
             )
         """.trimIndent().replace("[\n\r]".toRegex(), "")
-        private val createMedias = """
-            CREATE TABLE IF NOT EXISTS medias (
+        private val createIGPosts = """
+            CREATE TABLE IF NOT EXISTS igposts (
             id INTEGER,
             shortcode TEXT,
             ord INTEGER,
@@ -233,13 +233,13 @@ class Database(private val url: String, private val username: String = "", priva
             PRIMARY KEY (shortcode, ord)
             )
         """.trimIndent().replace("[\n\r]".toRegex(), "")
-        val createAllTables = "$createProfiles;\r\n$createProfileUsers;\r\n$createUsers;\r\n$createMedias;"
+        val createAllTables = "$createProfiles;\r\n$createProfileUsers;\r\n$createUsers;\r\n$createIGPosts;"
     }
 }
 
-data class MediaObject(val shortcode: String, val source: String,
-                       val thumb: String, val url: String,
-                       val caption: String, val timestamp: Int)
+data class IGPost(val shortcode: String, val source: String,
+                  val thumb: String, val url: String,
+                  val caption: String, val timestamp: Int)
 
 fun ResultSet.getAllString(fieldName: String) = sequence {
     use {
