@@ -65,25 +65,25 @@ class Database(private val url: String, private val username: String = "", priva
         return returnValue
     }
 
-    fun addUserProfile(user: String, profile: String) {
-        val userID = getUserID(user) ?: return
-        val profileID = getProfileID(profile) ?: return
-        connection.setAndUpdate(Schema.addUserToProfile, listOf(userID, profileID))
+    fun addUserProfile(user: String, profile: String): Boolean {
+        val userID = getUserID(user) ?: return false
+        val profileID = getProfileID(profile) ?: return false
+        return connection.setAndUpdate(Schema.addUserToProfile, listOf(userID, profileID)) == 1
     }
 
-    fun delUserProfile(user: String, profile: String) {
-        val userID = getUserID(user) ?: return
-        val profileID = getProfileID(profile) ?: return
-        connection.setAndUpdate(Schema.deleteProfileFromUser, listOf(userID, profileID))
+    fun delUserProfile(user: String, profile: String): Boolean {
+        val userID = getUserID(user) ?: return false
+        val profileID = getProfileID(profile) ?: return false
+        return connection.setAndUpdate(Schema.deleteProfileFromUser, listOf(userID, profileID)) == 1
     }
 
     fun addUser(name: String) =
             connection.setAndUpdate(Schema.addUser, listOf(name)) == 1
 
-    fun delUser(name: String) {
-        val userID = getUserID(name) ?: return
+    fun delUser(name: String): Boolean {
+        val userID = getUserID(name) ?: return false
         connection.setAndUpdate(Schema.deleteUserFromProfileUsers, listOf(userID))
-        connection.setAndUpdate(Schema.delUser, listOf(name))
+        return connection.setAndUpdate(Schema.delUser, listOf(name)) == 1
     }
 
     fun getUserID(name: String): Int? {
