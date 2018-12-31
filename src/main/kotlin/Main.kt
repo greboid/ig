@@ -1,5 +1,6 @@
 package com.greboid.scraper
 
+import com.greboid.scraper.retrievers.IGRetriever
 import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.*
 import kotlinx.coroutines.time.delay
@@ -15,7 +16,6 @@ fun main(args: Array<String>) = runBlocking {
     val database = Database(config.database)
     database.connect()
     database.init()
-    val instagram = Instagram()
     val web = launch {
         Web(database, config).start()
     }
@@ -25,7 +25,7 @@ fun main(args: Array<String>) = runBlocking {
     }
     val retriever = launch {
         while (isActive) {
-            Retriever().start(database, instagram)
+            IGRetriever().start(database, config)
             delay(Duration.ofMinutes(15))
         }
     }

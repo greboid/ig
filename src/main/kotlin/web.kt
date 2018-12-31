@@ -1,12 +1,11 @@
 package com.greboid.scraper
 
 import com.google.gson.Gson
+import io.ktor.application.ApplicationCallPipeline
 import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.auth.*
-import io.ktor.features.Compression
-import io.ktor.features.DefaultHeaders
-import io.ktor.features.StatusPages
+import io.ktor.features.*
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.content.*
@@ -17,27 +16,42 @@ import io.ktor.response.respondRedirect
 import io.ktor.response.respondText
 import io.ktor.routing.get
 import io.ktor.routing.post
+import io.ktor.routing.route
 import io.ktor.routing.routing
 import io.ktor.server.cio.CIO
 import io.ktor.server.engine.embeddedServer
+import io.ktor.sessions.*
 import io.ktor.util.KtorExperimentalAPI
+import io.ktor.util.hex
 import java.io.File
+
+data class IGSession(val user: String, val admin: Boolean, var previousPage: String = "/")
 
 class Web(private val database: Database, private val config: Config) {
     @KtorExperimentalAPI
     suspend fun start() {
         val server = embeddedServer(CIO, port = 8080) {
             install(DefaultHeaders)
+            install(PartialContent)
             install(Compression)
+            install(ConditionalHeaders)
+            install(CORS)
+            install(Sessions) {
+                cookie<IGSession>("session", SessionStorageMemory()) {
+                    transform(SessionTransportTransformerMessageAuthentication(hex("6819b57a326945c1968f45236589"), "HmacSHA256"))
+                }
+            }
             install(StatusPages) {
                 exception<Throwable> { cause ->
                     call.respond(HttpStatusCode.InternalServerError, "Internal Server Error")
-                    println(cause)
+                    cause.printStackTrace()
                 }
             }
             install(Authentication) {
-                basic(name = "admin") {
-                    realm = "IG Admin"
+                form(name = "auth") {
+                    userParamName = "username"
+                    passwordParamName = "password"
+                    challenge = FormAuthChallenge.Redirect { "/login" }
                     validate { credentials ->
                         if (credentials.name == config.adminUsername && credentials.password == config.adminPassword) {
                             UserIdPrincipal(credentials.name)
@@ -57,6 +71,18 @@ class Web(private val database: Database, private val config: Config) {
                 }
                 static("/thumbs") {
                     files("thumbs")
+                }
+                file("/login", "html/login.html")
+                authenticate ("auth") {
+                    post("/login") {
+                        val principal = call.authentication.principal<UserIdPrincipal>()
+                        if (principal == null) {
+                            call.respondFile(File("html/index.html"))
+                        } else {
+                            call.sessions.set("session", IGSession(principal.name, true))
+                            call.respondRedirect("/", false)
+                        }
+                    }
                 }
                 get("/igposts") {
                     val start: Int = call.request.queryParameters["start"]?.toInt() ?: 0
@@ -90,11 +116,14 @@ class Web(private val database: Database, private val config: Config) {
                         call.respondText(Gson().toJson(database.getUserProfiles(user)), ContentType.Application.Json)
                     }
                 }
-                authenticate("admin") {
-                    get("/admin") {
+                route("/admin") {
+                    intercept(ApplicationCallPipeline.Features) {
+                        call.sessions.get<IGSession>()?.user ?: call.respondRedirect("/login", false)
+                    }
+                    get("/") {
                         call.respondFile(File("html/admin.html"))
                     }
-                    post("/admin") {
+                    post("/") {
                         call.respondRedirect("/admin")
                     }
                     post("/ProfileUsers") {
@@ -119,9 +148,9 @@ class Web(private val database: Database, private val config: Config) {
                     post("/profiles") {
                         val newProfiles = Gson().fromJson(call.receive<String>(), Array<String>::class.java).toList()
                         val currentProfiles = database.getProfiles()
-                        val propfilesToRemove = currentProfiles.minus(newProfiles)
+                        val profilesToRemove = currentProfiles.minus(newProfiles)
                         val profilesToAdd = newProfiles.subtract(currentProfiles)
-                        propfilesToRemove.forEach { profile -> database.delProfile(profile) }
+                        profilesToRemove.forEach { profile -> database.delProfile(profile) }
                         profilesToAdd.forEach { profile -> database.addProfile(profile) }
                         call.respond(HttpStatusCode.OK, "{}")
                     }

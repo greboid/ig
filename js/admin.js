@@ -28,7 +28,7 @@ $('#saveUsers').on('click', function(event) {
     $('#userList').find('li').each(function(index) {
         users.push($(this).data('name'));
     });
-    $.postJSON( "/users", JSON.stringify(users), function() {
+    $.postJSON( "/admin/users", JSON.stringify(users), function() {
         $($("#userSelect").find("option")[0]).change();
     });
 });
@@ -37,7 +37,7 @@ $('#saveProfiles').on('click', function(event) {
     $('#profileList').find('li').each(function(index) {
         profiles.push($(this).data('name'));
     });
-    $.postJSON( "/profiles", JSON.stringify(profiles), function() {
+    $.postJSON( "/admin/profiles", JSON.stringify(profiles), function() {
         $($("#userSelect").find("option")[0]).change();
     });
 });
@@ -49,7 +49,7 @@ $('#saveProfileUsers').on('click', function(event) {
         selectedProfiles.push($(this).text());
     });
     profiles.profiles = selectedProfiles
-    $.postJSON( "/ProfileUsers", JSON.stringify(profiles))
+    $.postJSON( "/admin/ProfileUsers", JSON.stringify(profiles))
 });
 $('#userSelect').change(function() {
     $.getJSON($(location).attr('protocol') + '//' + $(location).attr('host') + '/profiles', {}, function(data) {
