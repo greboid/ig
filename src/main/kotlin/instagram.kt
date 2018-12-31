@@ -32,10 +32,7 @@ internal fun getProfile(username: String): Profile? {
     val jsonData = doc.select("script:containsData(window._sharedData)").find { element ->
         element.data().startsWith("window._sharedData")
     }?.data()?.substringBeforeLast(';')?.substringAfter("=")?.trim()
-    val gson = GsonBuilder()
-            .registerTypeAdapter(User::class.java, AnnotatedDeserializer<User>())
-            .create()
-    val data = gson.fromJson(jsonData, InstagramSharedData::class.java)
+    val data = Gson().fromJson(jsonData, InstagramSharedData::class.java)
     val userData = data.entry_data.ProfilePage.first().graphql.user
     return Profile(
             userData.username,
@@ -162,35 +159,6 @@ internal fun ShortcodeMedia.getPostType(): PostType {
         "GraphSidecar" -> PostType.SIDECAR
         "GraphVideo" -> PostType.VIDEO
         else -> PostType.UNKNOWN
-    }
-}
-
-@Retention(AnnotationRetention.RUNTIME)
-@Target(AnnotationTarget.FIELD)
-internal annotation class JsonRequired
-
-internal class AnnotatedDeserializer<T> : JsonDeserializer<T> {
-
-    @Throws(JsonParseException::class)
-    override fun deserialize(je: JsonElement, type: Type, jdc: JsonDeserializationContext): T {
-        val pojo = Gson().fromJson<T>(je, type) ?: throw IllegalArgumentException("")
-        val fields = (pojo as Any)::class.java.declaredFields
-        for (f in fields) {
-            if (f.getAnnotation(JsonRequired::class.java) != null) {
-                try {
-                    f.isAccessible = true
-                    if (f.get(pojo) == null) {
-                        throw JsonParseException("Missing field in JSON: " + f.name)
-                    }
-                } catch (ex: IllegalArgumentException) {
-                    return pojo
-                } catch (ex: IllegalAccessException) {
-                    return pojo
-                }
-
-            }
-        }
-        return pojo
     }
 }
 
