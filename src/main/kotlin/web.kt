@@ -80,7 +80,7 @@ class Web(private val database: Database, private val config: Config) {
                             call.respondFile(File("html/index.html"))
                         } else {
                             call.sessions.set("session", IGSession(principal.name, true))
-                            call.respondRedirect("/", false)
+                            call.respondRedirect("/admin", false)
                         }
                     }
                 }
