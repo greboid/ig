@@ -3,6 +3,8 @@ package com.greboid.scraper
 import com.google.gson.Gson
 import com.google.gson.JsonIOException
 import com.google.gson.JsonSyntaxException
+import io.ktor.util.KtorExperimentalAPI
+import io.ktor.util.hex
 import java.io.Reader
 
 fun getConfig(stream: Reader) : Config? {
@@ -14,4 +16,9 @@ fun getConfig(stream: Reader) : Config? {
         null
     }
 }
-class Config(val database: String, val adminUsername: String, val adminPassword: String)
+class Config(
+        val database: String,
+        val adminUsername: String,
+        val adminPassword: String,
+        val sessionKey: String
+)

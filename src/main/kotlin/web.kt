@@ -6,6 +6,7 @@ import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.auth.*
 import io.ktor.features.*
+import io.ktor.http.CacheControl
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.content.*
@@ -38,7 +39,7 @@ class Web(private val database: Database, private val config: Config) {
             install(CORS)
             install(Sessions) {
                 cookie<IGSession>("session", SessionStorageMemory()) {
-                    transform(SessionTransportTransformerMessageAuthentication(hex("6819b57a326945c1968f45236589"), "HmacSHA256"))
+                    transform(SessionTransportTransformerMessageAuthentication(hex(config.sessionKey), "HmacSHA256"))
                 }
             }
             install(StatusPages) {
@@ -61,7 +62,6 @@ class Web(private val database: Database, private val config: Config) {
                     }
                 }
             }
-
             routing {
                 static("/js") {
                     files("js")
@@ -72,7 +72,9 @@ class Web(private val database: Database, private val config: Config) {
                 static("/thumbs") {
                     files("thumbs")
                 }
-                file("/login", "html/login.html")
+                get("/login") {
+                    call.respondFile(File("html/login.html"))
+                }
                 authenticate ("auth") {
                     post("/login") {
                         val principal = call.authentication.principal<UserIdPrincipal>()
@@ -83,6 +85,10 @@ class Web(private val database: Database, private val config: Config) {
                             call.respondRedirect("/admin", false)
                         }
                     }
+                }
+                get("/logout") {
+                    call.sessions.clear<IGSession>()
+                    call.respondRedirect("/", false)
                 }
                 get("/igposts") {
                     val start: Int = call.request.queryParameters["start"]?.toInt() ?: 0
