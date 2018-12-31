@@ -189,9 +189,9 @@ internal data class ShortcodeMedia(
         val __typename: String,
         val shortcode: String,
         val display_url: URL,
-        var video_url: URL?,
+        val video_url: URL?,
         val edge_media_to_caption: EdgeMediaToCaption,
-        var edge_sidecar_to_children: EdgeSidecarToChildren?,
+        val edge_sidecar_to_children: EdgeSidecarToChildren?,
         val owner: Owner,
         val taken_at_timestamp: Int
 )
@@ -222,15 +222,15 @@ internal data class User(
         val username: String,
         val id: String,
         val biography: String,
-        var external_url: URL?,
+        val external_url: URL?,
         val profile_pic_url: URL,
-        var profile_pic_url_hd: URL?
+        val profile_pic_url_hd: URL?
 )
 
 internal data class EdgeOwnerToTimelineMedia(
         val edges: List<NodeHolder>,
         val page_info: PageInfo,
-        var count: Int
+        val count: Int
 )
 
 internal data class NodeHolder(
@@ -243,7 +243,7 @@ internal data class Node(
         val edge_media_to_caption: EdgeMediaToCaption,
         val shortcode: String,
         val display_url: URL,
-        var video_url: URL?,
+        val video_url: URL?,
         val thumbnail_src: URL
 )
 
@@ -252,9 +252,9 @@ internal data class EdgeMediaToCaption(
 )
 
 internal data class PageInfo(
-        var count: Int,
+        val count: Int,
         val has_next_page: Boolean,
-        var end_cursor: String?
+        val end_cursor: String?
 )
 
 internal data class CaptionNodeHolder(
