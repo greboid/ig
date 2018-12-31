@@ -110,8 +110,8 @@ class Profile(
 
     private fun getMD5(value: String): String {
         return String.format("%032x", BigInteger(1, MessageDigest.getInstance("MD5")
-                        .apply { update(StandardCharsets.UTF_8.encode(value)) }
-                        .digest()))
+                .apply { update(StandardCharsets.UTF_8.encode(value)) }
+                .digest()))
     }
 
     private fun getOlderData(count: Int) {
@@ -156,7 +156,7 @@ enum class PostType {
     UNKNOWN
 }
 
-internal fun shortcode_media.getPostType(): PostType {
+internal fun ShortcodeMedia.getPostType(): PostType {
     return when (__typename) {
         "GraphImage" -> PostType.IMAGE
         "GraphSidecar" -> PostType.SIDECAR
@@ -194,150 +194,105 @@ internal class AnnotatedDeserializer<T> : JsonDeserializer<T> {
     }
 }
 
-internal class InstagramData {
-    @JsonRequired
-    lateinit var data: data
-}
+internal data class InstagramData(val data: Data)
 
-internal class data {
-    @JsonRequired
-    lateinit var user: User
-}
+internal data class Data(val user: User)
 
-internal class InstagramSharedData {
-    @JsonRequired
-    lateinit var rhx_gis: String
-    @JsonRequired
-    lateinit var entry_data: EntryData
-}
+internal data class InstagramSharedData(
+        val rhx_gis: String,
+        val entry_data: EntryData
+)
 
-internal class EntryData {
-    @JsonRequired
-    lateinit var ProfilePage: List<ProfilePage>
-    @JsonRequired
-    lateinit var PostPage: List<PostPage>
-}
+internal data class EntryData(
+        val ProfilePage: List<ProfilePage>,
+        val PostPage: List<PostPage>
+)
 
-internal class PostPage {
-    @JsonRequired
-    lateinit var graphql: postgraphql
-}
+internal data class PostPage(
+        val graphql: PostgraphQL
+)
 
-internal class postgraphql {
-    @JsonRequired
-    lateinit var shortcode_media: shortcode_media
-}
+internal data class PostgraphQL(
+        val shortcode_media: ShortcodeMedia
+)
 
-internal class shortcode_media {
-    @JsonRequired
-    lateinit var id: String
-    @JsonRequired
-    lateinit var __typename: String
-    @JsonRequired
-    lateinit var shortcode: String
-    @JsonRequired
-    lateinit var display_url: URL
-    var video_url: URL? = null
-    @JsonRequired
-    lateinit var edge_media_to_caption: edge_media_to_caption
-    var edge_sidecar_to_children: edge_sidecar_to_children? = null
-    @JsonRequired
-    lateinit var owner: owner
-    @JsonRequired
-    var taken_at_timestamp: Int = 0
-}
+internal data class ShortcodeMedia(
+        val id: String,
+        val __typename: String,
+        val shortcode: String,
+        val display_url: URL,
+        var video_url: URL?,
+        val edge_media_to_caption: EdgeMediaToCaption,
+        var edge_sidecar_to_children: EdgeSidecarToChildren?,
+        val owner: Owner,
+        val taken_at_timestamp: Int
+)
 
-internal class edge_sidecar_to_children {
-    @JsonRequired
-    lateinit var edges: List<sidecarnodeHolder>
-}
+internal data class EdgeSidecarToChildren(
+        val edges: List<SideCarNodeHolder>
+)
 
-internal class sidecarnodeHolder {
-    @JsonRequired
-    lateinit var node: node
-}
+internal data class SideCarNodeHolder(
+        val node: Node
+)
 
-internal class owner {
-    @JsonRequired
-    lateinit var id: String
-    @JsonRequired
-    lateinit var username: String
-}
+internal data class Owner(
+        val id: String,
+        val username: String
+)
 
-internal class ProfilePage {
-    @JsonRequired
-    lateinit var graphql: graphql
-}
+internal data class ProfilePage(
+        val graphql: GraphQL
+)
 
-internal class graphql {
-    @JsonRequired
-    lateinit var user: User
-}
+internal data class GraphQL(
+        val user: User
+)
 
-internal class User {
-    @JsonRequired
-    lateinit var edge_owner_to_timeline_media: edge_owner_to_timeline_media
-    @JsonRequired
-    lateinit var username: String
-    @JsonRequired
-    lateinit var id: String
-    @JsonRequired
-    lateinit var biography: String
-    var external_url: URL? = null
-    @JsonRequired
-    lateinit var profile_pic_url: URL
-    var profile_pic_url_hd: URL? = null
-}
+internal data class User(
+        val edge_owner_to_timeline_media: EdgeOwnerToTimelineMedia,
+        val username: String,
+        val id: String,
+        val biography: String,
+        var external_url: URL?,
+        val profile_pic_url: URL,
+        var profile_pic_url_hd: URL?
+)
 
-internal class edge_owner_to_timeline_media {
-    @JsonRequired
-    lateinit var edges: List<nodeHolder>
-    @JsonRequired
-    lateinit var page_info: page_info
-    @JsonRequired
-    var count: Int = 0
+internal data class EdgeOwnerToTimelineMedia(
+        val edges: List<NodeHolder>,
+        val page_info: PageInfo,
+        var count: Int
+)
 
-}
+internal data class NodeHolder(
+        val node: Node
+)
 
-internal class nodeHolder {
-    @JsonRequired
-    lateinit var node: node
-}
+internal data class Node(
+        val id: String,
+        val __typename: String,
+        val edge_media_to_caption: EdgeMediaToCaption,
+        val shortcode: String,
+        val display_url: URL,
+        var video_url: URL?,
+        val thumbnail_src: URL
+)
 
-internal class node {
-    @JsonRequired
-    lateinit var id: String
-    @JsonRequired
-    lateinit var __typename: String
-    @JsonRequired
-    lateinit var edge_media_to_caption: edge_media_to_caption
-    @JsonRequired
-    lateinit var shortcode: String
-    @JsonRequired
-    lateinit var display_url: URL
-    var video_url: URL? = null
-    @JsonRequired
-    lateinit var thumbnail_src: URL
-}
+internal data class EdgeMediaToCaption(
+        val edges: List<CaptionNodeHolder>
+)
 
-internal class edge_media_to_caption {
-    @JsonRequired
-    lateinit var edges: List<captionnodeHolder>
-}
+internal data class PageInfo(
+        var count: Int,
+        val has_next_page: Boolean,
+        var end_cursor: String?
+)
 
-internal class page_info {
-    var count: Int = 0
-    @JsonRequired
-    var has_next_page: Boolean = false
-    var end_cursor: String? = null
-}
+internal data class CaptionNodeHolder(
+        val node: CaptionNode
+)
 
-internal class captionnodeHolder {
-    @JsonRequired
-    lateinit var node: captionnode
-}
-
-internal class captionnode {
-    @JsonRequired
-    lateinit var text: String
-}
+internal data class CaptionNode(
+        val text: String
+)
