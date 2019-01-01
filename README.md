@@ -13,14 +13,22 @@ available and this should set everything up.
 
  - git clone
  - docker-compose up -d
- - This creates a default config file for you
+ - This creates a default config file for you, config.yml in a docker volume named config
  - docker-compose up -d
+ 
+If you're doing this yourself, you will need the following:
+ - JVM (Tested on 12)
+ - Gradle (Tested on 5)
+ - MySQL (Tested 8)
 
 #### Config Options
 
-Setting|Default|Description
+Setting|Default|Comments
 ---|---|---
-database|jdbc:mysql://ig:ig@database/ig|Sets the JDBC url for the database, supports MySQL and SQLite<br><br>If you're not using docker, update the username and password as needed<br><br>To use SQLite, for dev for instance, use jdbc:sqlite:database/database.sqlite
+dbhost|ig|Defaults to database, unless using included docker-compose.
+db|ig|Must be created first, unless using included docker-compose.
+dbuser|ig|
+dbpassword|ig|
 sessionKey|9e424e10e3dcd2f4fdd8d811c54aa36c|**Change this**.  Value used to encrypt sessions.
 adminUsername|admin|**Change this**.  Default admin password
 adminPassword|admin|**Change this**.  Default admin username

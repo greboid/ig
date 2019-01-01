@@ -6,12 +6,14 @@ import java.sql.PreparedStatement
 import java.sql.ResultSet
 import java.sql.SQLException
 
-class Database(private val url: String, private val username: String = "", private val password: String = "") {
+class Database(private val config: Config) {
     private lateinit var connection: Connection
 
     fun connect(): Connection {
         connection = try {
-            DriverManager.getConnection(url, username, password)
+            DriverManager.getConnection(
+                    "jdbc:mysql://${config.dbhost}/${config.db}?useUnicode=yes&characterEncoding=UTF-8",
+                    config.dbuser, config.dbpassword)
         } catch (e: SQLException) {
             throw IllegalStateException("Unable to connect: ${e.localizedMessage}")
         }
@@ -26,9 +28,6 @@ class Database(private val url: String, private val username: String = "", priva
         Schema.createAllTables.forEach {
             connection.createStatement()?.executeUpdate(it)
                     ?: throw IllegalStateException("Must be connected to initialise.")
-        }
-        if (url.startsWith("jdbc:sqlite")) {
-            connection.createStatement()?.execute("PRAGMA busy_timeout=30000")
         }
     }
 
@@ -97,6 +96,7 @@ class Database(private val url: String, private val username: String = "", priva
         val statement = connection.prepareStatement(Schema.getUserID) ?: return null
         statement.setString(1, name)
         val result = statement.executeQuery()
+        result.first()
         val returnValue = result.getInt(1)
         result.close()
         statement.close()
@@ -107,6 +107,7 @@ class Database(private val url: String, private val username: String = "", priva
         val statement = connection.prepareStatement(Schema.getProfileID) ?: return null
         statement.setString(1, name)
         val result = statement.executeQuery()
+        result.first()
         val returnValue = result.getInt(1)
         result.close()
         statement.close()
@@ -116,10 +117,22 @@ class Database(private val url: String, private val username: String = "", priva
     fun getUsers(): List<String> =
             connection.getAllString(Schema.getUsers, "username")
 
+    private fun checkIGPost(shortcode: String): Boolean {
+        val statement = connection.prepareStatement(Schema.checkIGPost) ?: return false
+        statement.setString(1, shortcode)
+        val result = statement.executeQuery()
+        result.first()
+        val returnValue = result.getInt(1)
+        result.close()
+        statement.close()
+        return returnValue < 1
+    }
+
     fun addIGPost(shortcode: String, ord: Int, userID: Int, thumbnailURL: String,
-                  imageURL: String, caption: String, timestamp: Int) =
-            connection.setAndUpdate(Schema.addIGPost,
-                    listOf(shortcode, ord, userID, thumbnailURL, imageURL, caption, timestamp)) == 1
+                  imageURL: String, caption: String, timestamp: Int): Boolean {
+        return checkIGPost(shortcode) && connection.setAndUpdate(Schema.addIGPost,
+                listOf(shortcode, ord, userID, thumbnailURL, imageURL, caption, timestamp)) == 1
+    }
 
     fun getIGPost(profile: String, start: Int = 0, count: Int = 5): List<IGPost> {
         val s = connection.prepareStatement(Schema.selectIGPosts)
@@ -144,7 +157,7 @@ class Database(private val url: String, private val username: String = "", priva
             delete from profile_users where userID=? AND profileID=?
         """.trimIndent()
         internal val addUserToProfile = """
-            insert or ignore into profile_users (userID,profileID) values (?,?)
+            insert into profile_users (userID,profileID) values (?,?)
         """.trimIndent()
         internal val deleteProfileFromProfileUsers = """
             delete from profile_users where profileID=?
@@ -173,7 +186,7 @@ class Database(private val url: String, private val username: String = "", priva
             select id from users where username=?
         """.trimIndent()
         internal val addProfile = """
-            insert or ignore into profiles(name) values (?)
+            insert into profiles(name) values (?)
         """.trimIndent()
         internal val delProfile = """
             delete from profiles where name=?
@@ -182,7 +195,7 @@ class Database(private val url: String, private val username: String = "", priva
             select name from profiles
         """.trimIndent()
         internal val addUser = """
-            insert or ignore into users(username) values (?)
+            insert into users(username) values (?)
         """.trimIndent()
         internal val delUser = """
             delete from users where username=?
@@ -190,8 +203,11 @@ class Database(private val url: String, private val username: String = "", priva
         internal val getUsers = """
             select username from users
         """.trimIndent()
+        internal val checkIGPost = """
+            SELECT COUNT(*) FROM igposts WHERE shortcode=?
+        """.trimIndent()
         internal val addIGPost = """
-            insert or replace into igposts
+            insert into igposts
             (shortcode,ord,userID,thumbnailURL,imageURL,caption,timestamp)
             values (?,?,?,?,?,?,?)
         """.trimIndent()
@@ -208,28 +224,27 @@ class Database(private val url: String, private val username: String = "", priva
         """.trimIndent()
         private val createProfiles = """
             CREATE TABLE IF NOT EXISTS profiles (
-            id INTEGER PRIMARY KEY,
+            id INTEGER PRIMARY KEY AUTO_INCREMENT,
             name VARCHAR(255) UNIQUE
-            );
+            ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
         """.trimIndent().replace("[\n\r]".toRegex(), "")
         private val createProfileUsers = """
             CREATE TABLE IF NOT EXISTS profile_users (
-            id INTEGER PRIMARY KEY,
+            id INTEGER PRIMARY KEY AUTO_INCREMENT,
             userID INT,
             profileID INT,
             UNIQUE(userID, profileID)
-            );
+            ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
         """.trimIndent().replace("[\n\r]".toRegex(), "")
         private val createUsers = """
             CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY,
+            id INTEGER PRIMARY KEY AUTO_INCREMENT,
             username VARCHAR(255) UNIQUE,
             lastpoll INTEGER
-            );
+            ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
         """.trimIndent().replace("[\n\r]".toRegex(), "")
         private val createIGPosts = """
             CREATE TABLE IF NOT EXISTS igposts (
-            id INTEGER,
             shortcode varchar(16),
             ord INTEGER,
             userID INTEGER,
@@ -238,7 +253,7 @@ class Database(private val url: String, private val username: String = "", priva
             caption TEXT,
             timestamp INTEGER,
             PRIMARY KEY (shortcode, ord)
-            );
+            ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
         """.trimIndent().replace("[\n\r]".toRegex(), "")
         val createAllTables: List<String> = listOf(createProfiles, createProfileUsers, createUsers, createIGPosts)
     }

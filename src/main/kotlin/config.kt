@@ -3,32 +3,39 @@ package com.greboid.scraper
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonParseException
-import java.io.Reader
-import java.io.Writer
+import java.io.File
 
 
-fun getConfig(stream: Reader): Config? {
+fun getConfig(configFile: File): Config? {
     return try {
-        Gson().fromJson(stream, Config::class.java)
+        Gson().fromJson(configFile.reader(), Config::class.java)
     } catch (e: JsonParseException) {
         System.err.println("Parse error: ${e.localizedMessage}")
         null
     }
 }
 
-fun createDefault(stream: Writer) {
-    stream.write(GsonBuilder().setPrettyPrinting().create().toJson(Config(
-            "jdbc:mysql://ig:ig@database/ig",
+fun createDefault(configFile: File) {
+    configFile.mkdirs()
+    val writer = configFile.writer()
+    writer.write(GsonBuilder().setPrettyPrinting().create().toJson(Config(
+            "ig",
+            "database",
+            "ig",
+            "ig",
             "admin",
             "admin",
             "9e424e10e3dcd2f4fdd8d811c54aa36c",
             80
     )))
-    stream.flush()
+    writer.flush()
 }
 
 class Config(
-        val database: String,
+        val db: String,
+        val dbhost: String,
+        val dbuser: String,
+        val dbpassword: String,
         val adminUsername: String,
         val adminPassword: String,
         val sessionKey: String,

@@ -15,14 +15,14 @@ fun main(args: Array<String>) = runBlocking {
     if (!configFile.exists()) {
         println("No config exists, creating default.")
         println("Please edit config/config.yml as needed.")
-        createDefault(configFile.writer())
+        createDefault(configFile)
         return@runBlocking
     }
-    val config = getConfig(configFile.reader()) ?: run {
+    val config = getConfig(configFile) ?: run {
         println("Unable to load config.")
         return@runBlocking
     }
-    val database = Database(config.database)
+    val database = Database(config)
     database.connect()
     database.init()
     val web = launch {
@@ -32,10 +32,12 @@ fun main(args: Array<String>) = runBlocking {
     if (!web.isActive) {
         return@runBlocking
     }
-    launch {
+    val retriever = launch {
         while (isActive) {
-            IGRetriever().start(database, config)
+           IGRetriever().start(database, config)
             delay(Duration.ofMinutes(15))
         }
     }
+    retriever.join()
+    web.join()
 }
