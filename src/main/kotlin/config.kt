@@ -1,11 +1,13 @@
 package com.greboid.scraper
 
-import com.google.gson.*
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
+import com.google.gson.JsonParseException
 import java.io.Reader
 import java.io.Writer
 
 
-fun getConfig(stream: Reader) : Config? {
+fun getConfig(stream: Reader): Config? {
     return try {
         Gson().fromJson(stream, Config::class.java)
     } catch (e: JsonParseException) {
@@ -23,6 +25,7 @@ fun createDefault(stream: Writer) {
     )))
     stream.flush()
 }
+
 class Config(
         val database: String,
         val adminUsername: String,

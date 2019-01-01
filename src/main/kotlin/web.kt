@@ -4,14 +4,26 @@ import com.google.gson.Gson
 import io.ktor.application.ApplicationCallPipeline
 import io.ktor.application.call
 import io.ktor.application.install
-import io.ktor.auth.*
-import io.ktor.features.*
+import io.ktor.auth.Authentication
+import io.ktor.auth.FormAuthChallenge
+import io.ktor.auth.UserIdPrincipal
+import io.ktor.auth.authenticate
+import io.ktor.auth.authentication
+import io.ktor.auth.form
+import io.ktor.features.CORS
+import io.ktor.features.Compression
+import io.ktor.features.ConditionalHeaders
+import io.ktor.features.DefaultHeaders
+import io.ktor.features.PartialContent
+import io.ktor.features.StatusPages
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
-import io.ktor.http.content.*
+import io.ktor.http.content.files
+import io.ktor.http.content.resolveResource
+import io.ktor.http.content.resources
+import io.ktor.http.content.static
 import io.ktor.request.receive
 import io.ktor.response.respond
-import io.ktor.response.respondFile
 import io.ktor.response.respondRedirect
 import io.ktor.response.respondText
 import io.ktor.routing.get
@@ -20,10 +32,15 @@ import io.ktor.routing.route
 import io.ktor.routing.routing
 import io.ktor.server.cio.CIO
 import io.ktor.server.engine.embeddedServer
-import io.ktor.sessions.*
+import io.ktor.sessions.SessionStorageMemory
+import io.ktor.sessions.SessionTransportTransformerMessageAuthentication
+import io.ktor.sessions.Sessions
+import io.ktor.sessions.clear
+import io.ktor.sessions.cookie
+import io.ktor.sessions.get
+import io.ktor.sessions.sessions
 import io.ktor.util.KtorExperimentalAPI
 import io.ktor.util.hex
-import java.io.File
 
 data class IGSession(val user: String, val admin: Boolean, var previousPage: String = "/")
 
@@ -63,22 +80,23 @@ class Web(private val database: Database, private val config: Config) {
             }
             routing {
                 static("/js") {
-                    files("js")
+                    resources("js")
                 }
                 static("/css") {
-                    files("css")
+                    resources("css")
                 }
                 static("/thumbs") {
                     files("thumbs")
                 }
                 get("/login") {
-                    call.respondFile(File("html/login.html"))
+                    call.respond(call.resolveResource("/html/login.html", "") ?: HttpStatusCode.InternalServerError)
                 }
-                authenticate ("auth") {
+                authenticate("auth") {
                     post("/login") {
                         val principal = call.authentication.principal<UserIdPrincipal>()
                         if (principal == null) {
-                            call.respondFile(File("html/index.html"))
+                            call.respond(call.resolveResource("/html/index.html", "")
+                                    ?: HttpStatusCode.InternalServerError)
                         } else {
                             call.sessions.set("session", IGSession(principal.name, true))
                             call.respondRedirect("/admin", false)
@@ -126,7 +144,7 @@ class Web(private val database: Database, private val config: Config) {
                         call.sessions.get<IGSession>()?.user ?: call.respondRedirect("/login", false)
                     }
                     get("/") {
-                        call.respondFile(File("html/admin.html"))
+                        call.respond(call.resolveResource("/html/admin.html", "") ?: HttpStatusCode.InternalServerError)
                     }
                     post("/") {
                         call.respondRedirect("/admin")
@@ -161,7 +179,7 @@ class Web(private val database: Database, private val config: Config) {
                     }
                 }
                 get("/{...}") {
-                    call.respondFile(File("html/index.html"))
+                    call.respond(call.resolveResource("/html/index.html", "") ?: HttpStatusCode.InternalServerError)
                 }
                 get("/") {
                     val profiles = database.getProfiles()

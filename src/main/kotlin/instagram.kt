@@ -1,8 +1,7 @@
 package com.greboid.scraper
 
-import com.google.gson.*
+import com.google.gson.Gson
 import org.jsoup.Jsoup
-import org.jsoup.nodes.Document
 import java.io.IOException
 import java.math.BigInteger
 import java.net.URL

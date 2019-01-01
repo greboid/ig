@@ -1,13 +1,17 @@
 package com.greboid.scraper.retrievers
 
-import com.greboid.scraper.*
+import com.greboid.scraper.Config
+import com.greboid.scraper.Database
+import com.greboid.scraper.Instagram
+import com.greboid.scraper.PostType
+import com.greboid.scraper.Retriever
 import com.mortennobel.imagescaling.AdvancedResizeOp
 import com.mortennobel.imagescaling.ResampleOp
 import java.io.File
 import java.net.URL
 import javax.imageio.ImageIO
 
-class IGRetriever: Retriever {
+class IGRetriever : Retriever {
     private val instagram = Instagram()
 
     override suspend fun start(database: Database, config: Config) {

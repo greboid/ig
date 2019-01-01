@@ -2,7 +2,9 @@ package com.greboid.scraper
 
 import com.greboid.scraper.retrievers.IGRetriever
 import io.ktor.util.KtorExperimentalAPI
-import kotlinx.coroutines.*
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.time.delay
 import java.io.File
 import java.time.Duration

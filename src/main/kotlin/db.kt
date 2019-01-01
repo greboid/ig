@@ -1,7 +1,10 @@
 package com.greboid.scraper
 
-import java.lang.IllegalStateException
-import java.sql.*
+import java.sql.Connection
+import java.sql.DriverManager
+import java.sql.PreparedStatement
+import java.sql.ResultSet
+import java.sql.SQLException
 
 class Database(private val url: String, private val username: String = "", private val password: String = "") {
     private lateinit var connection: Connection
@@ -255,9 +258,9 @@ fun Connection.getAllString(sql: String, fieldName: String) =
 fun PreparedStatement.setAndUpdate(values: List<Any>) = use {
     values.forEachIndexed { index, value ->
         when (value) {
-            is String -> setString(index+1, value)
-            is Int -> setInt(index+1, value)
-            else -> setObject(index+1, value)
+            is String -> setString(index + 1, value)
+            is Int -> setInt(index + 1, value)
+            else -> setObject(index + 1, value)
         }
     }
     executeUpdate()

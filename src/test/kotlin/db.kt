@@ -1,9 +1,13 @@
 package com.greboid.scraper
 
-import com.nhaarman.mockitokotlin2.*
+import com.nhaarman.mockitokotlin2.any
+import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.verify
+import com.nhaarman.mockitokotlin2.verifyNoMoreInteractions
+import com.nhaarman.mockitokotlin2.whenever
+import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.Assertions.*
-import java.lang.IllegalStateException
 import java.sql.Connection
 import java.sql.PreparedStatement
 import java.sql.Statement
@@ -19,7 +23,7 @@ internal class DbTest {
 
     @Test
     fun `test using mocked connection`() {
-        val (db, _,statement) = getStatement()
+        val (db, _, statement) = getStatement()
         db.init()
         verify(statement).executeUpdate(Database.Schema.createAllTables)
     }
@@ -36,7 +40,7 @@ internal class DbTest {
 
     @Test
     fun `test add profile`() {
-        val (db, connection,statement) = getPreparedStatement()
+        val (db, connection, statement) = getPreparedStatement()
         val name = "test"
         db.addProfile(name)
         verify(connection).prepareStatement(Database.Schema.addProfile)
