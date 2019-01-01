@@ -15,64 +15,68 @@ const val ig: String = "https://www.instagram.com"
 
 class Instagram {
 
+    companion object {
+        internal fun getShortcodePost(shortcode: String?): Post? {
+            val json = try {
+                Jsoup.connect("$ig/p/$shortcode").get()
+            } catch (e: IOException) {
+                return null
+            }.select("script:containsData(window._sharedData)").find { element ->
+                element.data().startsWith("window._sharedData")
+            }?.data()?.substringBeforeLast(';')?.substringAfter("=")?.trim()
+            val data = Gson().fromJson(json, InstagramSharedData::class.java)
+                    .entry_data.PostPage.first().graphql.shortcode_media
+            return Post(
+                    data.id,
+                    data.getPostType(),
+                    data.shortcode,
+                    data.display_url,
+                    when (data.getPostType()) {
+                        PostType.SIDECAR -> data.edge_sidecar_to_children?.edges?.map {
+                            it.node.display_url
+                        }?.toList() ?: emptyList()
+                        PostType.VIDEO -> listOf(data.video_url ?: URL("http://instagram.com"))
+                        else -> listOf(data.display_url)
+                    },
+                    data.edge_media_to_caption.edges.firstOrNull()?.node?.text ?: "",
+                    data.owner.id,
+                    data.owner.username,
+                    data.taken_at_timestamp
+            )
+        }
+
+        internal fun getProfile(username: String): Profile? {
+            val doc = try {
+                Jsoup.connect("$ig/$username").get()
+            } catch (e: IOException) {
+                return null
+            }
+            val jsonData = doc.select("script:containsData(window._sharedData)").find { element ->
+                element.data().startsWith("window._sharedData")
+            }?.data()?.substringBeforeLast(';')?.substringAfter("=")?.trim()
+            val data = Gson().fromJson(jsonData, InstagramSharedData::class.java)
+            val userData = data.entry_data.ProfilePage.first().graphql.user
+            return Profile(
+                    userData.username,
+                    userData.id,
+                    userData.biography,
+                    userData.external_url,
+                    userData.profile_pic_url,
+                    userData.profile_pic_url_hd,
+                    userData.edge_owner_to_timeline_media.edges.stream().map {
+                        getShortcodePost(it.node.shortcode)
+                    }.toList().filterNotNull().toMutableList(),
+                    userData.edge_owner_to_timeline_media.page_info.end_cursor,
+                    userData.edge_owner_to_timeline_media.page_info.has_next_page,
+                    userData.edge_owner_to_timeline_media.count,
+                    data.rhx_gis
+            )
+        }
+    }
+
     fun getUserProfile(username: String): Profile? {
         return getProfile(username)
     }
-}
-
-internal fun getProfile(username: String): Profile? {
-    val doc = try {
-        Jsoup.connect("$ig/$username").get()
-    } catch (e: IOException) {
-        return null
-    }
-    val jsonData = doc.select("script:containsData(window._sharedData)").find { element ->
-        element.data().startsWith("window._sharedData")
-    }?.data()?.substringBeforeLast(';')?.substringAfter("=")?.trim()
-    val data = Gson().fromJson(jsonData, InstagramSharedData::class.java)
-    val userData = data.entry_data.ProfilePage.first().graphql.user
-    return Profile(
-            userData.username,
-            userData.id,
-            userData.biography,
-            userData.external_url,
-            userData.profile_pic_url,
-            userData.profile_pic_url_hd,
-            userData.edge_owner_to_timeline_media.edges.stream().map {
-                getShortcodePost(it.node.shortcode)
-            }.toList().filterNotNull().toMutableList(),
-            userData.edge_owner_to_timeline_media.page_info.end_cursor,
-            userData.edge_owner_to_timeline_media.page_info.has_next_page,
-            userData.edge_owner_to_timeline_media.count,
-            data.rhx_gis
-    )
-}
-
-internal fun getShortcodePost(shortcode: String?): Post? {
-    val json = try {
-        Jsoup.connect("$ig/p/$shortcode").get()
-    } catch (e: IOException) {
-        return null
-    }.toData()
-    val data = Gson().fromJson(json, InstagramSharedData::class.java)
-            .entry_data.PostPage.first().graphql.shortcode_media
-    return Post(
-            data.id,
-            data.getPostType(),
-            data.shortcode,
-            data.display_url,
-            when (data.getPostType()) {
-                PostType.SIDECAR -> data.edge_sidecar_to_children?.edges?.map {
-                    it.node.display_url
-                }?.toList() ?: emptyList()
-                PostType.VIDEO -> listOf(data.video_url ?: URL("http://instagram.com"))
-                else -> listOf(data.display_url)
-            },
-            data.edge_media_to_caption.edges.firstOrNull()?.node?.text ?: "",
-            data.owner.id,
-            data.owner.username,
-            data.taken_at_timestamp
-    )
 }
 
 class Profile(
@@ -120,15 +124,9 @@ class Profile(
         end_cursor = data.data.user.edge_owner_to_timeline_media.page_info.end_cursor
         hasMore = data.data.user.edge_owner_to_timeline_media.page_info.has_next_page
         posts.addAll(data.data.user.edge_owner_to_timeline_media.edges.stream().map {
-            getShortcodePost(it.node.shortcode)
+            Instagram.getShortcodePost(it.node.shortcode)
         }.toList().filterNotNull())
     }
-}
-
-fun Document.toData(): String? {
-    return select("script:containsData(window._sharedData)").find { element ->
-        element.data().startsWith("window._sharedData")
-    }?.data()?.substringBeforeLast(';')?.substringAfter("=")?.trim()
 }
 
 class Post(
