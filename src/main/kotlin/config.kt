@@ -16,7 +16,7 @@ fun getConfig(configFile: File): Config? {
 }
 
 fun createDefault(configFile: File) {
-    configFile.mkdirs()
+    configFile.parentFile.mkdirs()
     val writer = configFile.writer()
     writer.write(GsonBuilder().setPrettyPrinting().create().toJson(Config(
             "ig",
