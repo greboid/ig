@@ -18,7 +18,7 @@ fun getConfig(stream: Reader): Config? {
 
 fun createDefault(stream: Writer) {
     stream.write(GsonBuilder().setPrettyPrinting().create().toJson(Config(
-            "jdbc:sqlite:database/database.sqlite",
+            "jdbc:mysql://hostname/ig?user=ig&password=ig",
             "admin",
             "admin",
             "9e424e10e3dcd2f4fdd8d811c54aa36c"
