@@ -24,3 +24,4 @@ database|jdbc:mysql://ig:ig@database/ig|Sets the JDBC url for the database, supp
 sessionKey|9e424e10e3dcd2f4fdd8d811c54aa36c|**Change this**.  Value used to encrypt sessions.
 adminUsername|admin|**Change this**.  Default admin password
 adminPassword|admin|**Change this**.  Default admin username
+webPort|80|Default port to listen on for web connections

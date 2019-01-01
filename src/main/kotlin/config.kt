@@ -21,7 +21,8 @@ fun createDefault(stream: Writer) {
             "jdbc:mysql://ig:ig@database/ig",
             "admin",
             "admin",
-            "9e424e10e3dcd2f4fdd8d811c54aa36c"
+            "9e424e10e3dcd2f4fdd8d811c54aa36c",
+            80
     )))
     stream.flush()
 }
@@ -30,5 +31,6 @@ class Config(
         val database: String,
         val adminUsername: String,
         val adminPassword: String,
-        val sessionKey: String
+        val sessionKey: String,
+        val webPort: Int
 )

@@ -47,7 +47,7 @@ data class IGSession(val user: String, val admin: Boolean, var previousPage: Str
 class Web(private val database: Database, private val config: Config) {
     @KtorExperimentalAPI
     suspend fun start() {
-        val server = embeddedServer(CIO, port = 8080) {
+        val server = embeddedServer(CIO, port = config.webPort) {
             install(DefaultHeaders)
             install(PartialContent)
             install(Compression)
