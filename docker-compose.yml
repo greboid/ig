@@ -1,12 +1,22 @@
 version: "3.5"
 services:
-  cron:
+  ig:
     image: greboid/ig
-    build: .
     volumes:
       - config:/app/config/
       - database:/app/database/
       - thumbs:/app/thumbs/
+    links:
+      - database
+  database:
+    image: mysql:8
+    volumes:
+      - database:/var/lib/mysql
+    environment:
+      - MYSQL_RANDOM_ROOT_PASSWORD=true
+      - MYSQL_DATABASE=ig
+      - MYSQL_USER=ig 
+      - MYSQL_PASSWORD=ig
 
 volumes:
   config:
