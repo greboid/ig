@@ -1,0 +1,14 @@
+version: "3.5"
+services:
+  cron:
+    image: greboid/ig
+    build: .
+    volumes:
+      - config:/app/config/
+      - database:/app/database/
+      - thumbs:/app/thumbs/
+
+volumes:
+  config:
+  database:
+  thumbs:
