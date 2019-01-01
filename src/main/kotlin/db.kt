@@ -13,7 +13,7 @@ class Database(private val url: String, private val username: String = "", priva
         connection = try {
             DriverManager.getConnection(url, username, password)
         } catch (e: SQLException) {
-            throw IllegalStateException("Unable to connect again")
+            throw IllegalStateException("Unable to connect: ${e.localizedMessage}")
         }
         return connection
     }
