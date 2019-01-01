@@ -20,7 +20,7 @@ available and this should set everything up.
 
 Setting|Default|Description
 ---|---|---
-database|jdbc:mysql://hostname/ig?user=ig&password=ig|Sets the JDBC url for the database, supports MySQL and SQLite<br><br>If you're not using docker, update the username and password as needed<br><br>To use SQLite, for dev for instance, use jdbc:sqlite:database/database.sqlite
+database|jdbc:mysql://ig:ig@database/ig|Sets the JDBC url for the database, supports MySQL and SQLite<br><br>If you're not using docker, update the username and password as needed<br><br>To use SQLite, for dev for instance, use jdbc:sqlite:database/database.sqlite
 sessionKey|9e424e10e3dcd2f4fdd8d811c54aa36c|**Change this**.  Value used to encrypt sessions.
 adminUsername|admin|**Change this**.  Default admin password
 adminPassword|admin|**Change this**.  Default admin username

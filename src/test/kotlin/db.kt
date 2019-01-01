@@ -25,7 +25,9 @@ internal class DbTest {
     fun `test using mocked connection`() {
         val (db, _, statement) = getStatement()
         db.init()
-        verify(statement).executeUpdate(Database.Schema.createAllTables)
+        Database.Schema.createAllTables.forEach {
+            verify(statement).executeUpdate(it)
+        }
     }
 
     @Test

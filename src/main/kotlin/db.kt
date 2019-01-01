@@ -23,9 +23,13 @@ class Database(private val url: String, private val username: String = "", priva
     }
 
     fun init() {
-        connection.createStatement()?.executeUpdate(Schema.createAllTables)
-                ?: throw IllegalStateException("Must be connected to initialise.")
-        connection.createStatement()?.execute("PRAGMA busy_timeout=30000")
+        Schema.createAllTables.forEach {
+            connection.createStatement()?.executeUpdate(it)
+                    ?: throw IllegalStateException("Must be connected to initialise.")
+        }
+        if (url.startsWith("jdbc:sqlite")) {
+            connection.createStatement()?.execute("PRAGMA busy_timeout=30000")
+        }
     }
 
     fun addProfile(name: String) =
@@ -205,8 +209,8 @@ class Database(private val url: String, private val username: String = "", priva
         private val createProfiles = """
             CREATE TABLE IF NOT EXISTS profiles (
             id INTEGER PRIMARY KEY,
-            name TEXT UNIQUE
-            )
+            name VARCHAR(255) UNIQUE
+            );
         """.trimIndent().replace("[\n\r]".toRegex(), "")
         private val createProfileUsers = """
             CREATE TABLE IF NOT EXISTS profile_users (
@@ -214,19 +218,19 @@ class Database(private val url: String, private val username: String = "", priva
             userID INT,
             profileID INT,
             UNIQUE(userID, profileID)
-            )
+            );
         """.trimIndent().replace("[\n\r]".toRegex(), "")
         private val createUsers = """
             CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY,
-            username TEXT UNIQUE,
+            username VARCHAR(255) UNIQUE,
             lastpoll INTEGER
-            )
+            );
         """.trimIndent().replace("[\n\r]".toRegex(), "")
         private val createIGPosts = """
             CREATE TABLE IF NOT EXISTS igposts (
             id INTEGER,
-            shortcode TEXT,
+            shortcode varchar(16),
             ord INTEGER,
             userID INTEGER,
             thumbnailURL TEXT,
@@ -234,9 +238,9 @@ class Database(private val url: String, private val username: String = "", priva
             caption TEXT,
             timestamp INTEGER,
             PRIMARY KEY (shortcode, ord)
-            )
+            );
         """.trimIndent().replace("[\n\r]".toRegex(), "")
-        val createAllTables = "$createProfiles;\r\n$createProfileUsers;\r\n$createUsers;\r\n$createIGPosts;"
+        val createAllTables: List<String> = listOf(createProfiles, createProfileUsers, createUsers, createIGPosts)
     }
 }
 
