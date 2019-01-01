@@ -4,7 +4,6 @@ import com.google.gson.*
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import java.io.IOException
-import java.lang.reflect.Type
 import java.math.BigInteger
 import java.net.URL
 import java.nio.charset.StandardCharsets
@@ -14,15 +13,13 @@ import kotlin.streams.toList
 
 const val ig: String = "https://www.instagram.com"
 
-class Instagram() {
+class Instagram {
 
     fun getUserProfile(username: String): Profile? {
         return getProfile(username)
     }
 }
 
-//          "has_next_page": false,
-//          "end_cursor": null
 internal fun getProfile(username: String): Profile? {
     val doc = try {
         Jsoup.connect("$ig/$username").get()
@@ -44,10 +41,10 @@ internal fun getProfile(username: String): Profile? {
             userData.edge_owner_to_timeline_media.edges.stream().map {
                 getShortcodePost(it.node.shortcode)
             }.toList().filterNotNull().toMutableList(),
-            data.rhx_gis,
             userData.edge_owner_to_timeline_media.page_info.end_cursor,
             userData.edge_owner_to_timeline_media.page_info.has_next_page,
-            userData.edge_owner_to_timeline_media.count
+            userData.edge_owner_to_timeline_media.count,
+            data.rhx_gis
     )
 }
 
@@ -64,12 +61,12 @@ internal fun getShortcodePost(shortcode: String?): Post? {
             data.getPostType(),
             data.shortcode,
             data.display_url,
-            if (data.getPostType() == PostType.SIDECAR) {
-                data.edge_sidecar_to_children?.edges?.map { it.node.display_url }?.toList() ?: emptyList()
-            } else if (data.getPostType() == PostType.VIDEO) {
-                listOf(data.video_url ?: URL("http://instagram.com"))
-            } else {
-                listOf(data.display_url)
+            when (data.getPostType()) {
+                PostType.SIDECAR -> data.edge_sidecar_to_children?.edges?.map {
+                    it.node.display_url
+                }?.toList() ?: emptyList()
+                PostType.VIDEO -> listOf(data.video_url ?: URL("http://instagram.com"))
+                else -> listOf(data.display_url)
             },
             data.edge_media_to_caption.edges.firstOrNull()?.node?.text ?: "",
             data.owner.id,
@@ -86,14 +83,14 @@ class Profile(
         val profile_pic_url: URL,
         val profile_pic_url_hd: URL?,
         val posts: MutableList<Post>,
-        val rhx_gis: String,
-        var end_cursor: String?,
-        var hasMore: Boolean,
-        val count: Int
+        private var end_cursor: String?,
+        private var hasMore: Boolean,
+        private val count: Int,
+        private val rhx_gis: String
 ) {
     fun backfill(desiredCapacity: Int) {
         val targetCapacity = min(desiredCapacity, count)
-        val count = 12;
+        val count = 12
         val fullruns: Int = (targetCapacity - posts.size) / count
         val partRuns: Int = (targetCapacity - posts.size) % count
         if (fullruns <= 0 && partRuns <= 0) {
@@ -114,10 +111,10 @@ class Profile(
     private fun getOlderData(count: Int) {
         val soup = Jsoup.connect("$ig/graphql/query/")
         soup.header("X-Instagram-GIS",
-                getMD5("$rhx_gis:{\"id\":\"$id\",\"first\":${count},\"after\":\"$end_cursor\"}")
+                getMD5("$rhx_gis:{\"id\":\"$id\",\"first\":$count,\"after\":\"$end_cursor\"}")
         )
         soup.data("query_hash", "5b0222df65d7f6659c9b82246780caa7")
-        soup.data("variables", "{\"id\":\"$id\",\"first\":${count},\"after\":\"$end_cursor\"}")
+        soup.data("variables", "{\"id\":\"$id\",\"first\":$count,\"after\":\"$end_cursor\"}")
         val json = soup.ignoreContentType(true).execute().body()
         val data = Gson().fromJson(json, InstagramData::class.java)
         end_cursor = data.data.user.edge_owner_to_timeline_media.page_info.end_cursor
