@@ -9,7 +9,7 @@ import java.time.Duration
 
 @KtorExperimentalAPI
 fun main(args: Array<String>) = runBlocking {
-    val config = getConfig(File("defaults.yml").reader()) ?: run {
+    val config = getConfig(File("config/defaults.yml").reader()) ?: run {
         println("Unable to load config. Exiting.")
         return@runBlocking
     }
