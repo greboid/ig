@@ -16,6 +16,7 @@ import io.ktor.features.ConditionalHeaders
 import io.ktor.features.DefaultHeaders
 import io.ktor.features.PartialContent
 import io.ktor.features.StatusPages
+import io.ktor.features.XForwardedHeaderSupport
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.content.files
@@ -53,6 +54,7 @@ class Web(private val database: Database, private val config: Config) {
             install(Compression)
             install(ConditionalHeaders)
             install(CORS)
+            install(XForwardedHeaderSupport)
             install(Sessions) {
                 cookie<IGSession>("session", SessionStorageMemory()) {
                     transform(SessionTransportTransformerMessageAuthentication(hex(config.sessionKey), "HmacSHA256"))

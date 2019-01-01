@@ -77,7 +77,6 @@ function addItem(event) {
         }
     });
     if (text != "" && !known) {
-        console.log($(parentDiv))
         $(list).append("<li class=\"list-group-item\" data-name=\""+text+"\">"+text+" <a class=\"remove\" href=\"\">Remove</a></li>");
         $(input).val('')
     }
