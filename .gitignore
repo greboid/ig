@@ -4,4 +4,5 @@
 /.idea/
 /thumbs/
 defaults.yml
-database.sqlite
+database/database.sqlite
+config/config.yml
