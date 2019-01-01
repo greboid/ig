@@ -6,7 +6,6 @@ import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.auth.*
 import io.ktor.features.*
-import io.ktor.http.CacheControl
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.content.*

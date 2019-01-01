@@ -9,8 +9,15 @@ import java.time.Duration
 
 @KtorExperimentalAPI
 fun main(args: Array<String>) = runBlocking {
-    val config = getConfig(File("config/defaults.yml").reader()) ?: run {
-        println("Unable to load config. Exiting.")
+    val configFile = File("config/config.yml")
+    if (!configFile.exists()) {
+        println("No config exists, creating default.")
+        println("Please edit config/config.yml as needed.")
+        createDefault(configFile.writer())
+        return@runBlocking
+    }
+    val config = getConfig(configFile.reader()) ?: run {
+        println("Unable to load config.")
         return@runBlocking
     }
     val database = Database(config.database)
@@ -23,7 +30,7 @@ fun main(args: Array<String>) = runBlocking {
     if (!web.isActive) {
         return@runBlocking
     }
-    val retriever = launch {
+    launch {
         while (isActive) {
             IGRetriever().start(database, config)
             delay(Duration.ofMinutes(15))
