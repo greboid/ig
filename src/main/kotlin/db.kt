@@ -117,9 +117,10 @@ class Database(private val config: Config) {
     fun getUsers(): List<String> =
             connection.getAllString(Schema.getUsers, "username")
 
-    private fun checkIGPost(shortcode: String): Boolean {
+    private fun checkIGPost(shortcode: String, ord: Int): Boolean {
         val statement = connection.prepareStatement(Schema.checkIGPost) ?: return false
         statement.setString(1, shortcode)
+        statement.setInt(2, ord)
         val result = statement.executeQuery()
         result.first()
         val returnValue = result.getInt(1)
@@ -130,7 +131,7 @@ class Database(private val config: Config) {
 
     fun addIGPost(shortcode: String, ord: Int, userID: Int, thumbnailURL: String,
                   imageURL: String, caption: String, timestamp: Int): Boolean {
-        return checkIGPost(shortcode) && connection.setAndUpdate(Schema.addIGPost,
+        return checkIGPost(shortcode, ord) && connection.setAndUpdate(Schema.addIGPost,
                 listOf(shortcode, ord, userID, thumbnailURL, imageURL, caption, timestamp)) == 1
     }
 
@@ -204,7 +205,7 @@ class Database(private val config: Config) {
             select username from users
         """.trimIndent()
         internal val checkIGPost = """
-            SELECT COUNT(*) FROM igposts WHERE shortcode=?
+            select count(*) from igposts WHERE shortcode=? AND ord=?
         """.trimIndent()
         internal val addIGPost = """
             insert into igposts
