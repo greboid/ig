@@ -7,7 +7,7 @@ import java.sql.ResultSet
 import java.sql.SQLException
 
 class Database(private val config: Config) {
-    private lateinit var connection: Connection
+    internal lateinit var connection: Connection
 
     fun connect(): Connection {
         connection = try {
@@ -19,10 +19,6 @@ class Database(private val config: Config) {
         }
         init()
         return connection
-    }
-
-    internal fun setConnection(conn: Connection) {
-        connection = conn
     }
 
     private fun init() {
@@ -136,17 +132,34 @@ class Database(private val config: Config) {
                 listOf(shortcode, ord, userID, thumbnailURL, imageURL, caption, timestamp)) == 1
     }
 
-    fun getIGPost(profile: String, start: Int = 0, count: Int = 5): List<IGPost> {
-        val s = connection.prepareStatement(Schema.selectIGPosts)
-        s.setString(1, profile)
-        s.setInt(2, count)
-        s.setInt(3, start)
-        val results: ResultSet = s.executeQuery()
+    fun getAllIgPost(start: Int = 0, count: Int = 5) = getIntIGPost(null, start, count)
+    fun getIGPost(profile: String, start: Int = 0, count: Int = 5) = getIntIGPost(profile, start, count)
+
+    private fun getIntIGPost(profile: String? = null, start: Int = 0, count: Int = 5): List<IGPost> {
+        val s = (if (profile == null) {
+            val s = connection.prepareStatement(Schema.selectAllIGPosts)
+            s.setInt(1, count)
+            s.setInt(2, start)
+            s
+        } else {
+            val s = connection.prepareStatement(Schema.selectIGPosts)
+            s.setString(1, profile)
+            s.setInt(2, count)
+            s.setInt(3, start)
+            s
+        })
+        val results = s.executeQuery()
         val returnValue = sequence {
             while (results.next()) {
-                yield(IGPost(results.getString(1), results.getString(2),
-                        results.getString(3), results.getString(4),
-                        results.getString(5), results.getInt(6)))
+                yield(IGPost(
+                        shortcode = results.getString(1),
+                        source = results.getString(2),
+                        thumb = results.getString(3),
+                        url = results.getString(4),
+                        caption = results.getString(5),
+                        timestamp = results.getInt(6),
+                        ord = results.getInt(7)
+                ))
             }
         }.toList()
         results.close()
@@ -213,8 +226,18 @@ class Database(private val config: Config) {
             (shortcode,ord,userID,thumbnailURL,imageURL,caption,timestamp)
             values (?,?,?,?,?,?,?)
         """.trimIndent()
+        internal val selectAllIGPosts = """
+            SELECT shortcode, users.username, thumbnailURL, imageURL, caption, timestamp, ord
+            FROM igposts
+            LEFT JOIN users on users.id=igposts.userID
+            LEFT JOIN profile_users on profile_users.userid=users.id
+            LEFT JOIN profiles on profile_users.profileid=profiles.id
+            ORDER BY timestamp DESC
+            LIMIT ?
+            OFFSET ?
+        """.trimIndent()
         internal val selectIGPosts = """
-            SELECT shortcode, users.username, thumbnailURL, imageURL, caption, timestamp
+            SELECT shortcode, users.username, thumbnailURL, imageURL, caption, timestamp, ord
             FROM igposts
             LEFT JOIN users on users.id=igposts.userID
             LEFT JOIN profile_users on profile_users.userid=users.id
@@ -263,7 +286,7 @@ class Database(private val config: Config) {
 
 data class IGPost(val shortcode: String, val source: String,
                   val thumb: String, val url: String,
-                  val caption: String, val timestamp: Int)
+                  val caption: String, val timestamp: Int, internal val ord: Int)
 
 fun ResultSet.getAllString(fieldName: String) = sequence {
     use {
