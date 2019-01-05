@@ -21,7 +21,7 @@ internal class DbTest {
     companion object {
 
         private lateinit var mysqld: EmbeddedMysql
-        internal val config = Config(dbhost="localhost", dbport = 2215)
+        internal val config = Config(dbhost="127.0.0.1", dbport = 2215)
         val initial: SchemaConfig = aSchemaConfig("ig")
                 .withScripts(ScriptResolver.classPathScript("/db/initial.sql"))
                 .withCharset(UTF8MB4)
@@ -33,6 +33,7 @@ internal class DbTest {
             val config = aMysqldConfig(Version.v5_7_latest)
                     .withCharset(UTF8MB4)
                     .withPort(2215)
+                    .withServerVariable("bind-address", "127.0.0.1")
                     .withUser("ig", "ig")
                     .withTimeZone("Europe/London")
                     .withTimeout(5, TimeUnit.MINUTES)
