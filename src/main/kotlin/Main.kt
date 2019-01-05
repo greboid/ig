@@ -24,7 +24,6 @@ fun main(args: Array<String>) = runBlocking {
     }
     val database = Database(config)
     database.connect()
-    database.init()
     val web = launch {
         Web(database, config).start()
     }

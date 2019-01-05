@@ -29,6 +29,7 @@ dbhost|ig|Defaults to database, unless using included docker-compose.
 db|ig|Must be created first, unless using included docker-compose.
 dbuser|ig|
 dbpassword|ig|
+dbport|3306|
 sessionKey|9e424e10e3dcd2f4fdd8d811c54aa36c|**Change this**.  Value used to encrypt sessions.
 adminUsername|admin|**Change this**.  Default admin password
 adminPassword|admin|**Change this**.  Default admin username

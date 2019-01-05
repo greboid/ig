@@ -12,11 +12,12 @@ class Database(private val config: Config) {
     fun connect(): Connection {
         connection = try {
             DriverManager.getConnection(
-                    "jdbc:mysql://${config.dbhost}/${config.db}?useUnicode=yes&characterEncoding=UTF-8",
+                    "jdbc:mysql://${config.dbhost}:${config.dbport}/${config.db}?useUnicode=yes&characterEncoding=UTF-8",
                     config.dbuser, config.dbpassword)
         } catch (e: SQLException) {
             throw IllegalStateException("Unable to connect: ${e.localizedMessage}")
         }
+        init()
         return connection
     }
 
@@ -24,7 +25,7 @@ class Database(private val config: Config) {
         connection = conn
     }
 
-    fun init() {
+    private fun init() {
         Schema.createAllTables.forEach {
             connection.createStatement()?.executeUpdate(it)
                     ?: throw IllegalStateException("Must be connected to initialise.")

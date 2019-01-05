@@ -18,26 +18,18 @@ fun getConfig(configFile: File): Config? {
 fun createDefault(configFile: File) {
     configFile.parentFile.mkdirs()
     val writer = configFile.writer()
-    writer.write(GsonBuilder().setPrettyPrinting().create().toJson(Config(
-            "ig",
-            "database",
-            "ig",
-            "ig",
-            "admin",
-            "admin",
-            "9e424e10e3dcd2f4fdd8d811c54aa36c",
-            80
-    )))
+    writer.write(GsonBuilder().setPrettyPrinting().create().toJson(Config()))
     writer.flush()
 }
 
 class Config(
-        val db: String,
-        val dbhost: String,
-        val dbuser: String,
-        val dbpassword: String,
-        val adminUsername: String,
-        val adminPassword: String,
-        val sessionKey: String,
-        val webPort: Int
+        val db: String = "ig",
+        val dbhost: String = "database",
+        val dbuser: String = "ig",
+        val dbpassword: String = "ig",
+        val dbport: Int = 3306,
+        val adminUsername: String = "admin",
+        val adminPassword: String = "admin",
+        val sessionKey: String = "9e424e10e3dcd2f4fdd8d811c54aa36c",
+        val webPort: Int = 80
 )
