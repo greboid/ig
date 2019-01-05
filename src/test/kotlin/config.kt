@@ -10,7 +10,7 @@ internal class ConfigTest {
 
     @Test
     fun `test loading valid config file`() {
-        val reader = File(this.javaClass.getResource("example.yml").toURI()).reader()
+        val reader = File(this.javaClass.getResource("example.yml").toURI())
         assertNotNull(reader)
         val config = getConfig(reader)
         assertNotNull(config)
@@ -18,19 +18,19 @@ internal class ConfigTest {
 
     @Test
     fun `test loading invalid config file`() {
-        val config = getConfig(File(this.javaClass.getResource("broken.yml").toURI()).reader())
+        val config = getConfig(File(this.javaClass.getResource("broken.yml").toURI()))
         assertNull(config)
     }
 
     @Test
     fun `test loading database from valid file`() {
-        val config = getConfig(File(this.javaClass.getResource("example.yml").toURI()).reader()) as Config
-        assertEquals("jdbc:sqlite:database.sqlite", config.database)
+        val config = getConfig(File(this.javaClass.getResource("example.yml").toURI())) as Config
+        assertEquals("jdbc:sqlite:database.sqlite", config.db)
     }
 
     @Test
     fun `test loading database from valid file without database`() {
-        val config = getConfig(File(this.javaClass.getResource("nodb.yml").toURI()).reader()) as Config
-        assertNull(config.database)
+        val config = getConfig(File(this.javaClass.getResource("nodb.yml").toURI())) as Config
+        assertNull(config.db)
     }
 }
