@@ -3,21 +3,22 @@ package com.greboid.scraper
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonParseException
-import java.io.File
+import java.nio.file.Files
+import java.nio.file.Path
 
 
-fun getConfig(configFile: File): Config? {
+fun getConfig(configFile: Path): Config? {
     return try {
-        Gson().fromJson(configFile.reader(), Config::class.java)
+        Gson().fromJson(Files.newBufferedReader(configFile), Config::class.java)
     } catch (e: JsonParseException) {
         System.err.println("Parse error: ${e.localizedMessage}")
         null
     }
 }
 
-fun createDefault(configFile: File) {
-    configFile.parentFile.mkdirs()
-    val writer = configFile.writer()
+fun createDefault(configFile: Path) {
+    Files.createDirectories(configFile.parent)
+    val writer = Files.newBufferedWriter(configFile)
     writer.write(GsonBuilder().setPrettyPrinting().create().toJson(Config()))
     writer.flush()
 }

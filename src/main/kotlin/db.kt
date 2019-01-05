@@ -23,8 +23,7 @@ class Database(private val config: Config) {
 
     private fun init() {
         Schema.createAllTables.forEach {
-            connection.createStatement()?.executeUpdate(it)
-                    ?: throw IllegalStateException("Must be connected to initialise.")
+            connection.createStatement().executeUpdate(it)
         }
     }
 
