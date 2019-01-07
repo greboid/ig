@@ -2,4 +2,4 @@ requests>=2.20.0
 beautifulsoup4==4.7.0
 typing==3.6.6
 PyYAML==4.2b1
-Pillow==5.4.0
+Pillow==5.4.1
