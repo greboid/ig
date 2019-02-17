@@ -1,5 +1,5 @@
-requests==2.18.4
-beautifulsoup4==4.6.0
-typing==3.6.4
-PyYAML==3.12
-Pillow==5.1.0
+requests>=2.20.0
+beautifulsoup4==4.7.1
+typing==3.6.6
+PyYAML==4.2b4
+Pillow==5.4.1
