@@ -1,3 +1,0 @@
-typing==3.6.6
-PyYAML==4.2b4
-Flask==1.0.2

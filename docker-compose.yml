@@ -1,28 +1,24 @@
 version: "3.5"
 services:
-  cron:
-    image: greboid/ig-cron
-    build: cron
+  ig:
+    image: greboid/ig
     volumes:
-      - ./db:/app/db
-      - ./config.yml:/app/config.yml
-      - ./thumbs:/app/static/thumbs
+      - config:/app/config/
+      - database:/app/database/
+      - thumbs:/app/thumbs/
+    links:
+      - database
+  database:
+    image: mysql:8
+    volumes:
+      - database:/var/lib/mysql
     environment:
-      - DELAY=900
-  feed:
-    image: greboid/ig-feed
-    build: feed
-    volumes:
-      - ./db:/app/db
-      - ./thumbs:/app/static/thumbs
-      - ./feed/templates:/app/templates
-      - ./config.yml:/app/config.yml
-  web:
-    image: "nginx:latest"
-    volumes:
-        - ./site.conf:/etc/nginx/conf.d/default.conf
-        - ./feed/js:/app/js
-        - ./feed/css:/app/css
-        - ./thumbs:/app/thumbs
-    depends_on:
-      - feed
+      - MYSQL_RANDOM_ROOT_PASSWORD=true
+      - MYSQL_DATABASE=ig
+      - MYSQL_USER=ig 
+      - MYSQL_PASSWORD=ig
+
+volumes:
+  config:
+  database:
+  thumbs:

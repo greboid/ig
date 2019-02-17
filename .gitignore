@@ -1,4 +1,9 @@
-/thumbs
-/db
-docker-compose.override.yml
-config.yml
+/.gradle/
+/out/
+/build/
+/target/
+/.idea/
+/thumbs/
+defaults.yml
+database/database.sqlite
+config/config.yml
