@@ -16,12 +16,12 @@ class IGRetriever : Retriever {
 
     override suspend fun start(database: Database, config: Config) {
         val users = sequence {
-            for (user in database.getUsers()) {
+            for (user in database.getAllSources()) {
                 yield(instagram.getUserProfile(user))
             }
         }.filterNotNull()
         users.filterNotNull().forEach {
-            val userID = database.getUserID(it.username)
+            val userID = database.getSourcesID(it.username)
                     ?: run { println("Unable to get id for user: ${it.username}"); return }
             it.posts.forEach { post ->
                 if (post.type == PostType.SIDECAR) {

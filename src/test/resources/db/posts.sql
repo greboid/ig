@@ -1,13 +1,4 @@
-INSERT INTO `users` (`id`, `username`, `lastpoll`) VALUES (1, 'testuser1', NULL);
-INSERT INTO `users` (`id`, `username`, `lastpoll`) VALUES (2, 'testuser2', NULL);
-
-INSERT INTO `profiles` (`id`, `name`) VALUES (1, 'testprofile1');
-INSERT INTO `profiles` (`id`, `name`) VALUES (2, 'testprofile2');
-
-INSERT INTO `profile_users` (`id`, `userID`, `profileID`) VALUES (1, 1, 1);
-INSERT INTO `profile_users` (`id`, `userID`, `profileID`) VALUES (2, 2, 2);
-
-INSERT INTO `igposts` (`shortcode`, `ord`, `userID`, `thumbnailURL`, `imageURL`, `caption`, `timestamp`) VALUES
+INSERT INTO `sourceitems` (`identifier`, `index`, `source_ID`, `thumbnail`, `url`, `caption`, `timestamp`) VALUES
 	('RSLBmnFzrba', 0, 1, 'thumbs\\RSLBmnFzrba.jpg', 'https://www.example.com/RSLBmnFzrba', '... 👍🏼(😂)', 1545834162),
 	('Uv6J1JGURH2', 0, 1, 'thumbs\\Uv6J1JGURH2.jpg', 'https://www.example.com/Uv6J1JGURH2', 'foo', 1546079082),
 	('IIpRRMXowSZ', 0, 1, 'thumbs\\IIpRRMXowSZ.jpg', 'https://www.example.com/IIpRRMXowSZ', 'bar', 1544999111),

@@ -1,3 +1,23 @@
+function addItem(event) {
+    var parentDiv = $(event.target).closest('div[class="col"]')[0];
+    var input = $(parentDiv).find("input[type=text]");
+    var list = $(parentDiv).find("ul");
+    var text = $(input).val().trim().toLowerCase();
+    var known = false;
+    $(list).find("li").each(function() {
+        if ($(this).data('name') === text) {
+            known = true;
+        }
+    });
+    if (text !== "" && !known) {
+        $(list).append("<li class=\"list-group-item\" data-name=\""+text+"\">"+text+" <a class=\"remove\" href=\"\">Remove</a></li>");
+        $(input).val('');
+    }
+    var elems = $(list).find('li').detach().sort(function (a, b) {
+        return ($(a).data("name") < $(b).data("name") ? -1 : $(a).data("name") > $(b).data("name") ? 1 : 0);
+    });
+    $(list).append(elems);
+}
 $.getJSON($(location).attr('protocol') + '//' + $(location).attr('host') + '/users', {}, function(data) {
     $.each(data, function(index, user) {
         $("#userList").append("<li class=\"list-group-item\" data-name=\""+user+"\">"+user+" <a class=\"remove\" href=\"\">Remove</a></li>");
@@ -42,14 +62,14 @@ $('#saveProfiles').on('click', function(event) {
     });
 });
 $('#saveProfileUsers').on('click', function(event) {
-    var profiles = new Object()
-    profiles.selected = $($(userSelect).find(":selected")[0]).val()
+    var profiles = new Object();
+    profiles.selected = $($("#userSelect").find(":selected")[0]).val();
     var selectedProfiles = [];
-    $(profileSelect).find(":selected").each(function(index) {
+    $("#profileSelect").find(":selected").each(function(index) {
         selectedProfiles.push($(this).text());
     });
-    profiles.profiles = selectedProfiles
-    $.postJSON( "/admin/ProfileUsers", JSON.stringify(profiles))
+    profiles.profiles = selectedProfiles;
+    $.postJSON( "/admin/ProfileUsers", JSON.stringify(profiles));
 });
 $('#userSelect').change(function() {
     $.getJSON($(location).attr('protocol') + '//' + $(location).attr('host') + '/profiles', {}, function(data) {
@@ -57,34 +77,13 @@ $('#userSelect').change(function() {
         $.each(data, function(index, profile) {
             $("#profileSelect").append("<option value=\""+profile+"\">"+profile+"</option>");
         })
-    })
+    });
     $.getJSON($(location).attr('protocol') + '//' + $(location).attr('host') + '/userprofiles/'+$(this).val(), {}, function(data) {
         $.each(data, function(index, profile) {
             $("#profileSelect").find("option[value=\""+profile+"\"]").attr('selected','selected');
         })
-    })
+    });
 });
-
-function addItem(event) {
-    var parentDiv = $(event.target).closest('div[class="col"]')[0];
-    var input = $(parentDiv).find("input[type=text]");
-    var list = $(parentDiv).find("ul");
-    var text = $(input).val().trim().toLowerCase();
-    var known = false;
-    $(list).find("li").each(function() {
-        if ($(this).data('name') == text) {
-            known = true;
-        }
-    });
-    if (text != "" && !known) {
-        $(list).append("<li class=\"list-group-item\" data-name=\""+text+"\">"+text+" <a class=\"remove\" href=\"\">Remove</a></li>");
-        $(input).val('')
-    }
-    var elems = $(list).find('li').detach().sort(function (a, b) {
-        return ($(a).data("name") < $(b).data("name") ? -1 : $(a).data("name") > $(b).data("name") ? 1 : 0);
-    });
-    $(list).append(elems);
-}
 $.postJSON = function(url, data, callback) {
     return jQuery.ajax({
         'type': 'POST',

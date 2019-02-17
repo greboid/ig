@@ -2,30 +2,6 @@ initial = true;
 scrolling = false;
 finished = false;
 
-$('#app').before('<div id="menu"></div>')
-
-$.getJSON($(location).attr('protocol') + '//' + $(location).attr('host') + '/profiles', {}, function(data) {
-  $.each(data, function(index, profile) {
-    if ($(location).attr('pathname').substr(8) == profile) {
-      $('#menu').append('<li><a href="/'+profile+'" class="active">'+profile+'</a></li>')
-    } else {
-      $('#menu').append('<li><a href="/'+profile+'">'+profile+'</a></li>')
-    }
-  })
-})
-
-getImages()
-$(window).scroll(function() {
-  if (!scrolling && ($(window).scrollTop() + $(window).height() == $(document).height())) {
-    getImages()
-  }
-});
-$( window ).resize(function() {
-  if (!scrolling && $('#app').height() < $(window).height()) {
-    getImages()
-  }
-});
-
 function getImages() {
   scrolling = true;
   offset = $("#app img").length
@@ -57,5 +33,29 @@ function getImages() {
     }
   })
 }
+
+$("#app").before('<div id="menu"></div>');
+
+$.getJSON($(location).attr('protocol') + '//' + $(location).attr('host') + '/profiles', {}, function(data) {
+  $.each(data, function(index, profile) {
+    if ($(location).attr('pathname').substr(8) == profile) {
+      $('#menu').append('<li><a href="/'+profile+'" class="active">'+profile+'</a></li>');
+    } else {
+      $('#menu').append('<li><a href="/'+profile+'">'+profile+'</a></li>');
+    }
+  })
+})
+
+getImages();
+$(window).scroll(function() {
+  if (!scrolling && ($(window).scrollTop() + $(window).height() == $(document).height())) {
+    getImages();
+  }
+});
+$( window ).resize(function() {
+  if (!scrolling && $('#app').height() < $(window).height()) {
+    getImages();
+  }
+});
 
 

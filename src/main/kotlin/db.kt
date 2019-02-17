@@ -27,21 +27,76 @@ class Database(private val config: Config) {
         }
     }
 
-    fun addProfile(name: String) =
-            connection.setAndUpdate(Schema.addProfile, listOf(name)) == 1
-
-    fun delProfile(name: String) {
-        val profileID = getProfileID(name) ?: return
-        connection.setAndUpdate(Schema.deleteProfileFromProfileUsers, listOf(profileID))
-        connection.setAndUpdate(Schema.delProfile, listOf(name))
+    fun getAccounts(): List<String> {
+        return connection.getAllString(Schema.getAccounts, "username")
     }
 
-    fun getProfiles() =
-            connection.getAllString(Schema.getProfiles, "name")
+    fun getAccountID(name: String): Int? {
+        val statement = connection.prepareStatement(Schema.getAccountID)
+        statement.setString(1, name)
+        val results = statement.executeQuery()
+        results.first()
+        val returnValue = results.getInt(1)
+        results.close()
+        statement.close()
+        return returnValue
+    }
 
-    fun getProfileUsers(profile: String): List<String> {
+    fun addAccount(name: String, password: String) {
+        connection.setAndUpdate(Schema.addAccount, listOf(name, password))
+    }
+
+    fun delAccount(name: String) =
+            connection.setAndUpdate(Schema.delAccount, listOf(name)) == 1
+
+    fun getAccountAdmin(name: String): Boolean {
+        val statement = connection.prepareStatement(Schema.getAccountAdmin) ?: return false
+        statement.setString(1, name)
+        val result = statement.executeQuery()
+        result.first()
+        val returnValue = result.getBoolean(1)
+        result.close()
+        statement.close()
+        return returnValue
+    }
+
+    fun setAccountAdmin(name: String, admin: Boolean): Boolean {
+        val statement = connection.prepareStatement(Schema.setAccountAdmin) ?: return false
+        statement.setBoolean(1, admin)
+        statement.setString(2, name)
+        return statement.executeUpdate() == 1
+    }
+
+    fun addCategory(account: String, name: String): Boolean {
+        val accountID = getAccountID(account) ?: return false
+        return connection.setAndUpdate(Schema.addCategory, listOf(accountID, name)) == 1
+    }
+
+
+    fun delCategory(account: String, name: String): Boolean {
+        val accountID = getAccountID(account) ?: return false
+        return connection.setAndUpdate(Schema.delCategory, listOf(accountID, name)) == 1
+    }
+
+    fun getCategories(account: String): List<String> {
+        val accountID = getAccountID(account) ?: return emptyList()
+        val statement = connection.prepareStatement(Schema.getProfiles) ?: return emptyList()
+        statement.setInt(1, accountID)
+        val results: ResultSet = statement.executeQuery()
+        val returnValue = sequence {
+            while (results.next()) {
+                yield(results.getString(1))
+            }
+        }.toList()
+        results.close()
+        statement.close()
+        return returnValue
+    }
+
+    fun getProfileUsers(account: String, profile: String): List<String> {
         val s = connection.prepareStatement(Schema.getProfileUsers)
         s.setString(1, profile)
+        s.setString(2, account)
         val results: ResultSet = s.executeQuery()
         val returnValue = sequence {
             while (results.next()) {
@@ -53,9 +108,10 @@ class Database(private val config: Config) {
         return returnValue
     }
 
-    fun getUserProfiles(user: String): List<String> {
+    fun getSourcesCategories(account: String, source: String): List<String> {
         val s = connection.prepareStatement(Schema.getUserProfiles)
-        s.setString(1, user)
+        s.setString(1, source)
+        s.setString(2, account)
         val results: ResultSet = s.executeQuery()
         val returnValue = sequence {
             while (results.next()) {
@@ -67,28 +123,41 @@ class Database(private val config: Config) {
         return returnValue
     }
 
-    fun addUserProfile(user: String, profile: String): Boolean {
-        val userID = getUserID(user) ?: return false
-        val profileID = getProfileID(profile) ?: return false
+    fun addSourceCategory(account: String, user: String, profile: String): Boolean {
+        val accountID = getAccountID(account) ?: return false
+        val userID = getSourcesID(user) ?: return false
+        val profileID = getCategoryID(accountID, profile) ?: return false
         return connection.setAndUpdate(Schema.addUserToProfile, listOf(userID, profileID)) == 1
     }
 
-    fun delUserProfile(user: String, profile: String): Boolean {
-        val userID = getUserID(user) ?: return false
-        val profileID = getProfileID(profile) ?: return false
+    fun delSourceCategory(account: String, user: String, profile: String): Boolean {
+        val accountID = getAccountID(account) ?: return false
+        val userID = getSourcesID(user) ?: return false
+        val profileID = getCategoryID(accountID, profile) ?: return false
         return connection.setAndUpdate(Schema.deleteProfileFromUser, listOf(userID, profileID)) == 1
     }
 
-    fun addUser(name: String) =
-            connection.setAndUpdate(Schema.addUser, listOf(name)) == 1
+    fun addSource(account: String, name: String, sourceType: String): Boolean {
+        val sourceTypeID = getSourceTypeID(sourceType) ?: return false
+        return connection.setAndUpdate(Schema.addUser, listOf(name, sourceTypeID)) == 1
+    }
 
-    fun delUser(name: String): Boolean {
-        val userID = getUserID(name) ?: return false
-        connection.setAndUpdate(Schema.deleteUserFromProfileUsers, listOf(userID))
+    fun delSource(account: String, name: String): Boolean {
         return connection.setAndUpdate(Schema.delUser, listOf(name)) == 1
     }
 
-    fun getUserID(name: String): Int? {
+    fun getSourceTypeID(name: String): Int? {
+        val statement = connection.prepareStatement(Schema.getSourceTypeID) ?: return null
+        statement.setString(1, name)
+        val result = statement.executeQuery()
+        result.first()
+        val returnValue = result.getInt(1)
+        result.close()
+        statement.close()
+        return returnValue
+    }
+
+    fun getSourcesID(name: String): Int? {
         val statement = connection.prepareStatement(Schema.getUserID) ?: return null
         statement.setString(1, name)
         val result = statement.executeQuery()
@@ -99,9 +168,10 @@ class Database(private val config: Config) {
         return returnValue
     }
 
-    fun getProfileID(name: String): Int? {
+    fun getCategoryID(account: Int, name: String): Int? {
         val statement = connection.prepareStatement(Schema.getProfileID) ?: return null
         statement.setString(1, name)
+        statement.setInt(2, account)
         val result = statement.executeQuery()
         result.first()
         val returnValue = result.getInt(1)
@@ -110,8 +180,11 @@ class Database(private val config: Config) {
         return returnValue
     }
 
-    fun getUsers(): List<String> =
-            connection.getAllString(Schema.getUsers, "username")
+    fun getSources(account: String): List<String> =
+            connection.getAllString(Schema.getUsers, "name")
+
+    fun getAllSources(): List<String> =
+            connection.getAllString(Schema.getUsers, "name")
 
     private fun checkIGPost(shortcode: String, ord: Int): Boolean {
         val statement = connection.prepareStatement(Schema.checkIGPost) ?: return false
@@ -128,23 +201,27 @@ class Database(private val config: Config) {
     fun addIGPost(shortcode: String, ord: Int, userID: Int, thumbnailURL: String,
                   imageURL: String, caption: String, timestamp: Int): Boolean {
         return checkIGPost(shortcode, ord) && connection.setAndUpdate(Schema.addIGPost,
-                listOf(shortcode, ord, userID, thumbnailURL, imageURL, caption, timestamp)) == 1
+                listOf(shortcode, ord, thumbnailURL, imageURL, caption, timestamp, userID)) == 1
     }
 
-    fun getAllIgPost(start: Int = 0, count: Int = 5) = getIntIGPost(null, start, count)
-    fun getIGPost(profile: String, start: Int = 0, count: Int = 5) = getIntIGPost(profile, start, count)
+    fun getAllIgPost(account: String, start: Int = 0, count: Int = 5) = getIntIGPost(account,null, start, count)
+    fun getIGPost(account: String, profile: String, start: Int = 0, count: Int = 5) = getIntIGPost(account, profile, start, count)
 
-    private fun getIntIGPost(profile: String? = null, start: Int = 0, count: Int = 5): List<IGPost> {
+    private fun getIntIGPost(account: String, profile: String? = null, start: Int = 0, count: Int = 5): List<IGPost> {
+        val accountID = getAccountID(account) ?: return emptyList()
+        println("Get Posts: $account $profile $start $count")
         val s = (if (profile == null) {
             val s = connection.prepareStatement(Schema.selectAllIGPosts)
             s.setInt(1, count)
             s.setInt(2, start)
+            s.setInt(3, accountID)
             s
         } else {
             val s = connection.prepareStatement(Schema.selectIGPosts)
             s.setString(1, profile)
             s.setInt(2, count)
             s.setInt(3, start)
+            s.setInt(3, accountID)
             s
         })
         val results = s.executeQuery()
@@ -167,119 +244,108 @@ class Database(private val config: Config) {
     }
 
     internal object Schema {
+        internal val addSourceType = """
+            insert into sourcetype (name) values (?)
+        """.trimIndent()
+        internal val getSourceTypeID = """
+            select id from sourceTypes where name=?
+        """.trimIndent()
+        internal val getAccountAdmin = """
+            select isAdmin from accounts where username=?
+        """.trimIndent()
+        internal val setAccountAdmin = """
+            update accounts set isAdmin = ? where username=?
+        """.trimIndent()
+        internal val delAccount = """
+            delete from accounts where username=?
+        """.trimIndent()
+        internal val getAccountID = """
+            select id from accounts where username=?
+        """.trimIndent()
+        internal val addAccount = """
+            insert into accounts (username, password, isAdmin) values (?, ?, false)
+        """.trimIndent()
+        internal val getAccounts = """
+            select username from accounts
+        """.trimIndent()
         internal val deleteProfileFromUser = """
-            delete from profile_users where userID=? AND profileID=?
+            delete from categoryMap where source_ID=? AND categories_id=?
         """.trimIndent()
         internal val addUserToProfile = """
-            insert into profile_users (userID,profileID) values (?,?)
-        """.trimIndent()
-        internal val deleteProfileFromProfileUsers = """
-            delete from profile_users where profileID=?
+            insert into categoryMap (source_ID,categories_id) values (?,?)
         """.trimIndent()
         internal val getProfileID = """
-            select id from profiles where name=?
-        """.trimIndent()
-        internal val deleteUserFromProfileUsers = """
-            delete from profile_users where userID=?
-        """.trimIndent()
-        internal val getUserProfiles = """
-            select profiles.name
-            from profile_users
-            left join profiles on profile_users.profileID=profiles.id
-            left join users on profile_users.userID=users.id
-            where users.username=?
+            select id from categories where name=? and account_id=?
         """.trimIndent()
         internal val getProfileUsers = """
-            select users.username
-            from profile_users
-            left join profiles on profile_users.profileID=profiles.id
-            left join users on profile_users.userID=users.id
-            where profiles.name=?
+            select sources.name
+            from categories
+            left join accounts on accounts.id=categories.Account_ID
+            left join categorymap on categorymap.Categories_ID=categories.ID
+            left join sources on sources.ID=categorymap.Source_ID
+            where categories.name=?
+            and accounts.username=?
+        """.trimIndent()
+        internal val getUserProfiles = """
+            select categories.name
+            from categorymap
+            left join categories on categorymap.categories_ID=categories.id
+            left join sources on categorymap.source_ID=sources.id
+            left join accounts on accounts.id=categories.Account_ID
+            where sources.name=?
+            and accounts.username=?
         """.trimIndent()
         internal val getUserID = """
-            select id from users where username=?
+            select id from sources where name=?
         """.trimIndent()
-        internal val addProfile = """
-            insert into profiles(name) values (?)
+        internal val addCategory = """
+            insert into categories(account_id, name) values (?, ?)
         """.trimIndent()
-        internal val delProfile = """
-            delete from profiles where name=?
+        internal val delCategory = """
+            delete from categories where account_id=? AND name=?
         """.trimIndent()
         internal val getProfiles = """
-            select name from profiles
+            select name from categories where Account_ID=?
         """.trimIndent()
         internal val addUser = """
-            insert into users(username) values (?)
+            insert into sources (name, sourceType_ID) values (?, ?)
         """.trimIndent()
         internal val delUser = """
-            delete from users where username=?
+            delete from sources where name=?
         """.trimIndent()
         internal val getUsers = """
-            select username from users
+            select name from sources
         """.trimIndent()
         internal val checkIGPost = """
-            select count(*) from igposts WHERE shortcode=? AND ord=?
+            select count(*) from sourceitems WHERE identifier=? AND `index`=?
         """.trimIndent()
         internal val addIGPost = """
-            insert into igposts
-            (shortcode,ord,userID,thumbnailURL,imageURL,caption,timestamp)
+            insert into sourceitems
+            (identifier,`index`,thumbnail,url,caption,`timestamp`,Source_ID)
             values (?,?,?,?,?,?,?)
         """.trimIndent()
         internal val selectAllIGPosts = """
-            SELECT shortcode, users.username, thumbnailURL, imageURL, caption, timestamp, ord
-            FROM igposts
-            LEFT JOIN users on users.id=igposts.userID
-            LEFT JOIN profile_users on profile_users.userid=users.id
-            LEFT JOIN profiles on profile_users.profileid=profiles.id
+            SELECT identifier, sources.name, thumbnail, url, caption, `timestamp`, `index`
+            FROM sourceitems
+            LEFT JOIN sources on sources.id=sourceitems.Source_ID
+            LEFT JOIN CategoryMap on CategoryMap.Source_ID=sources.id
+            LEFT JOIN categories on CategoryMap.Categories_ID=categories.id
             ORDER BY timestamp DESC
             LIMIT ?
             OFFSET ?
         """.trimIndent()
         internal val selectIGPosts = """
-            SELECT shortcode, users.username, thumbnailURL, imageURL, caption, timestamp, ord
-            FROM igposts
-            LEFT JOIN users on users.id=igposts.userID
-            LEFT JOIN profile_users on profile_users.userid=users.id
-            LEFT JOIN profiles on profile_users.profileid=profiles.id
-            WHERE profiles.name=?
+            SELECT identifier, sources.name, thumbnail, url, caption, `timestamp`, `index`
+            FROM sourceitems
+            LEFT JOIN sources on sources.id=sourceitems.Source_ID
+            LEFT JOIN CategoryMap on CategoryMap.Source_ID=sources.id
+            LEFT JOIN categories on CategoryMap.Categories_ID=categories.id
+            WHERE categories.name=?
             ORDER BY timestamp DESC
             LIMIT ?
             OFFSET ?
         """.trimIndent()
-        private val createProfiles = """
-            CREATE TABLE IF NOT EXISTS profiles (
-            id INTEGER PRIMARY KEY AUTO_INCREMENT,
-            name VARCHAR(255) UNIQUE
-            ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-        """.trimIndent().replace("[\n\r]".toRegex(), "")
-        private val createProfileUsers = """
-            CREATE TABLE IF NOT EXISTS profile_users (
-            id INTEGER PRIMARY KEY AUTO_INCREMENT,
-            userID INT,
-            profileID INT,
-            UNIQUE(userID, profileID)
-            ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-        """.trimIndent().replace("[\n\r]".toRegex(), "")
-        private val createUsers = """
-            CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTO_INCREMENT,
-            username VARCHAR(255) UNIQUE,
-            lastpoll INTEGER
-            ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-        """.trimIndent().replace("[\n\r]".toRegex(), "")
-        private val createIGPosts = """
-            CREATE TABLE IF NOT EXISTS igposts (
-            shortcode varchar(16),
-            ord INTEGER,
-            userID INTEGER,
-            thumbnailURL TEXT,
-            imageURL TEXT,
-            caption TEXT,
-            timestamp INTEGER,
-            PRIMARY KEY (shortcode, ord)
-            ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-        """.trimIndent().replace("[\n\r]".toRegex(), "")
-        val createAllTables: List<String> = listOf(createProfiles, createProfileUsers, createUsers, createIGPosts)
+        val createAllTables = ClassLoader.getSystemResource("sql/schema.sql").readText().split(";").filter { it.isNotEmpty() }
     }
 }
 
@@ -303,6 +369,7 @@ fun PreparedStatement.setAndUpdate(values: List<Any>) = use {
         when (value) {
             is String -> setString(index + 1, value)
             is Int -> setInt(index + 1, value)
+            is Boolean -> setBoolean(index + 1, value)
             else -> setObject(index + 1, value)
         }
     }
