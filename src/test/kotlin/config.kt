@@ -13,19 +13,19 @@ internal class ConfigTest {
 
     @Test
     fun `test loading valid config file`() {
-        val config = getConfig(Paths.get(this.javaClass.getResource("/config/example.yml").toURI())) as Config
+        val config = getConfig(Paths.get(this.javaClass.getResource("example.yml").toURI())) as Config
         assertNotNull(config)
     }
 
     @Test
     fun `test loading database from valid file`() {
-        val config = getConfig(Paths.get(this.javaClass.getResource("/config/example.yml").toURI())) as Config
+        val config = getConfig(Paths.get(this.javaClass.getResource("example.yml").toURI())) as Config
         assertEquals("ig", config.db)
     }
 
     @Test
     fun `test loading database from valid file without database`() {
-        val config = getConfig(Paths.get(this.javaClass.getResource("/config/nodb.yml").toURI())) as Config
+        val config = getConfig(Paths.get(this.javaClass.getResource("nodb.yml").toURI())) as Config
         assertEquals("jdbc:sqlite:database.sqlite", config.db)
     }
 

@@ -1,1 +1,0 @@
-INSERT INTO `SourceTypes` (`id`, `name`) VALUES (1, 'TestType');
