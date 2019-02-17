@@ -1,6 +1,7 @@
 package com.greboid.scraper
 
 import com.google.gson.Gson
+import freemarker.cache.ClassTemplateLoader
 import io.ktor.application.ApplicationCallPipeline
 import io.ktor.application.call
 import io.ktor.application.install
@@ -17,6 +18,8 @@ import io.ktor.features.DefaultHeaders
 import io.ktor.features.PartialContent
 import io.ktor.features.StatusPages
 import io.ktor.features.XForwardedHeaderSupport
+import io.ktor.freemarker.FreeMarker
+import io.ktor.freemarker.FreeMarkerContent
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.content.files
@@ -65,6 +68,9 @@ class Web(private val database: Database, private val config: Config) {
                     call.respond(HttpStatusCode.InternalServerError, "Internal Server Error")
                     cause.printStackTrace()
                 }
+            }
+            install(FreeMarker) {
+                templateLoader = ClassTemplateLoader(this::class.java.classLoader, "templates")
             }
             install(Authentication) {
                 form(name = "auth") {
@@ -179,6 +185,21 @@ class Web(private val database: Database, private val config: Config) {
                         profilesToAdd.forEach { profile -> database.addProfile(profile) }
                         call.respond(HttpStatusCode.OK, "{}")
                     }
+                }
+                get ("/rss/{profile}") {
+                    val profile = call.parameters["profile"] ?: ""
+                    if (profile.isEmpty()) {
+                        call.respondRedirect("/", false)
+                    } else {
+
+                    }
+                    val rss = emptyMap<String, String>().toMutableMap()
+                    rss["title"] = profile
+                    rss["description"] = "Items from Instagram: $profile"
+                    rss["link"] = "$ig/$profile"
+                    val feedItems = database.getIGPost(profile, 0, 100)
+                    val location = call.request.local.scheme + "://" + call.request.local.host + ":" + call.request.local.port + call.request.local.uri
+                    call.respond(FreeMarkerContent("rss.ftl", mapOf("feedItems" to feedItems, "rss" to rss, "url" to location)))
                 }
                 get("/{...}") {
                     call.respond(call.resolveResource("/html/index.html", "") ?: HttpStatusCode.InternalServerError)

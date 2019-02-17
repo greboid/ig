@@ -11,7 +11,7 @@ import java.nio.file.Paths
 import java.time.Duration
 
 @KtorExperimentalAPI
-fun main(args: Array<String>) = runBlocking {
+fun main() = runBlocking {
     val configFile = Paths.get("config/config.yml")
     if (!Files.exists(configFile)) {
         println("No config exists, creating default.")

@@ -5,6 +5,9 @@ import java.sql.DriverManager
 import java.sql.PreparedStatement
 import java.sql.ResultSet
 import java.sql.SQLException
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 class Database(private val config: Config) {
     internal lateinit var connection: Connection
@@ -157,7 +160,9 @@ class Database(private val config: Config) {
                         url = results.getString(4),
                         caption = results.getString(5),
                         timestamp = results.getInt(6),
-                        ord = results.getInt(7)
+                        ord = results.getInt(7),
+                        date = Instant.ofEpochMilli(results.getInt(6).toLong() * 1000)
+                               .atZone(ZoneId.of("UTC")).format(DateTimeFormatter.RFC_1123_DATE_TIME)
                 ))
             }
         }.toList()
@@ -285,7 +290,7 @@ class Database(private val config: Config) {
 
 data class IGPost(val shortcode: String, val source: String,
                   val thumb: String, val url: String,
-                  val caption: String, val timestamp: Int, internal val ord: Int)
+                  val caption: String, val timestamp: Int, val ord: Int, val date: String)
 
 fun ResultSet.getAllString(fieldName: String) = sequence {
     use {
