@@ -46,9 +46,17 @@ function getImages() {
     if (images.length == 0) {
       finished = true;
     }
-    $.each(images, function(index, image) {
-      $('#app').append($('<a data-fancybox="images" class="item" title="'+image.source+'" data-shortcode="'+image.shortcode+'" data-source="'+image.source+'" data-caption="<a href=\'https://instagram.com/'+image.source+'\'>'+image.source+'</a> - <a href=\'https://instagram.com/p/'+image.shortcode+'\'>'+image.shortcode+'</a><br>'+image.caption+'" href="' + image.url + '"><img class="itemimage" src="' + image.thumb + '"/></a>'));
-    })
+    var promises = images.map(function (image, index) {
+        return $.get(
+            $(location).attr('protocol') + '//' + $(location).attr('host') + '/template/image/'+image.shortcode
+        );
+    });
+    $.when.apply($, promises).done(function() {
+        for (var i = 0; i < arguments.length; i++) {
+        console.log($($(arguments[i][0]).find('.perfundo__link')[0]).attr("href"))
+            $('#app').append(arguments[i][0])
+        }
+    });
   }).done(function() {
     initial = false;
     scrolling = false;
@@ -57,5 +65,3 @@ function getImages() {
     }
   })
 }
-
-

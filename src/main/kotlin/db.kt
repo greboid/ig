@@ -134,6 +134,26 @@ class Database(private val config: Config) {
                 listOf(shortcode, ord, userID, thumbnailURL, imageURL, caption, timestamp)) == 1
     }
 
+    fun getIGPost(shortcode: String): IGPost {
+        val s = connection.prepareStatement(Schema.selectIGPost)
+        s.setString(1, shortcode)
+        val results = s.executeQuery()
+        results.next()
+        val returnValue = IGPost(
+                shortcode = results.getString(1),
+                source = results.getString(2),
+                thumb = results.getString(3),
+                url = results.getString(4),
+                caption = results.getString(5),
+                timestamp = results.getInt(6),
+                ord = results.getInt(7),
+                date = Instant.ofEpochMilli(results.getInt(6).toLong() * 1000)
+                        .atZone(ZoneId.of("UTC")).format(DateTimeFormatter.RFC_1123_DATE_TIME)
+        )
+        results.close()
+        s.close()
+        return returnValue
+    }
     fun getAllIgPost(start: Int = 0, count: Int = 5) = getIntIGPost(null, start, count)
     fun getIGPost(profile: String, start: Int = 0, count: Int = 5) = getIntIGPost(profile, start, count)
 
@@ -229,6 +249,14 @@ class Database(private val config: Config) {
             insert into igposts
             (shortcode,ord,userID,thumbnailURL,imageURL,caption,timestamp)
             values (?,?,?,?,?,?,?)
+        """.trimIndent()
+        internal val selectIGPost = """
+            SELECT shortcode, users.username, thumbnailURL, imageURL, caption, timestamp, ord
+            FROM igposts
+            LEFT JOIN users on users.id=igposts.userID
+            LEFT JOIN profile_users on profile_users.userid=users.id
+            LEFT JOIN profiles on profile_users.profileid=profiles.id
+            WHERE igposts.shortcode=?
         """.trimIndent()
         internal val selectAllIGPosts = """
             SELECT shortcode, users.username, thumbnailURL, imageURL, caption, timestamp, ord

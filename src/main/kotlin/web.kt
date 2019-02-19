@@ -2,6 +2,9 @@ package com.greboid.scraper
 
 import com.google.gson.Gson
 import freemarker.cache.ClassTemplateLoader
+import freemarker.template.Configuration
+import freemarker.template.Configuration.DEFAULT_INCOMPATIBLE_IMPROVEMENTS
+import freemarker.template.Version
 import io.ktor.application.ApplicationCallPipeline
 import io.ktor.application.call
 import io.ktor.application.install
@@ -45,6 +48,7 @@ import io.ktor.sessions.get
 import io.ktor.sessions.sessions
 import io.ktor.util.KtorExperimentalAPI
 import io.ktor.util.hex
+import java.io.StringWriter
 
 data class IGSession(val user: String, val admin: Boolean, var previousPage: String = "/")
 
@@ -201,8 +205,15 @@ class Web(private val database: Database, private val config: Config) {
                     val location = call.request.local.scheme + "://" + call.request.local.host + ":" + call.request.local.port + call.request.local.uri
                     call.respond(FreeMarkerContent("rss.ftl", mapOf("feedItems" to feedItems, "rss" to rss, "url" to location)))
                 }
+                get ("/template/image/{shortcode}") {
+                    val shortcode = call.parameters["shortcode"] ?: ""
+                    if (shortcode.isBlank()) {
+                        call.respond(HttpStatusCode.NotFound, "Shortcode not found")
+                    }
+                    call.respond(getImageLightbox(database.getIGPost(shortcode)))
+                }
                 get("/{...}") {
-                    call.respond(call.resolveResource("/html/index.html", "") ?: HttpStatusCode.InternalServerError)
+                    call.respond(FreeMarkerContent("index.ftl", emptyMap<String, Any>()))
                 }
                 get("/") {
                     val profiles = database.getProfiles()
@@ -215,6 +226,16 @@ class Web(private val database: Database, private val config: Config) {
             }
         }
         server.start(wait = true)
+    }
+
+    fun getImageLightbox(image: IGPost): String {
+        val cfg = Configuration(DEFAULT_INCOMPATIBLE_IMPROVEMENTS)
+        cfg.setClassForTemplateLoading(this::class.java, "/templates/")
+        cfg.defaultEncoding = "UTF-8"
+        val template = cfg.getTemplate("image.ftl")
+        val out = StringWriter()
+        template.process(mapOf("image" to image), out)
+        return out.buffer.toString()
     }
 }
 
