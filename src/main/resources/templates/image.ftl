@@ -3,7 +3,13 @@
   </a>
   <div id="${image.shortcode}${image.ord}" class="perfundo__overlay fadeInLeft">
     <figure class="perfundo__content perfundo__figure">
-        <img src="${image.url}">
+        <#if image.url?contains(".mp4")>
+            <video controls>
+                <source src="${image.url}" type="video/mp4">
+            </video>
+        <#else>
+            <img src="${image.url}">
+        </#if>
         <figcaption class="perfundo__figcaption">
         <a href="https://instagram.com/${image.source}">${image.source}</a> - <a href="https://instagram.com/p/${image.shortcode}">${image.shortcode}</a>
         <br>${image.caption}
