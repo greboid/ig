@@ -134,9 +134,10 @@ class Database(private val config: Config) {
                 listOf(shortcode, ord, userID, thumbnailURL, imageURL, caption, timestamp)) == 1
     }
 
-    fun getIGPost(shortcode: String): IGPost {
+    fun getIGPost(shortcode: String, ord: Int = 0): IGPost {
         val s = connection.prepareStatement(Schema.selectIGPost)
         s.setString(1, shortcode)
+        s.setInt(2, ord)
         val results = s.executeQuery()
         results.next()
         val returnValue = IGPost(
@@ -257,6 +258,7 @@ class Database(private val config: Config) {
             LEFT JOIN profile_users on profile_users.userid=users.id
             LEFT JOIN profiles on profile_users.profileid=profiles.id
             WHERE igposts.shortcode=?
+            AND igposts.ord=?
         """.trimIndent()
         internal val selectAllIGPosts = """
             SELECT shortcode, users.username, thumbnailURL, imageURL, caption, timestamp, ord

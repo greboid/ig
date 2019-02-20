@@ -205,15 +205,16 @@ class Web(private val database: Database, private val config: Config) {
                     val location = call.request.local.scheme + "://" + call.request.local.host + ":" + call.request.local.port + call.request.local.uri
                     call.respond(FreeMarkerContent("rss.ftl", mapOf("feedItems" to feedItems, "rss" to rss, "url" to location)))
                 }
-                get ("/template/image/{shortcode}") {
+                get ("/template/image/{shortcode}/{ord?}") {
                     val shortcode = call.parameters["shortcode"] ?: ""
+                    val ord = call.parameters["ord"]?.toInt() ?: 0
                     if (shortcode.isBlank()) {
                         call.respond(HttpStatusCode.NotFound, "Shortcode not found")
                     }
-                    call.respond(getImageLightbox(database.getIGPost(shortcode)))
+                    call.respond(getImageLightbox(database.getIGPost(shortcode, ord)))
                 }
                 get("/{...}") {
-                    call.respond(FreeMarkerContent("index.ftl", emptyMap<String, Any>()))
+                    call.respond(FreeMarkerContent("index.ftl", mapOf("profiles" to database.getProfiles())))
                 }
                 get("/") {
                     val profiles = database.getProfiles()
