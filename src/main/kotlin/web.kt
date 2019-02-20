@@ -219,7 +219,7 @@ class Web(private val database: Database, private val config: Config) {
                 get("/") {
                     val profiles = database.getProfiles()
                     if (profiles.isNotEmpty()) {
-                        call.respondRedirect(database.getProfiles().first(), false)
+                        call.respondRedirect(database.getProfiles().first()+'#', false)
                     } else {
                         call.respondRedirect("/admin", false)
                     }
