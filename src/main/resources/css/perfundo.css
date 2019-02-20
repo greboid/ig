@@ -50,6 +50,8 @@
   display: none;
   /* [1] */
   margin: 1.5em;
+  width: 100%;
+  text-align: center;
 }
 
   :target > .perfundo__figure,
@@ -58,8 +60,8 @@
     /* [2] */
 }
   .perfundo__figure img {
-    display: block;
-    height: 0;
+    max-height: 90%;
+    max-width: 90%;
 }
 
 .perfundo__figcaption {
@@ -71,10 +73,13 @@
  * 2. Scale the background image to match the size of the image container.
  */
 .perfundo__image {
-  max-width: 100%;
+  max-width: 80%;
+  max-height: 80%;
   /* [1] */
   background-size: 100%;
   /* [2] */
+  background-size: contain;
+  background-repeat: no-repeat;
 }
 
 /**
