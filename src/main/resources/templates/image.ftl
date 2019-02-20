@@ -10,5 +10,5 @@
         <br>${image.caption}
       </figcaption>
     </figure>
-    <a href="#perfundo-untarget" class="perfundo__close perfundo__control">Close</a>
+    <a href="#" class="perfundo__close perfundo__control">Close</a>
   </div>
