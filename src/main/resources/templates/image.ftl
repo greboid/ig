@@ -8,7 +8,8 @@
                 <source src="${image.url}" type="video/mp4">
             </video>
         <#else>
-            <img src="${image.url}">
+            <img src="${image.thumb}">
+            <div class="perfundo__image" style="background-image: url(${image.url});"></div>
         </#if>
         <figcaption class="perfundo__figcaption">
         <a href="https://instagram.com/${image.source}">${image.source}</a> - <a href="https://instagram.com/p/${image.shortcode}">${image.shortcode}</a>
