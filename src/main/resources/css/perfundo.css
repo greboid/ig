@@ -67,6 +67,11 @@
   color: #fff;
 }
 
+.perfundo__figcaption a {
+  text-decoration: none;
+  color: #fff;
+}
+
 /**
  * 1. Make the image container responsive.
  * 2. Scale the background image to match the size of the image container.

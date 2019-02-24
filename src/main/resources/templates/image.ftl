@@ -12,8 +12,7 @@
             <div class="perfundo__image" style="background-image: url(${image.url});"></div>
         </#if>
         <figcaption class="perfundo__figcaption">
-        <a href="https://instagram.com/${image.source}">${image.source}</a> - <a href="https://instagram.com/p/${image.shortcode}">${image.shortcode}</a>
-        <br>${image.caption}
+        <a href="https://instagram.com/p/${image.shortcode}">${image.source}</a><br>${image.caption}
       </figcaption>
     </figure>
     <a href="#" class="perfundo__close perfundo__control">Close</a>
