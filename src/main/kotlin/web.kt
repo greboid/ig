@@ -4,7 +4,6 @@ import com.google.gson.Gson
 import freemarker.cache.ClassTemplateLoader
 import freemarker.template.Configuration
 import freemarker.template.Configuration.DEFAULT_INCOMPATIBLE_IMPROVEMENTS
-import freemarker.template.Version
 import io.ktor.application.ApplicationCallPipeline
 import io.ktor.application.call
 import io.ktor.application.install
