@@ -11,32 +11,44 @@ import java.io.File
 import java.net.URL
 import javax.imageio.ImageIO
 
-class IGRetriever : Retriever {
-    private val instagram = Instagram()
+class IGRetriever(
+        private val database: Database,
+        private val config: Config,
+        private val instagram: Instagram = Instagram()
+) : Retriever {
 
-    override suspend fun start(database: Database, config: Config) {
+    override suspend fun start() {
+        retrieveAll()
+    }
+
+    override suspend fun retrieveAll() {
         val users = sequence {
             for (user in database.getUsers()) {
                 yield(instagram.getUserProfile(user))
             }
         }.filterNotNull()
         users.filterNotNull().forEach {
-            val userID = database.getUserID(it.username)
-                    ?: run { println("Unable to get id for user: ${it.username}"); return }
-            it.posts.forEach { post ->
-                if (post.type == PostType.SIDECAR) {
-                    post.displayURL.forEachIndexed { index, url ->
-                        val out = File("thumbs/${post.shortcode}$index.jpg")
-                        thumbnail(url, out)
-                        database.addIGPost(post.shortcode, index, userID, out.toString(),
-                                url.toString(), post.caption, post.timestamp)
-                    }
-                } else {
-                    val out = File("thumbs/${post.shortcode}.jpg")
-                    thumbnail(post.thumbnailURL, out)
-                    database.addIGPost(post.shortcode, 0, userID, out.toString(),
-                            post.displayURL.first().toString(), post.caption, post.timestamp)
+            retrieve(it.username)
+        }
+    }
+
+    override suspend fun retrieve(identifier: String) {
+        val profile = instagram.getUserProfile(identifier) ?: return
+        val userID = database.getUserID(identifier)
+                ?: run { println("Unable to get id for user: ${profile.username}"); return }
+        profile.posts.forEach { post ->
+            if (post.type == PostType.SIDECAR) {
+                post.displayURL.forEachIndexed { index, url ->
+                    val out = File("thumbs/${post.shortcode}$index.jpg")
+                    thumbnail(url, out)
+                    database.addIGPost(post.shortcode, index, userID, out.toString(),
+                            url.toString(), post.caption, post.timestamp)
                 }
+            } else {
+                val out = File("thumbs/${post.shortcode}.jpg")
+                thumbnail(post.thumbnailURL, out)
+                database.addIGPost(post.shortcode, 0, userID, out.toString(),
+                        post.displayURL.first().toString(), post.caption, post.timestamp)
             }
         }
     }

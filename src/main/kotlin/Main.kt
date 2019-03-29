@@ -24,20 +24,21 @@ fun main() = runBlocking {
         return@runBlocking
     }
     val database = Database(config)
+    val retriever = IGRetriever(database, config)
     database.connect()
     val web = launch {
-        Web(database, config).start()
+        Web(database, config, retriever).start()
     }
     delay(Duration.ofSeconds(2))
     if (!web.isActive) {
         return@runBlocking
     }
-    val retriever = launch {
+    val retrieverJob = launch {
         while (isActive) {
-           IGRetriever().start(database, config)
+            retriever.start()
             delay(Duration.ofMinutes(15))
         }
     }
-    retriever.join()
+    retrieverJob.join()
     web.join()
 }
