@@ -48,13 +48,17 @@ class IGRetriever(
             if (post.type == PostType.SIDECAR) {
                 post.displayURL.forEachIndexed { index, url ->
                     val out = File("thumbs/${post.shortcode}$index.jpg")
-                    thumbnail(url, out)
+                    if (!out.exists()) {
+                        thumbnail(url, out)
+                    }
                     database.addIGPost(post.shortcode, index, userID, out.toString(),
                             url.toString(), post.caption, post.timestamp)
                 }
             } else {
                 val out = File("thumbs/${post.shortcode}.jpg")
-                thumbnail(post.thumbnailURL, out)
+                if (!out.exists()) {
+                    thumbnail(post.thumbnailURL, out)
+                }
                 database.addIGPost(post.shortcode, 0, userID, out.toString(),
                         post.displayURL.first().toString(), post.caption, post.timestamp)
             }
