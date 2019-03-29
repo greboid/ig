@@ -27,7 +27,7 @@ fun main() = runBlocking {
     val retriever = IGRetriever(database, config)
     database.connect()
     val web = launch {
-        Web(database, config, retriever).start()
+        Web(database, config).start()
     }
     delay(Duration.ofSeconds(2))
     if (!web.isActive) {
