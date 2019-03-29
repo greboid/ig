@@ -32,5 +32,6 @@ class Config(
         val adminUsername: String = "admin",
         val adminPassword: String = "admin",
         val sessionKey: String = "9e424e10e3dcd2f4fdd8d811c54aa36c",
-        val webPort: Int = 80
+        val webPort: Int = 80,
+        val refreshDelay: Int = 15
 )

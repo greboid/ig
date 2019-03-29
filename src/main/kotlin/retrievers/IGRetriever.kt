@@ -28,7 +28,7 @@ class IGRetriever(
         isActive.set(true)
         while (isActive.get()) {
             retrieveAll()
-            delay(Duration.ofMinutes(15))
+            delay(Duration.ofMinutes(config.refreshDelay.toLong()))
         }
     }
 
