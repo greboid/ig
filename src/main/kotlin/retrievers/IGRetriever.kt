@@ -7,8 +7,6 @@ import com.greboid.scraper.PostType
 import com.greboid.scraper.Retriever
 import com.mortennobel.imagescaling.AdvancedResizeOp
 import com.mortennobel.imagescaling.ResampleOp
-import kotlinx.coroutines.NonCancellable.isActive
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.time.delay
 import java.io.File
 import java.net.URL
@@ -37,13 +35,8 @@ class IGRetriever(
     }
 
     override fun retrieveAll() {
-        val users = sequence {
-            for (user in database.getUsers()) {
-                yield(instagram.getUserProfile(user))
-            }
-        }.filterNotNull()
-        users.filterNotNull().forEach {
-            retrieve(it.username)
+        for (user in database.getUsers()) {
+            retrieve(user)
         }
     }
 
