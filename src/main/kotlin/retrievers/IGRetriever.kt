@@ -7,8 +7,13 @@ import com.greboid.scraper.PostType
 import com.greboid.scraper.Retriever
 import com.mortennobel.imagescaling.AdvancedResizeOp
 import com.mortennobel.imagescaling.ResampleOp
+import kotlinx.coroutines.NonCancellable.isActive
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.time.delay
 import java.io.File
 import java.net.URL
+import java.time.Duration
+import java.util.concurrent.atomic.AtomicBoolean
 import javax.imageio.ImageIO
 
 class IGRetriever(
@@ -17,8 +22,18 @@ class IGRetriever(
         private val instagram: Instagram = Instagram()
 ) : Retriever {
 
+    private val isActive = AtomicBoolean(false)
+
     override suspend fun start() {
-        retrieveAll()
+        isActive.set(true)
+        while (isActive.get()) {
+            retrieveAll()
+            delay(Duration.ofMinutes(15))
+        }
+    }
+
+    override suspend fun stop() {
+        isActive.set(false)
     }
 
     override suspend fun retrieveAll() {

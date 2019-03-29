@@ -33,12 +33,6 @@ fun main() = runBlocking {
     if (!web.isActive) {
         return@runBlocking
     }
-    val retrieverJob = launch {
-        while (isActive) {
-            retriever.start()
-            delay(Duration.ofMinutes(15))
-        }
-    }
-    retrieverJob.join()
+    retriever.start()
     web.join()
 }
