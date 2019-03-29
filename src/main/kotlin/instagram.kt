@@ -1,6 +1,7 @@
 package com.greboid.scraper
 
 import com.google.gson.Gson
+import okhttp3.JavaNetCookieJar
 import org.jsoup.Jsoup
 import java.io.IOException
 import java.math.BigInteger
@@ -9,15 +10,35 @@ import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
 import kotlin.math.min
 import kotlin.streams.toList
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import java.net.CookiePolicy
+import java.net.CookieManager
 
 const val ig: String = "https://www.instagram.com"
 
 class Instagram {
 
     companion object {
+        internal fun getURL(url: String): String {
+            val cookieManager = CookieManager().apply {
+                setCookiePolicy(CookiePolicy.ACCEPT_ALL)
+            }
+            val client = OkHttpClient().newBuilder()
+                    .cookieJar(JavaNetCookieJar(cookieManager))
+                    .build()
+            val request = Request.Builder()
+                    .url(url)
+                    .build()
+            return client.newCall(request).execute().use {
+                        it.body()?.string() ?: ""
+                    }
+        }
+
         internal fun getShortcodePost(shortcode: String?): Post? {
             val json = try {
-                Jsoup.connect("$ig/p/$shortcode").get()
+                val contents = getURL("$ig/p/$shortcode")
+                Jsoup.parse(contents, "$ig/p/$shortcode")
             } catch (e: IOException) {
                 return null
             }.select("script:containsData(window._sharedData)").find { element ->
@@ -46,7 +67,8 @@ class Instagram {
 
         internal fun getProfile(username: String): Profile? {
             val doc = try {
-                Jsoup.connect("$ig/$username").get()
+                val contents = getURL("$ig/$username")
+                Jsoup.parse(contents, "$ig/$username")
             } catch (e: IOException) {
                 return null
             }

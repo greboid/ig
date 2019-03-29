@@ -22,6 +22,9 @@ repositories {
     mavenCentral()
     jcenter()
     maven {
+        url "https://jitpack.io"
+    }
+    maven {
         url "https://dl.bintray.com/kotlin/kotlin"
     }
     maven {
@@ -41,6 +44,8 @@ dependencies {
     runtime "mysql:mysql-connector-java:8.0.15"
     implementation 'org.jsoup:jsoup:1.11.3'
     implementation 'com.google.code.gson:gson:2.8.5'
+    implementation 'com.squareup.okhttp3:okhttp:3.14.0'
+    implementation 'com.squareup.okhttp3:okhttp-urlconnection:3.14.0'
 
     testImplementation "com.nhaarman.mockitokotlin2:mockito-kotlin:2.1.0"
     testCompile "org.junit.jupiter:junit-jupiter-api:5.4.1"
