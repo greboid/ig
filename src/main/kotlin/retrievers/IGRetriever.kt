@@ -8,6 +8,7 @@ import com.greboid.scraper.Retriever
 import com.mortennobel.imagescaling.AdvancedResizeOp
 import com.mortennobel.imagescaling.ResampleOp
 import kotlinx.coroutines.time.delay
+import mu.KotlinLogging
 import java.io.File
 import java.net.URL
 import java.time.Duration
@@ -21,26 +22,37 @@ class IGRetriever(
 ) : Retriever {
 
     private val isActive = AtomicBoolean(false)
+    val logger = KotlinLogging.logger {}
 
     override suspend fun start() {
+        logger.info("Starting IG retriever")
         isActive.set(true)
         while (isActive.get()) {
             retrieveAll()
+            logger.trace("Sleeping for ${config.refreshDelay} before next run")
             delay(Duration.ofMinutes(config.refreshDelay.toLong()))
         }
+        logger.info("IG retriever ended")
     }
 
     override suspend fun stop() {
+        logger.info("Stopping IG retriever")
         isActive.set(false)
     }
 
     override suspend fun retrieveAll() {
-        for (user in database.getUsers()) {
+        logger.info("Retrieving all users")
+        val users = database.getUsers()
+        val delay = (config.refreshDelay * 60) / users.size
+        for (user in users) {
             retrieve(user)
+            logger.trace("Sleeping for $delay before next user")
+            delay(Duration.ofSeconds(delay.toLong()))
         }
     }
 
     override suspend fun retrieve(identifier: String) {
+        logger.info("Retrieving: $identifier")
         val profile = instagram.getUserProfile(identifier) ?: return
         val userID = database.getUserID(identifier)
                 ?: run { println("Unable to get id for user: ${profile.username}"); return }
