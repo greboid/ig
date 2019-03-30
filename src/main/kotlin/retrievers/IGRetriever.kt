@@ -29,8 +29,6 @@ class IGRetriever(
         isActive.set(true)
         while (isActive.get()) {
             retrieveAll()
-            logger.trace("Sleeping for ${config.refreshDelay} before next run")
-            delay(Duration.ofMinutes(config.refreshDelay.toLong()))
         }
         logger.info("IG retriever ended")
     }
