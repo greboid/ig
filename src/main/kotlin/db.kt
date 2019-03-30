@@ -10,7 +10,7 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 class Database(private val config: Config) {
-    internal lateinit var internalConnection: Connection
+    private lateinit var internalConnection: Connection
     internal val connection: Connection
         get() {
             if (!internalConnection.isValid(1)) {
