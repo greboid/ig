@@ -34,13 +34,13 @@ class IGRetriever(
         isActive.set(false)
     }
 
-    override fun retrieveAll() {
+    override suspend fun retrieveAll() {
         for (user in database.getUsers()) {
             retrieve(user)
         }
     }
 
-    override fun retrieve(identifier: String) {
+    override suspend fun retrieve(identifier: String) {
         val profile = instagram.getUserProfile(identifier) ?: return
         val userID = database.getUserID(identifier)
                 ?: run { println("Unable to get id for user: ${profile.username}"); return }

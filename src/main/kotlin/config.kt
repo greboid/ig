@@ -6,7 +6,6 @@ import com.google.gson.JsonParseException
 import java.nio.file.Files
 import java.nio.file.Path
 
-
 fun getConfig(configFile: Path): Config? {
     return try {
         Gson().fromJson(Files.newBufferedReader(configFile), Config::class.java)
