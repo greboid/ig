@@ -1,6 +1,5 @@
 package com.greboid.scraper
 
-import java.lang.reflect.Array.set
 import java.sql.Connection
 import java.sql.DriverManager
 import java.sql.PreparedStatement
@@ -9,7 +8,6 @@ import java.sql.SQLException
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-import javax.xml.validation.Schema
 
 class Database(private val config: Config) {
     internal lateinit var internalConnection: Connection
