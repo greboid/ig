@@ -14,7 +14,7 @@ available and this should set everything up.
  - git clone
  - docker-compose up -d
  - This creates a default config file for you, config.yml in a docker volume named config
- - docker-compose up -d
+ - The admin details will be output to docker logs
  
 If you're doing this yourself, you will need the following:
  - JVM (Tested on 12)
@@ -30,7 +30,7 @@ db|ig|Must be created first, unless using included docker-compose.
 dbuser|ig|
 dbpassword|ig|
 dbport|3306|
-sessionKey|9e424e10e3dcd2f4fdd8d811c54aa36c|**Change this**.  Value used to encrypt sessions.
-adminUsername|admin|**Change this**.  Default admin password
-adminPassword|admin|**Change this**.  Default admin username
+sessionKey|[Random String]|Value used to encrypt sessions.
+adminUsername|admin|Default admin username
+adminPassword|[Random String]|Default admin password
 webPort|80|Default port to listen on for web connections
