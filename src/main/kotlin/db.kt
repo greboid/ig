@@ -1,5 +1,6 @@
 package com.greboid.scraper
 
+import java.lang.reflect.Array.set
 import java.sql.Connection
 import java.sql.DriverManager
 import java.sql.PreparedStatement
@@ -8,12 +9,20 @@ import java.sql.SQLException
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import javax.xml.validation.Schema
 
 class Database(private val config: Config) {
-    internal lateinit var connection: Connection
+    internal lateinit var internalConnection: Connection
+    internal val connection: Connection
+        get() {
+            if (!internalConnection.isValid(1)) {
+                connect()
+            }
+            return internalConnection
+        }
 
     fun connect(): Connection {
-        connection = try {
+        internalConnection = try {
             DriverManager.getConnection(
                     "jdbc:mysql://${config.dbhost}:${config.dbport}/${config.db}?useUnicode=yes&characterEncoding=UTF-8",
                     config.dbuser, config.dbpassword)
