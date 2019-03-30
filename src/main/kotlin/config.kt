@@ -3,23 +3,33 @@ package com.greboid.scraper
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonParseException
+import mu.KotlinLogging
 import java.nio.file.Files
 import java.nio.file.Path
 
+val logger = KotlinLogging.logger {}
+
 fun getConfig(configFile: Path): Config? {
     return try {
+        logger.trace("Starting to parse config file")
         Gson().fromJson(Files.newBufferedReader(configFile), Config::class.java)
     } catch (e: JsonParseException) {
-        System.err.println("Parse error: ${e.localizedMessage}")
+        logger.error("Error parsing config", e)
         null
     }
 }
 
 fun createDefault(configFile: Path) {
+    logger.trace("Creating config directories")
     Files.createDirectories(configFile.parent)
     val writer = Files.newBufferedWriter(configFile)
-    writer.write(GsonBuilder().setPrettyPrinting().create().toJson(Config()))
+    logger.trace("Writing to config file")
+    val config = Config()
+    writer.write(GsonBuilder().setPrettyPrinting().create().toJson(config))
     writer.flush()
+    logger.info("First run credentials:")
+    logger.info("\tUsername: ${config.adminUsername}")
+    logger.info("\tPassword: ${config.adminPassword}")
 }
 
 class Config(
@@ -29,8 +39,10 @@ class Config(
         val dbpassword: String = "ig",
         val dbport: Int = 3306,
         val adminUsername: String = "admin",
-        val adminPassword: String = "admin",
-        val sessionKey: String = "9e424e10e3dcd2f4fdd8d811c54aa36c",
+        val adminPassword: String = randomString(('!'..'~').toList(), 16),
+        val sessionKey: String = randomString(('0'..'9') + ('a'..'f'), 32),
         val webPort: Int = 80,
         val refreshDelay: Int = 15
 )
+
+fun randomString(charPool: List<Char>, length: Int) = CharArray(length) { charPool.random() }.joinToString("")

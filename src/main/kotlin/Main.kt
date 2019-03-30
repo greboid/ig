@@ -21,8 +21,6 @@ fun main() {
         if (!Files.exists(configFile)) {
             logger.warn("No config exists, creating default")
             createDefault(configFile)
-            logger.warn("Editing config/config.yml as needed and relaunch")
-            return@runBlocking
         }
         val config = getConfig(configFile) ?: run {
             logger.error("Unable to load config")
