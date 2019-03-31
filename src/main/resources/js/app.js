@@ -3,7 +3,7 @@ getImages()
 function getImages() {
   offset = $("#app .item img").length
   var images = [];
-  $.getJSON($(location).attr('protocol') + '//' + $(location).attr('host') + '/igposts?start='+offset+'&count='+(offset+150)+'&profile='+$(location).attr('pathname').substr(1), {}, function(data) {
+  $.getJSON($(location).attr('protocol') + '//' + $(location).attr('host') + '/igposts?start='+offset+'&count='+(offset+150)+'&profile='+$(location).attr('pathname').substr(10), {}, function(data) {
     $.each(data, function(index, image) {
       images.push(image);
      })

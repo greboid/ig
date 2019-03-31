@@ -212,13 +212,13 @@ class Web(private val database: Database, private val config: Config) {
                     }
                     call.respond(getImageLightbox(database.getIGPost(shortcode, ord)))
                 }
-                get("/{...}") {
+                get("/category/{...}") {
                     call.respond(FreeMarkerContent("index.ftl", mapOf("profiles" to database.getProfiles())))
                 }
                 get("/") {
                     val profiles = database.getProfiles()
                     if (profiles.isNotEmpty()) {
-                        call.respondRedirect(database.getProfiles().first()+'#', false)
+                        call.respondRedirect("/category/${database.getProfiles().first()}#", false)
                     } else {
                         call.respondRedirect("/admin", false)
                     }

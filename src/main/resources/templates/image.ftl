@@ -1,5 +1,5 @@
   <a class="perfundo__link item" href="#${image.shortcode}${image.ord}">
-    <img class="itemimage" src="${image.thumb}" alt="${image.caption}">
+    <img class="itemimage" src="/${image.thumb}" alt="${image.caption}">
   </a>
   <div id="${image.shortcode}${image.ord}" class="perfundo__overlay fadeInLeft">
     <figure class="perfundo__content perfundo__figure">
@@ -8,7 +8,7 @@
                 <source src="${image.url}" type="video/mp4">
             </video>
         <#else>
-            <img src="${image.thumb}">
+            <img src="/${image.thumb}">
             <div class="perfundo__image" style="background-image: url(${image.url});"></div>
         </#if>
         <figcaption class="perfundo__figcaption">
