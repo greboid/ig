@@ -5,5 +5,8 @@
     </#list>
 </div>
 <div id="app" class="container">
+    <#list images as image>
+        <#include "/image.ftl">
+    </#list>
 </div>
 <#include "/footer.ftl">

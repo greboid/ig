@@ -212,8 +212,12 @@ class Web(private val database: Database, private val config: Config) {
                     }
                     call.respond(getImageLightbox(database.getIGPost(shortcode, ord)))
                 }
-                get("/category/{...}") {
-                    call.respond(FreeMarkerContent("index.ftl", mapOf("profiles" to database.getProfiles())))
+                get("/category/{profile}") {
+                    val profile = call.parameters["profile"] ?: ""
+                    call.respond(FreeMarkerContent("index.ftl",
+                        mapOf("profiles" to database.getProfiles(),
+                            "images" to database.getIGPost(profile=profile, start = 0, count=50)
+                        )))
                 }
                 get("/") {
                     val profiles = database.getProfiles()
