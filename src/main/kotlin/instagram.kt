@@ -1,6 +1,7 @@
 package com.greboid.scraper
 
 import com.google.gson.Gson
+import okhttp3.FormBody
 import okhttp3.HttpUrl
 import okhttp3.JavaNetCookieJar
 import okhttp3.OkHttpClient
@@ -20,16 +21,42 @@ const val ig: String = "https://www.instagram.com"
 
 class Instagram {
 
+    private val cookieManager = JavaNetCookieJar(CookieManager().apply {
+        setCookiePolicy(CookiePolicy.ACCEPT_ALL)
+    })
+    private val userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:64.0) Gecko/20100101 Firefox/64.0"
+
     internal fun getURL(
         url: String,
         params: Map<String, String> = emptyMap(),
         headers: Map<String, String> = emptyMap()
-    ): String {
-        val cookieManager = CookieManager().apply {
-            setCookiePolicy(CookiePolicy.ACCEPT_ALL)
-        }
+    ): String? {
         val client = OkHttpClient().newBuilder()
-            .cookieJar(JavaNetCookieJar(cookieManager))
+            .cookieJar(cookieManager)
+            .build()
+        val httpBuider = HttpUrl.parse(url)?.newBuilder() ?: return null
+        for (param in params) {
+            httpBuider.addQueryParameter(param.key, param.value)
+        }
+        val requestBuilder = Request.Builder()
+            .url(httpBuider.build())
+        for (header in headers) {
+            requestBuilder.addHeader(header.key, header.value)
+        }
+        requestBuilder.addHeader("User-Agent", userAgent)
+        return client.newCall(requestBuilder.build()).execute().use {
+            it.body()?.string()
+        }
+    }
+
+    internal fun postURL(
+        url: String,
+        contents: Map<String, String>,
+        params: Map<String, String> = emptyMap(),
+        headers: Map<String, String> = emptyMap()
+    ): String {
+        val client = OkHttpClient().newBuilder()
+            .cookieJar(cookieManager)
             .build()
         val httpBuider = HttpUrl.parse(url)?.newBuilder() ?: return ""
         for (param in params) {
@@ -40,14 +67,22 @@ class Instagram {
         for (header in headers) {
             requestBuilder.addHeader(header.key, header.value)
         }
-        return client.newCall(requestBuilder.build()).execute().use {
-            it.body()?.string() ?: ""
+        requestBuilder.addHeader("User-Agent", userAgent)
+        val formBuilder = FormBody.Builder()
+        for (content in contents) {
+            formBuilder.add(content.key, content.value)
+        }
+        requestBuilder.post(formBuilder.build())
+        val request = requestBuilder.build()
+        val call = client.newCall(request)
+        call.execute().use {
+            return it.body()?.string() ?: ""
         }
     }
 
     internal fun getShortcodePost(shortcode: String?): Post? {
         val json = try {
-            val contents = getURL("$ig/p/$shortcode")
+            val contents = getURL("$ig/p/$shortcode") ?: ""
             Jsoup.parse(contents, "$ig/p/$shortcode")
         } catch (e: IOException) {
             return null
@@ -77,7 +112,7 @@ class Instagram {
 
     internal fun getProfile(username: String): Profile? {
         val doc = try {
-            val contents = getURL("$ig/$username")
+            val contents = getURL("$ig/$username") ?: ""
             Jsoup.parse(contents, "$ig/$username")
         } catch (e: IOException) {
             return null
@@ -106,6 +141,32 @@ class Instagram {
 
     fun getUserProfile(username: String): Profile? {
         return getProfile(username)
+    }
+
+    fun login(username: String, password: String) {
+        val loginGet = getURL("$ig/accounts/login/",
+            params = mapOf(
+                "source" to "auth_switcher"
+            )
+        )
+        val doc = Jsoup.parse(loginGet, "$ig/accounts/login/")
+        val jsonData = doc.select("script:containsData(window._sharedData)").find { element ->
+            element.data().startsWith("window._sharedData")
+        }?.data()?.substringBeforeLast(';')?.substringAfter("=")?.trim()
+        val csrf = Gson().fromJson(jsonData, InstagramSharedData::class.java).config?.csrf_token ?: ""
+        val data = postURL("$ig/accounts/login/ajax/",
+            contents = mapOf(
+                "username" to username,
+                "password" to password,
+                "optIntoOneTap" to "false"
+            ),
+            params = mapOf(
+                "queryParams" to "{\"source\":\"auth_switcher\"}"
+            ),
+            headers = mapOf(
+                "X-CSRFToken" to csrf
+            )
+        )
     }
 }
 
@@ -152,7 +213,7 @@ class Profile(
             headers = mapOf(
                 "X-Instagram-GIS" to getMD5("$rhx_gis:{\"id\":\"$id\",\"first\":$count,\"after\":\"$end_cursor\"}")
             )
-        )
+        ) ?: ""
         val data = Gson().fromJson(json, InstagramData::class.java)
         end_cursor = data.data.user.edge_owner_to_timeline_media.page_info.end_cursor
         hasMore = data.data.user.edge_owner_to_timeline_media.page_info.has_next_page
@@ -196,7 +257,17 @@ internal data class Data(val user: User)
 
 internal data class InstagramSharedData(
         val rhx_gis: String,
-        val entry_data: EntryData
+        val entry_data: EntryData,
+        val config: DataConfig?
+)
+
+internal data class DataConfig(
+    val viewer: Viewer?,
+    val csrf_token: String?
+)
+
+internal data class Viewer(
+    val username: String
 )
 
 internal data class EntryData(
