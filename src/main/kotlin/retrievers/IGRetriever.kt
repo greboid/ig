@@ -43,7 +43,11 @@ class IGRetriever(
         val users = database.getUsers()
         val delay = (config.refreshDelay * 60) / users.size
         for (user in users) {
-            retrieve(user)
+            try {
+                retrieve(user)
+            } catch (e: Exception) {
+                logger.error("Exception in retrieving: ", e)
+            }
             logger.trace("Sleeping for $delay before next user")
             delay(Duration.ofSeconds(delay.toLong()))
         }
