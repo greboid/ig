@@ -47,6 +47,9 @@ class IGRetriever(
                 retrieve(user)
             } catch (e: Exception) {
                 logger.error("Exception in retrieving: ", e)
+                if (instagram.currentData != null) {
+                    logger.error("Data: ${instagram.currentData.toString()}")
+                }
             }
             logger.trace("Sleeping for $delay before next user")
             delay(Duration.ofSeconds(delay.toLong()))

@@ -21,6 +21,7 @@ const val ig: String = "https://www.instagram.com"
 
 class Instagram {
 
+    internal var currentData: String? = null
     private val cookieManager = JavaNetCookieJar(CookieManager().apply {
         setCookiePolicy(CookiePolicy.ACCEPT_ALL)
     })
@@ -89,6 +90,7 @@ class Instagram {
         }.select("script:containsData(window._sharedData)").find { element ->
             element.data().startsWith("window._sharedData")
         }?.data()?.substringBeforeLast(';')?.substringAfter("=")?.trim()
+        currentData = json
         val data = Gson().fromJson(json, InstagramSharedData::class.java)
             .entry_data.PostPage.first().graphql.shortcode_media
         return Post(
@@ -107,7 +109,9 @@ class Instagram {
             data.owner.id,
             data.owner.username,
             data.taken_at_timestamp
-        )
+        ).also {
+            currentData = null
+        }
     }
 
     internal fun getProfile(username: String): Profile? {
@@ -121,6 +125,7 @@ class Instagram {
             element.data().startsWith("window._sharedData")
         }?.data()?.substringBeforeLast(';')?.substringAfter("=")?.trim()
         val data = Gson().fromJson(jsonData, InstagramSharedData::class.java)
+        currentData = jsonData
         val userData = data.entry_data.ProfilePage.first().graphql.user
         return Profile(
             userData.username,
@@ -136,7 +141,9 @@ class Instagram {
             userData.edge_owner_to_timeline_media.page_info.has_next_page,
             userData.edge_owner_to_timeline_media.count,
             data.rhx_gis
-        )
+        ).also {
+            currentData = null
+        }
     }
 
     fun getUserProfile(username: String): Profile? {
