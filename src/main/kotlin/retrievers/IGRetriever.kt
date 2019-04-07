@@ -27,6 +27,10 @@ class IGRetriever(
     override suspend fun start() {
         logger.info("Starting IG retriever")
         isActive.set(true)
+        if (config.igLogin) {
+            logger.info("Logging in")
+            instagram.login(config.igUsername, config.igPassword)
+        }
         while (isActive.get()) {
             retrieveAll()
         }
