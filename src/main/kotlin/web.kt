@@ -152,7 +152,10 @@ class Web(private val database: Database, private val config: Config) {
                 }
                 route("/admin") {
                     intercept(ApplicationCallPipeline.Features) {
-                        call.sessions.get<IGSession>()?.user ?: call.respondRedirect("/login", false)
+                        if (call.sessions.get<IGSession>()?.user == null) {
+                            call.respondRedirect("/login", false)
+                            return@intercept finish()
+                        }
                     }
                     get("/") {
                         call.respond(call.resolveResource("/html/admin.html", "") ?: HttpStatusCode.InternalServerError)
