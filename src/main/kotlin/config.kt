@@ -33,19 +33,19 @@ fun createDefault(configFile: Path) {
 }
 
 class Config(
-        val db: String = "ig",
-        val dbhost: String = "database",
-        val dbuser: String = "ig",
-        val dbpassword: String = "ig",
-        val dbport: Int = 3306,
-        val adminUsername: String = "admin",
-        val adminPassword: String = randomString(('!'..'~').toList(), 16),
-        val sessionKey: String = randomString(('0'..'9') + ('a'..'f'), 32),
-        val webPort: Int = 80,
-        val refreshDelay: Int = 15,
-        val igLogin: Boolean = true,
-        val igUsername: String = "",
-        val igPassword: String = ""
+    val db: String = "ig",
+    val dbhost: String = "database",
+    val dbuser: String = "ig",
+    val dbpassword: String = "ig",
+    val dbport: Int = 3306,
+    val adminUsername: String = "admin",
+    val adminPassword: String = randomString(('!'..'~').toList(), 16),
+    val sessionKey: String = randomString(('0'..'9') + ('a'..'f'), 32),
+    val webPort: Int = 80,
+    val refreshDelay: Int = 15,
+    val igLogin: Boolean = true,
+    val igUsername: String = "",
+    val igPassword: String = ""
 )
 
 fun randomString(charPool: List<Char>, length: Int) = CharArray(length) { charPool.random() }.joinToString("")
