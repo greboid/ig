@@ -34,3 +34,7 @@ sessionKey|[Random String]|Value used to encrypt sessions.
 adminUsername|admin|Default admin username
 adminPassword|[Random String]|Default admin password
 webPort|80|Default port to listen on for web connections
+refreshDelay|15|Total delay between polls
+igLogin|false|Should we log in to poll
+igUsername||Login username
+igPassword||Login password
