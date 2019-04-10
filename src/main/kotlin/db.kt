@@ -32,9 +32,7 @@ class Database(private val config: Config) {
     }
 
     private fun init() {
-        Schema.createAllTables.forEach {
-            connection.createStatement().executeUpdate(it)
-        }
+        Schema.init(connection)
     }
 
     fun addProfile(name: String) =
@@ -200,6 +198,7 @@ class Database(private val config: Config) {
     }
 
     internal object Schema {
+        val version = 1
         internal val deleteProfileFromUser = """
             delete from profile_users where userID=? AND profileID=?
         """.trimIndent()
@@ -239,7 +238,7 @@ class Database(private val config: Config) {
             delete from profiles where name=?
         """.trimIndent()
         internal val getProfiles = """
-            select name from profiles
+            select name from profiles order by order
         """.trimIndent()
         internal val addUser = """
             insert into users(username) values (?)
@@ -321,7 +320,32 @@ class Database(private val config: Config) {
             PRIMARY KEY (shortcode, ord)
             ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
         """.trimIndent().replace("[\n\r]".toRegex(), "")
-        val createAllTables: List<String> = listOf(createProfiles, createProfileUsers, createUsers, createIGPosts)
+        private val createVersion = """
+            CREATE TABLE IF NOT EXISTS version (
+            id INTEGER,
+            version INTEGER
+            ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+        """.trimIndent().replace("[\n\r]".toRegex(), "")
+        private val getVersion = """
+            select IFNULL((SELECT version from version),0) as version
+        """.trimIndent().replace("[\n\r]".toRegex(), "")
+        private val zeroToOneChange = """
+            ALTER TABLE `profiles` ADD COLUMN `order` INT NULL DEFAULT NULL AFTER `name`;
+        """.trimIndent().replace("[\n\r]".toRegex(), "")
+        private val zeroToOneVersion = """
+            REPLACE INTO version VALUES(1, 1);
+        """.trimIndent().replace("[\n\r]".toRegex(), "")
+        private val createAllTables: List<String> = listOf(createVersion, createProfiles, createProfileUsers, createUsers, createIGPosts)
+        fun init(connection: Connection) {
+            Schema.createAllTables.forEach {
+                connection.createStatement().executeUpdate(it)
+            }
+            val currentVersion = connection.getAllInt(getVersion, "version").first()
+            if (currentVersion == 0) {
+                connection.createStatement().executeUpdate(zeroToOneChange)
+                connection.createStatement().executeUpdate(zeroToOneVersion)
+            }
+        }
     }
 }
 
@@ -338,7 +362,18 @@ fun ResultSet.getAllString(fieldName: String) = sequence {
 }.toList().filterNotNull()
 
 fun Connection.getAllString(sql: String, fieldName: String) =
-        prepareStatement(sql)?.executeQuery()?.getAllString(fieldName) ?: emptyList()
+    prepareStatement(sql)?.executeQuery()?.getAllString(fieldName) ?: emptyList()
+
+fun ResultSet.getAllInt(fieldName: String) = sequence {
+    use {
+        while (next()) {
+            yield(getInt(fieldName))
+        }
+    }
+}.toList().filterNotNull()
+
+fun Connection.getAllInt(sql: String, fieldName: String) =
+    prepareStatement(sql)?.executeQuery()?.getAllInt(fieldName) ?: emptyList()
 
 fun PreparedStatement.setAndUpdate(values: List<Any>) = use {
     values.forEachIndexed { index, value ->
