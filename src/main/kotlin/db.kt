@@ -238,7 +238,7 @@ class Database(private val config: Config) {
             delete from profiles where name=?
         """.trimIndent()
         internal val getProfiles = """
-            select name from profiles order by order
+            select name from profiles order by isNull(priority), priority
         """.trimIndent()
         internal val addUser = """
             insert into users(username) values (?)
@@ -290,7 +290,8 @@ class Database(private val config: Config) {
         private val createProfiles = """
             CREATE TABLE IF NOT EXISTS profiles (
             id INTEGER PRIMARY KEY AUTO_INCREMENT,
-            name VARCHAR(255) UNIQUE
+            name VARCHAR(255) UNIQUE,
+            priority INT NULL DEFAULT NULL
             ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
         """.trimIndent().replace("[\n\r]".toRegex(), "")
         private val createProfileUsers = """
@@ -330,7 +331,7 @@ class Database(private val config: Config) {
             select IFNULL((SELECT version from version),0) as version
         """.trimIndent().replace("[\n\r]".toRegex(), "")
         private val zeroToOneChange = """
-            ALTER TABLE `profiles` ADD COLUMN `order` INT NULL DEFAULT NULL AFTER `name`;
+            ALTER TABLE `profiles` ADD COLUMN priority INT NULL DEFAULT NULL AFTER `name`;
         """.trimIndent().replace("[\n\r]".toRegex(), "")
         private val zeroToOneVersion = """
             REPLACE INTO version VALUES(1, 1);
