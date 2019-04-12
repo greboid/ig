@@ -198,7 +198,7 @@ class Database(private val config: Config) {
     }
 
     internal object Schema {
-        val version = 1
+        val version = 2
         internal val deleteProfileFromUser = """
             delete from profile_users where userID=? AND profileID=?
         """.trimIndent()
@@ -335,15 +335,27 @@ class Database(private val config: Config) {
         private val zeroToOneVersion = """
             REPLACE INTO version VALUES(1, 1);
         """.trimIndent().replace("[\n\r]".toRegex(), "")
+        private val oneToTwoChange = """
+            ALTER TABLE `igposts` CHANGE COLUMN `shortcode` `shortcode` VARCHAR(64) NOT NULL;
+        """.trimIndent().replace("[\n\r]".toRegex(), "")
+        private val oneToTwoVersion = """
+            REPLACE INTO version VALUES(1, 2);
+        """.trimIndent().replace("[\n\r]".toRegex(), "")
         private val createAllTables: List<String> = listOf(createVersion, createProfiles, createProfileUsers, createUsers, createIGPosts)
         fun init(connection: Connection) {
             Schema.createAllTables.forEach {
                 connection.createStatement().executeUpdate(it)
             }
-            val currentVersion = connection.getAllInt(getVersion, "version").first()
+            var currentVersion = connection.getAllInt(getVersion, "version").first()
             if (currentVersion == 0) {
                 connection.createStatement().executeUpdate(zeroToOneChange)
                 connection.createStatement().executeUpdate(zeroToOneVersion)
+                currentVersion = 1
+            }
+            if (currentVersion == 1) {
+                connection.createStatement().executeUpdate(oneToTwoChange)
+                connection.createStatement().executeUpdate(oneToTwoVersion)
+                currentVersion = 2
             }
         }
     }
