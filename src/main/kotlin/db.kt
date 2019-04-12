@@ -290,8 +290,7 @@ class Database(private val config: Config) {
         private val createProfiles = """
             CREATE TABLE IF NOT EXISTS profiles (
             id INTEGER PRIMARY KEY AUTO_INCREMENT,
-            name VARCHAR(255) UNIQUE,
-            priority INT NULL DEFAULT NULL
+            name VARCHAR(255) UNIQUE
             ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
         """.trimIndent().replace("[\n\r]".toRegex(), "")
         private val createProfileUsers = """
