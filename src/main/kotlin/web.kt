@@ -202,8 +202,14 @@ class Web(private val database: Database, private val config: Config) {
                     rss["description"] = "Items from Instagram: $profile"
                     rss["link"] = "$ig/$profile"
                     val feedItems = database.getIGPost(profile, 0, 100)
-                    val location = call.request.local.scheme + "://" + call.request.local.host + ":" + call.request.local.port + call.request.local.uri
-                    call.respond(FreeMarkerContent("rss.ftl", mapOf("feedItems" to feedItems, "rss" to rss, "url" to location), null, ContentType.Text.Xml))
+                    val location = call.request.local.scheme + "://" + call.request.local.host +
+                        ":" + call.request.local.port + call.request.local.uri
+                    call.respond(FreeMarkerContent(
+                        "rss.ftl",
+                        mapOf("feedItems" to feedItems, "rss" to rss, "url" to location),
+                        null,
+                        ContentType.Text.Xml)
+                    )
                 }
                 get ("/template/image/{shortcode}/{ord?}") {
                     val shortcode = call.parameters["shortcode"] ?: ""
@@ -218,6 +224,13 @@ class Web(private val database: Database, private val config: Config) {
                     call.respond(FreeMarkerContent("index.ftl",
                         mapOf("profiles" to database.getProfiles(),
                             "images" to database.getIGPost(profile=profile, start = 0, count=50)
+                        )))
+                }
+                get("/user/{user}") {
+                    val user = call.parameters["user"] ?: ""
+                    call.respond(FreeMarkerContent("index.ftl",
+                        mapOf("profiles" to database.getProfiles(),
+                            "images" to database.getUserIGPost(user=user, start = 0, count=50)
                         )))
                 }
                 get("/") {

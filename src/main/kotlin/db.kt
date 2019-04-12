@@ -177,23 +177,39 @@ class Database(private val config: Config) {
             s
         })
         val results = s.executeQuery()
+        val returnValue = resultSetToIgPosts(results)
+        s.close()
+        return returnValue
+    }
+
+    fun getUserIGPost(user: String, start: Int = 0, count: Int = 5): List<IGPost> {
+        val s = connection.prepareStatement(Schema.selectUserIGPosts)
+        s.setString(1, user)
+        s.setInt(2, count)
+        s.setInt(3, start)
+        val results = s.executeQuery()
+        val returnValue = resultSetToIgPosts(results)
+        s.close()
+        return returnValue
+    }
+
+    private fun resultSetToIgPosts(results: ResultSet): List<IGPost> {
         val returnValue = sequence {
             while (results.next()) {
                 yield(IGPost(
-                        shortcode = results.getString(1),
-                        source = results.getString(2),
-                        thumb = results.getString(3),
-                        url = results.getString(4),
-                        caption = results.getString(5),
-                        timestamp = results.getInt(6),
-                        ord = results.getInt(7),
-                        date = Instant.ofEpochMilli(results.getInt(6).toLong() * 1000)
-                               .atZone(ZoneId.of("UTC")).format(DateTimeFormatter.RFC_1123_DATE_TIME)
+                    shortcode = results.getString(1),
+                    source = results.getString(2),
+                    thumb = results.getString(3),
+                    url = results.getString(4),
+                    caption = results.getString(5),
+                    timestamp = results.getInt(6),
+                    ord = results.getInt(7),
+                    date = Instant.ofEpochMilli(results.getInt(6).toLong() * 1000)
+                        .atZone(ZoneId.of("UTC")).format(DateTimeFormatter.RFC_1123_DATE_TIME)
                 ))
             }
         }.toList()
         results.close()
-        s.close()
         return returnValue
     }
 
@@ -272,6 +288,16 @@ class Database(private val config: Config) {
             LEFT JOIN users on users.id=igposts.userID
             LEFT JOIN profile_users on profile_users.userid=users.id
             LEFT JOIN profiles on profile_users.profileid=profiles.id
+            ORDER BY timestamp DESC
+            LIMIT ?
+            OFFSET ?
+        """
+        internal val selectUserIGPosts = """
+            SELECT shortcode, users.username, thumbnailURL, imageURL, caption, timestamp, ord
+            FROM igposts
+            LEFT JOIN users on users.id=igposts.userID
+            LEFT JOIN profile_users on profile_users.userid=users.id
+            WHERE users.username=?
             ORDER BY timestamp DESC
             LIMIT ?
             OFFSET ?
