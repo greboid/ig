@@ -201,62 +201,62 @@ class Database(private val config: Config) {
         val version = 2
         internal val deleteProfileFromUser = """
             delete from profile_users where userID=? AND profileID=?
-        """.trimIndent()
+        """
         internal val addUserToProfile = """
             insert into profile_users (userID,profileID) values (?,?)
-        """.trimIndent()
+        """
         internal val deleteProfileFromProfileUsers = """
             delete from profile_users where profileID=?
-        """.trimIndent()
+        """
         internal val getProfileID = """
             select id from profiles where name=?
-        """.trimIndent()
+        """
         internal val deleteUserFromProfileUsers = """
             delete from profile_users where userID=?
-        """.trimIndent()
+        """
         internal val getUserProfiles = """
             select profiles.name
             from profile_users
             left join profiles on profile_users.profileID=profiles.id
             left join users on profile_users.userID=users.id
             where users.username=?
-        """.trimIndent()
+        """
         internal val getProfileUsers = """
             select users.username
             from profile_users
             left join profiles on profile_users.profileID=profiles.id
             left join users on profile_users.userID=users.id
             where profiles.name=?
-        """.trimIndent()
+        """
         internal val getUserID = """
             select id from users where username=?
-        """.trimIndent()
+        """
         internal val addProfile = """
             insert into profiles(name) values (?)
-        """.trimIndent()
+        """
         internal val delProfile = """
             delete from profiles where name=?
-        """.trimIndent()
+        """
         internal val getProfiles = """
             select name from profiles order by isNull(priority), priority
-        """.trimIndent()
+        """
         internal val addUser = """
             insert into users(username) values (?)
-        """.trimIndent()
+        """
         internal val delUser = """
             delete from users where username=?
-        """.trimIndent()
+        """
         internal val getUsers = """
             select username from users
-        """.trimIndent()
+        """
         internal val checkIGPost = """
             select count(*) from igposts WHERE shortcode=? AND ord=?
-        """.trimIndent()
+        """
         internal val addIGPost = """
             insert into igposts
             (shortcode,ord,userID,thumbnailURL,imageURL,caption,timestamp)
             values (?,?,?,?,?,?,?)
-        """.trimIndent()
+        """
         internal val selectIGPost = """
             SELECT shortcode, users.username, thumbnailURL, imageURL, caption, timestamp, ord
             FROM igposts
@@ -265,7 +265,7 @@ class Database(private val config: Config) {
             LEFT JOIN profiles on profile_users.profileid=profiles.id
             WHERE igposts.shortcode=?
             AND igposts.ord=?
-        """.trimIndent()
+        """
         internal val selectAllIGPosts = """
             SELECT shortcode, users.username, thumbnailURL, imageURL, caption, timestamp, ord
             FROM igposts
@@ -275,7 +275,7 @@ class Database(private val config: Config) {
             ORDER BY timestamp DESC
             LIMIT ?
             OFFSET ?
-        """.trimIndent()
+        """
         internal val selectIGPosts = """
             SELECT shortcode, users.username, thumbnailURL, imageURL, caption, timestamp, ord
             FROM igposts
@@ -286,13 +286,13 @@ class Database(private val config: Config) {
             ORDER BY timestamp DESC
             LIMIT ?
             OFFSET ?
-        """.trimIndent()
+        """
         private val createProfiles = """
             CREATE TABLE IF NOT EXISTS profiles (
             id INTEGER PRIMARY KEY AUTO_INCREMENT,
             name VARCHAR(255) UNIQUE
             ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-        """.trimIndent().replace("[\n\r]".toRegex(), "")
+        """
         private val createProfileUsers = """
             CREATE TABLE IF NOT EXISTS profile_users (
             id INTEGER PRIMARY KEY AUTO_INCREMENT,
@@ -300,14 +300,14 @@ class Database(private val config: Config) {
             profileID INT,
             UNIQUE(userID, profileID)
             ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-        """.trimIndent().replace("[\n\r]".toRegex(), "")
+        """
         private val createUsers = """
             CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTO_INCREMENT,
             username VARCHAR(255) UNIQUE,
             lastpoll INTEGER
             ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-        """.trimIndent().replace("[\n\r]".toRegex(), "")
+        """
         private val createIGPosts = """
             CREATE TABLE IF NOT EXISTS igposts (
             shortcode varchar(16),
@@ -319,28 +319,28 @@ class Database(private val config: Config) {
             timestamp INTEGER,
             PRIMARY KEY (shortcode, ord)
             ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-        """.trimIndent().replace("[\n\r]".toRegex(), "")
+        """
         private val createVersion = """
             CREATE TABLE IF NOT EXISTS version (
             id INTEGER,
             version INTEGER
             ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-        """.trimIndent().replace("[\n\r]".toRegex(), "")
+        """
         private val getVersion = """
             select IFNULL((SELECT version from version),0) as version
-        """.trimIndent().replace("[\n\r]".toRegex(), "")
+        """
         private val zeroToOneChange = """
             ALTER TABLE `profiles` ADD COLUMN priority INT NULL DEFAULT NULL AFTER `name`;
-        """.trimIndent().replace("[\n\r]".toRegex(), "")
+        """
         private val zeroToOneVersion = """
-            REPLACE INTO version VALUES(1, 1);
-        """.trimIndent().replace("[\n\r]".toRegex(), "")
+            insert into version values (1, 1);
+        """
         private val oneToTwoChange = """
             ALTER TABLE `igposts` CHANGE COLUMN `shortcode` `shortcode` VARCHAR(64) NOT NULL;
-        """.trimIndent().replace("[\n\r]".toRegex(), "")
+        """
         private val oneToTwoVersion = """
-            REPLACE INTO version VALUES(1, 2);
-        """.trimIndent().replace("[\n\r]".toRegex(), "")
+            update version SET version=2 where id=1;
+        """
         private val createAllTables: List<String> = listOf(createVersion, createProfiles, createProfileUsers, createUsers, createIGPosts)
         fun init(connection: Connection) {
             Schema.createAllTables.forEach {
@@ -355,7 +355,6 @@ class Database(private val config: Config) {
             if (currentVersion == 1) {
                 connection.createStatement().executeUpdate(oneToTwoChange)
                 connection.createStatement().executeUpdate(oneToTwoVersion)
-                currentVersion = 2
             }
         }
     }
