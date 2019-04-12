@@ -38,3 +38,14 @@ refreshDelay|15|Total delay between polls
 igLogin|false|Should we log in to poll
 igUsername||Login username
 igPassword||Login password
+
+#### Logging
+You can adjust the logging by creating a file called log.properties in the config folder, this file is a standard JDK logging properties file and can be used to edit the logging as desired.  To enable debug logging for instance, use the below
+
+```
+java.util.logging.SimpleFormatter.format=[%1$tF %1$tT] [%4$-7s]: %5$s%6$s%n
+handlers=java.util.logging.ConsoleHandler
+.level=FINEST
+```
+
+A restart will be required for the changes to take effect.
