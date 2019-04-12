@@ -190,7 +190,7 @@ class Web(private val database: Database, private val config: Config) {
                         call.respond(HttpStatusCode.OK, "{}")
                     }
                 }
-                get ("/rss/{profile}") {
+                get ("/rss/category/{profile}") {
                     val profile = call.parameters["profile"] ?: ""
                     if (profile.isEmpty()) {
                         call.respondRedirect("/", false)
