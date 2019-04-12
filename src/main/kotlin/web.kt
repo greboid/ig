@@ -13,7 +13,6 @@ import io.ktor.auth.UserIdPrincipal
 import io.ktor.auth.authenticate
 import io.ktor.auth.authentication
 import io.ktor.auth.form
-import io.ktor.features.CORS
 import io.ktor.features.Compression
 import io.ktor.features.ConditionalHeaders
 import io.ktor.features.DefaultHeaders
@@ -59,7 +58,6 @@ class Web(private val database: Database, private val config: Config) {
             install(PartialContent)
             install(Compression)
             install(ConditionalHeaders)
-            install(CORS)
             install(XForwardedHeaderSupport)
             install(Sessions) {
                 cookie<IGSession>("session", SessionStorageMemory()) {
