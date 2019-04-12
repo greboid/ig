@@ -13,7 +13,14 @@ import java.util.logging.LogManager
 
 @KtorExperimentalAPI
 fun main() {
-    LogManager.getLogManager().readConfiguration(object{}::class.java.getResourceAsStream("/logs.properties"))
+    val logProperties = Paths.get("config/log.properties")
+    LogManager.getLogManager().readConfiguration(
+        if (Files.exists(logProperties.toAbsolutePath())) {
+            Files.newInputStream(logProperties)
+        } else {
+            object{}::class.java.getResourceAsStream("/logs.properties")
+        }
+    )
     val logger = KotlinLogging.logger {}
     runBlocking {
         logger.info("Loading config")
