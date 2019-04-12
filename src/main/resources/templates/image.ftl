@@ -15,5 +15,5 @@
         <a href="https://instagram.com/p/${image.shortcode}">${image.source}</a><br>${image.caption}
       </figcaption>
     </figure>
-    <a href="#" class="perfundo__close perfundo__control">Close</a>
+    <a href="#close" class="perfundo__close perfundo__control">Close</a>
   </div>
