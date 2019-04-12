@@ -203,7 +203,7 @@ class Web(private val database: Database, private val config: Config) {
                     rss["link"] = "$ig/$profile"
                     val feedItems = database.getIGPost(profile, 0, 100)
                     val location = call.request.local.scheme + "://" + call.request.local.host + ":" + call.request.local.port + call.request.local.uri
-                    call.respond(FreeMarkerContent("rss.ftl", mapOf("feedItems" to feedItems, "rss" to rss, "url" to location)))
+                    call.respond(FreeMarkerContent("rss.ftl", mapOf("feedItems" to feedItems, "rss" to rss, "url" to location), null, ContentType.Text.Xml))
                 }
                 get ("/template/image/{shortcode}/{ord?}") {
                     val shortcode = call.parameters["shortcode"] ?: ""
