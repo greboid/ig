@@ -20,3 +20,9 @@ function getImages() {
         });
   })
 }
+
+$(document).keyup(function(e) {
+     if (e.key === "Escape") {
+        window.location.href = '#close'
+    }
+});
