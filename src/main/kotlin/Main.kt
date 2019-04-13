@@ -24,7 +24,8 @@ fun main() {
     val logger = KotlinLogging.logger {}
     runBlocking {
         logger.info("Loading config")
-        val configFile = Paths.get("config/config.yml")
+        val configFile = Paths.get("config/config.json")
+        migrateConfig(configFile)
         if (!Files.exists(configFile)) {
             logger.warn("No config exists, creating default")
             createDefault(configFile)

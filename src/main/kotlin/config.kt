@@ -6,8 +6,17 @@ import com.google.gson.JsonParseException
 import mu.KotlinLogging
 import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.Paths
 
 val logger = KotlinLogging.logger {}
+
+fun migrateConfig(configFile: Path) {
+    val yamlPath = Paths.get(configFile.toAbsolutePath().toString().substringBeforeLast(".").plus(".yml"))
+    if (Files.exists(yamlPath)) {
+        logger.info("Migrating config to json")
+        Files.move(yamlPath, configFile)
+    }
+}
 
 fun getConfig(configFile: Path): Config? {
     return try {
