@@ -1,3 +1,4 @@
+<div class="post">
   <a class="perfundo__link item" href="#${image.shortcode}${image.ord}">
     <img class="itemimage" src="/${image.thumb}" alt="${image.caption}">
   </a>
@@ -19,3 +20,4 @@
     </figure>
     <a href="#close" class="perfundo__close perfundo__control">Close</a>
   </div>
+</div>
