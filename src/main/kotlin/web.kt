@@ -1,6 +1,7 @@
 package com.greboid.scraper
 
 import com.google.gson.Gson
+import com.greboid.scraper.retrievers.IGRetriever
 import freemarker.cache.ClassTemplateLoader
 import freemarker.template.Configuration
 import freemarker.template.Configuration.DEFAULT_INCOMPATIBLE_IMPROVEMENTS
@@ -50,7 +51,11 @@ import java.security.Security
 
 data class IGSession(val user: String, val admin: Boolean, var previousPage: String = "/")
 
-class Web(private val database: Database, private val config: Config) {
+class Web(
+    private val database: Database,
+    private val config: Config,
+    private val retriever: IGRetriever
+) {
     @KtorExperimentalAPI
     suspend fun start() {
         System.setProperty("io.ktor.random.secure.random.provider", "DRBG")
@@ -186,7 +191,10 @@ class Web(private val database: Database, private val config: Config) {
                         val usersToRemove = currentUsers.minus(newUsers)
                         val usersToAdd = newUsers.subtract(currentUsers)
                         usersToRemove.forEach { user -> database.delUser(user) }
-                        usersToAdd.forEach { user -> database.addUser(user) }
+                        usersToAdd.forEach {
+                                user -> database.addUser(user)
+                                retriever.retrieve(user)
+                        }
                         call.respond(HttpStatusCode.OK, "{}")
                     }
                     post("/profiles") {

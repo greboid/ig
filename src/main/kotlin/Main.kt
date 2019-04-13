@@ -40,7 +40,7 @@ fun main() {
         database.connect()
         val web = launch {
             logger.info("Launching web server")
-            Web(database, config).start()
+            Web(database, config, retriever).start()
         }
         delay(Duration.ofSeconds(2))
         if (!web.isActive) {
