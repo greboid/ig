@@ -1,9 +1,5 @@
 <#include "/header.ftl">
-<div id="menu">
-    <#list profiles as profile>
-        <li><a href="/category/${profile}#">${profile}</a></li>
-    </#list>
-</div>
+<#include "/menu.ftl">
 <div id="app" class="container-fluid">
     <div class="row">
         <div class="col"></div>

@@ -159,7 +159,9 @@ class Web(private val database: Database, private val config: Config) {
                     }
                     get("/") {
                         call.respond(FreeMarkerContent("admin.ftl",
-                            mapOf("profiles" to database.getProfiles()
+                            mapOf(
+                                "profiles" to database.getProfiles(),
+                                "username" to call.sessions.get<IGSession>()?.user
                             )))
                     }
                     post("/") {
@@ -229,7 +231,8 @@ class Web(private val database: Database, private val config: Config) {
                         mapOf("profiles" to database.getProfiles(),
                             "images" to database.getIGPost(profile=profile, start = 0, count=50),
                             "feedURL" to "/rss/category/${profile}",
-                            "feedTitle" to "RSS - Category: ${profile}"
+                            "feedTitle" to "RSS - Category: ${profile}",
+                            "username" to call.sessions.get<IGSession>()?.user
                         )))
                 }
                 get("/user/{user}") {
@@ -238,7 +241,8 @@ class Web(private val database: Database, private val config: Config) {
                         mapOf("profiles" to database.getProfiles(),
                             "images" to database.getUserIGPost(user=user, start = 0, count=50),
                             "feedURL" to "/rss/category/${user}",
-                            "feedTitle" to "RSS - User: ${user}"
+                            "feedTitle" to "RSS - User: ${user}",
+                            "username" to call.sessions.get<IGSession>()?.user
                         )))
                 }
                 get("/") {
