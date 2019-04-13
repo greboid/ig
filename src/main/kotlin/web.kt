@@ -227,14 +227,18 @@ class Web(private val database: Database, private val config: Config) {
                     val profile = call.parameters["profile"] ?: ""
                     call.respond(FreeMarkerContent("index.ftl",
                         mapOf("profiles" to database.getProfiles(),
-                            "images" to database.getIGPost(profile=profile, start = 0, count=50)
+                            "images" to database.getIGPost(profile=profile, start = 0, count=50),
+                            "feedURL" to "/rss/category/${profile}",
+                            "feedTitle" to "RSS - Category: ${profile}"
                         )))
                 }
                 get("/user/{user}") {
                     val user = call.parameters["user"] ?: ""
                     call.respond(FreeMarkerContent("index.ftl",
                         mapOf("profiles" to database.getProfiles(),
-                            "images" to database.getUserIGPost(user=user, start = 0, count=50)
+                            "images" to database.getUserIGPost(user=user, start = 0, count=50),
+                            "feedURL" to "/rss/category/${user}",
+                            "feedTitle" to "RSS - User: ${user}"
                         )))
                 }
                 get("/") {
