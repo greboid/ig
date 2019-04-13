@@ -46,12 +46,15 @@ import io.ktor.sessions.sessions
 import io.ktor.util.KtorExperimentalAPI
 import io.ktor.util.hex
 import java.io.StringWriter
+import java.security.Security
 
 data class IGSession(val user: String, val admin: Boolean, var previousPage: String = "/")
 
 class Web(private val database: Database, private val config: Config) {
     @KtorExperimentalAPI
     suspend fun start() {
+        System.setProperty("io.ktor.random.secure.random.provider", "DRBG")
+        Security.setProperty("securerandom.drbg.config", "HMAC_DRBG,SHA-512,256,pr_and_reseed")
         val server = embeddedServer(CIO, port = config.webPort) {
             install(DefaultHeaders)
             install(PartialContent)
