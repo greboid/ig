@@ -1,13 +1,9 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>IG - Admin</title>
-    <meta http-equiv="Content-Type" content="text/html" charset="UTF-8"/>
-    <link rel="stylesheet" href="/css/main.css"/>
-    <link rel="stylesheet" href="/css/jquery.fancybox-3.3.5.min.css"/>
-    <link rel="stylesheet" href="/css/bootstrap-4.2.1.min.css"/>
-</head>
-<body>
+<#include "/header.ftl">
+<div id="menu">
+    <#list profiles as profile>
+        <li><a href="/category/${profile}#">${profile}</a></li>
+    </#list>
+</div>
 <div id="app" class="container-fluid">
     <div class="row">
         <div class="col"></div>
@@ -63,8 +59,5 @@
     </div>
 </div>
 <script src="/js/jquery-3.3.1.min.js" charset="utf-8" nonce="uXhb3jHDu7bM9z4P"></script>
-<script src="/js/popper-1.14.6.min.js" charset="utf-8" nonce="uXhb3jHDu7bM9z4P"></script>
-<script src="/js/bootstrap-4.2.1.min.js" charset="utf-8" nonce="uXhb3jHDu7bM9z4P"></script>
 <script src="/js/admin.js" charset="utf-8" nonce="uXhb3jHDu7bM9z4P"></script>
-</body>
-</html>
+<#include "/footer.ftl">

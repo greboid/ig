@@ -5,5 +5,6 @@
     <meta http-equiv="Content-Type" content="text/html" charset="UTF-8"/>
     <link rel="stylesheet" href="/css/main.css"/>
     <link rel="stylesheet" href="/css/perfundo.css"/>
+    <link rel="stylesheet" href="/css/bootstrap-4.2.1.min.css"/>
 </head>
 <body>

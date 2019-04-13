@@ -24,7 +24,6 @@ import io.ktor.freemarker.FreeMarkerContent
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.content.files
-import io.ktor.http.content.resolveResource
 import io.ktor.http.content.resources
 import io.ktor.http.content.static
 import io.ktor.request.receive
@@ -159,7 +158,9 @@ class Web(private val database: Database, private val config: Config) {
                         }
                     }
                     get("/") {
-                        call.respond(call.resolveResource("/html/admin.html", "") ?: HttpStatusCode.InternalServerError)
+                        call.respond(FreeMarkerContent("admin.ftl",
+                            mapOf("profiles" to database.getProfiles()
+                            )))
                     }
                     post("/") {
                         call.respondRedirect("/admin")
