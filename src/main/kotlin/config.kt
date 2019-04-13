@@ -21,7 +21,11 @@ fun migrateConfig(configFile: Path) {
 fun getConfig(configFile: Path): Config? {
     return try {
         logger.trace("Starting to parse config file")
-        Gson().fromJson(Files.newBufferedReader(configFile), Config::class.java)
+        val config = Gson().fromJson(Files.newBufferedReader(configFile), Config::class.java)
+        val writer = Files.newBufferedWriter(configFile)
+        writer.write(GsonBuilder().setPrettyPrinting().create().toJson(config))
+        writer.flush()
+        return config
     } catch (e: JsonParseException) {
         logger.error("Error parsing config", e)
         null
