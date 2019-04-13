@@ -98,7 +98,9 @@ class Web(private val database: Database, private val config: Config) {
                     files("thumbs")
                 }
                 get("/login") {
-                    call.respond(call.resolveResource("/html/login.html", "") ?: HttpStatusCode.InternalServerError)
+                    call.respond(FreeMarkerContent("login.ftl",
+                        mapOf("profiles" to database.getProfiles()
+                    )))
                 }
                 authenticate("auth") {
                     post("/login") {

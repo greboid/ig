@@ -1,11 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>IG - Login</title>
-    <link rel="stylesheet" href="/css/login.css"/>
-</head>
-<body>
+<#include "/header.ftl">
+<div id="menu">
+    <#list profiles as profile>
+        <li><a href="/category/${profile}#">${profile}</a></li>
+    </#list>
+</div>
 <div class="login-page">
     <div class="form">
         <form class="login-form" action="/login" method="post">
@@ -15,7 +13,4 @@
         </form>
     </div>
 </div>
-<script src="/js/jquery-3.3.1.min.js" charset="utf-8" nonce="uXhb3jHDu7bM9z4P"></script>
-<script src="/js/login.js" charset="utf-8" nonce="uXhb3jHDu7bM9z4P"></script>
-</body>
-</html>
+<#include "/footer.ftl">
