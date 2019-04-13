@@ -25,7 +25,7 @@ If you're doing this yourself, you will need the following:
 
 Setting|Default|Comments
 ---|---|---
-dbhost|ig|Defaults to localhost, unless using included docker-compose.
+dbhost|ig|Defaults to database, unless using included docker-compose.
 db|ig|Must be created first, unless using included docker-compose.
 dbuser|ig|
 dbpassword|ig|
