@@ -4,7 +4,6 @@ services:
     image: greboid/ig
     volumes:
       - config:/app/config/
-      - database:/app/database/
       - thumbs:/app/thumbs/
     links:
       - database
