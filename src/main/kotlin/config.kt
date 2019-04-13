@@ -34,7 +34,7 @@ fun createDefault(configFile: Path) {
 
 class Config(
     val db: String = "ig",
-    val dbhost: String = "database",
+    val dbhost: String = "localhost",
     val dbuser: String = "ig",
     val dbpassword: String = "ig",
     val dbport: Int = 3306,
