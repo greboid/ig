@@ -1,6 +1,6 @@
 <div class="post">
   <a class="perfundo__link item" href="#${image.shortcode}${image.ord}">
-    <img class="itemimage" src="/${image.thumb}" alt="${image.caption}">
+    <img class="itemimage" src="/${image.thumb}" alt="${image.caption?html}">
   </a>
   <div id="${image.shortcode}${image.ord}" class="perfundo__overlay fadeInLeft">
     <figure class="perfundo__content perfundo__figure">
@@ -15,7 +15,7 @@
         <figcaption class="perfundo__figcaption">
         <a href="/user/${image.source}">${image.source}</a> - <a href="https://instagram.com/p/${image.shortcode}">${image.shortcode}</a>
         <br>
-        ${image.caption}
+        ${image.caption?html}
       </figcaption>
     </figure>
     <a href="#close" class="perfundo__close perfundo__control">Close</a>
