@@ -106,8 +106,9 @@ class Web(private val database: Database, private val config: Config) {
                     post("/login") {
                         val principal = call.authentication.principal<UserIdPrincipal>()
                         if (principal == null) {
-                            call.respond(call.resolveResource("/html/index.html", "")
-                                    ?: HttpStatusCode.InternalServerError)
+                            call.respond(FreeMarkerContent("index.ftl",
+                                mapOf("profiles" to database.getProfiles()
+                                )))
                         } else {
                             call.sessions.set("session", IGSession(principal.name, true))
                             call.respondRedirect("/admin", false)
