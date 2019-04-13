@@ -7,6 +7,7 @@ services:
       - thumbs:/app/thumbs/
     links:
       - database
+    restart: always
   database:
     image: mysql:8
     volumes:
@@ -14,8 +15,9 @@ services:
     environment:
       - MYSQL_RANDOM_ROOT_PASSWORD=true
       - MYSQL_DATABASE=ig
-      - MYSQL_USER=ig 
+      - MYSQL_USER=ig
       - MYSQL_PASSWORD=ig
+    restart: always
 
 volumes:
   config:
