@@ -3,7 +3,7 @@ html, body {
   margin-left:0;
   padding: 0;
 }
-.container {
+.contentContainer {
   margin: 0;
   padding: 0;
   display: flex;

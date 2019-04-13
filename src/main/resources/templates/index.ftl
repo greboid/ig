@@ -4,7 +4,7 @@
         <li><a href="/category/${profile}#">${profile}</a></li>
     </#list>
 </div>
-<div id="app" class="container">
+<div id="app" class="contentContainer">
     <#list images as image>
         <#include "/image.ftl">
     </#list>
