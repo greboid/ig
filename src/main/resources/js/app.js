@@ -1,6 +1,7 @@
 getImages()
 
 function getImages() {
+  scrolling = true;
   offset = $("#app .item img").length
   var images = [];
   $.getJSON($(location).attr('protocol') + '//' + $(location).attr('host') + '/igposts?start='+offset+'&count='+(offset+150)+'&profile='+$(location).attr('pathname').substr(10), {}, function(data) {
@@ -18,6 +19,7 @@ function getImages() {
                 $('#app').append(arguments[i][0])
             }
         });
+        scrolling = false;
   })
 }
 
@@ -55,4 +57,17 @@ $(document).keyup(function(e) {
             window.location.hash = 'close'
         }
     }
+});
+
+scrolling = false;
+
+$( window ).resize(function() {
+  if (!scrolling && $('#app').height() < $(window).height()) {
+    getImages()
+  }
+});
+$(window).scroll(function() {
+  if (!scrolling && ($(window).scrollTop() + $(window).height() == $(document).height())) {
+    getImages()
+  }
 });
