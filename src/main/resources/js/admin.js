@@ -20,10 +20,23 @@ $('#addProfile').on('click', function(event) {
     event.preventDefault();
 });
 $(document).on('click','a.remove',function(event){
+    var name = $(event.target).parent().data("name");
+    var parentDiv = $(event.target).closest('div[class="col"]')[0];
+    var list = $(parentDiv).find("ul");
+    if ($(list).attr('id') == "userList") {
+        var select = $('#userSelect');
+    } else {
+        var select = $('#profileSelect');
+    }
     $(event.target).parent().remove();
+    $(select).find('option').each(function() {
+        if ( $(this).val() == name ) {
+            $(this).remove();
+        }
+    });
     event.preventDefault();
 });
-$('#saveUsers').on('click', function(event) {
+$('#save').on('click', function(event) {
     var users = [];
     $('#userList').find('li').each(function(index) {
         users.push($(this).data('name'));
@@ -31,8 +44,6 @@ $('#saveUsers').on('click', function(event) {
     $.postJSON( "/admin/users", JSON.stringify(users), function() {
         $($("#userSelect").find("option")[0]).change();
     });
-});
-$('#saveProfiles').on('click', function(event) {
     var profiles = [];
     $('#profileList').find('li').each(function(index) {
         profiles.push($(this).data('name'));
@@ -40,8 +51,6 @@ $('#saveProfiles').on('click', function(event) {
     $.postJSON( "/admin/profiles", JSON.stringify(profiles), function() {
         $($("#userSelect").find("option")[0]).change();
     });
-});
-$('#saveProfileUsers').on('click', function(event) {
     var profiles = new Object()
     profiles.selected = $($(userSelect).find(":selected")[0]).val()
     var selectedProfiles = [];
@@ -69,7 +78,11 @@ function addItem(event) {
     var parentDiv = $(event.target).closest('div[class="col"]')[0];
     var input = $(parentDiv).find("input[type=text]");
     var list = $(parentDiv).find("ul");
-    var select = $('#userSelect');
+    if ($(list).attr('id') == "userList") {
+        var select = $('#userSelect');
+    } else {
+        var select = $('#profileSelect');
+    }
     var text = $(input).val().trim().toLowerCase();
     var known = false;
     $(list).find("li").each(function() {

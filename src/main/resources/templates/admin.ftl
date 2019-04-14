@@ -27,16 +27,6 @@
         </div>
         <div class="col"></div>
     </div>
-    <div class="row">
-        <div class="col"></div>
-        <div class="col">
-            <button id="saveUsers" class="btn btn-primary">Save</button>
-        </div>
-        <div class="col">
-            <button id="saveProfiles" class="btn btn-primary">Save</button>
-        </div>
-        <div class="col"></div>
-    </div>
     <br><br>
     <div class="row">
         <div class="col"></div>
@@ -49,7 +39,14 @@
             <h4>Profiles:</h4>
             <select id="profileSelect" multiple size="12" class="form-control">
             </select>
-            <button id="saveProfileUsers" class="btn btn-primary">Save</button>
+        </div>
+        <div class="col"></div>
+    </div>
+    <br><br>
+    <div class="row">
+        <div class="col"></div>
+        <div class="col centercontainer">
+            <button id="save" class="btn btn-primary">Save</button>
         </div>
         <div class="col"></div>
     </div>
