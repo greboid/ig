@@ -69,6 +69,7 @@ function addItem(event) {
     var parentDiv = $(event.target).closest('div[class="col"]')[0];
     var input = $(parentDiv).find("input[type=text]");
     var list = $(parentDiv).find("ul");
+    var select = $('#userSelect');
     var text = $(input).val().trim().toLowerCase();
     var known = false;
     $(list).find("li").each(function() {
@@ -78,12 +79,22 @@ function addItem(event) {
     });
     if (text != "" && !known) {
         $(list).append("<li class=\"list-group-item\" data-name=\""+text+"\">"+text+" <a class=\"remove\" href=\"\">Remove</a></li>");
+        $(select).append("<option value=\""+text+"\" data-name=\""+text+"\">"+text+"</option>")
         $(input).val('')
     }
-    var elems = $(list).find('li').detach().sort(function (a, b) {
+    var listElems = $(list).find('li').detach().sort(function (a, b) {
         return ($(a).data("name") < $(b).data("name") ? -1 : $(a).data("name") > $(b).data("name") ? 1 : 0);
     });
-    $(list).append(elems);
+    $(list).append(listElems);
+    var selectOptions = $(select).find('option');
+    var selected = $(select).find(":selected").text();
+    selectOptions.sort(function(a,b) {
+        if (a.text > b.text) return 1;
+        if (a.text < b.text) return -1;
+        return 0
+    });
+    $(select).empty().append(selectOptions);
+    $(select).filter(function () { return $(this).html() == selected; }).attr('selected', 'selected');
 }
 $.postJSON = function(url, data, callback) {
     return jQuery.ajax({
