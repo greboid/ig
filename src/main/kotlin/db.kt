@@ -8,6 +8,7 @@ import java.sql.SQLException
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.util.TimeZone
 
 class Database(private val config: Config) {
     private lateinit var internalConnection: Connection
@@ -20,12 +21,28 @@ class Database(private val config: Config) {
         }
 
     fun connect(): Connection {
-        internalConnection = try {
-            DriverManager.getConnection(
-                    "jdbc:mysql://${config.dbhost}:${config.dbport}/${config.db}?useUnicode=yes&characterEncoding=UTF-8",
+        val startTime = System.currentTimeMillis()
+        var tempConnect: Connection? = null
+        var lastError: Throwable? = null
+        do {
+            logger.debug("Trying DB connection.")
+            if (startTime + 30000 < System.currentTimeMillis()) {
+                logger.debug("Breaking")
+                break
+            }
+            try {
+                tempConnect = DriverManager.getConnection(
+                    "jdbc:mysql://${config.dbhost}:${config.dbport}/${config.db}?useUnicode=yes&characterEncoding=UTF-8&serverTimezone=${TimeZone.getDefault().id}",
                     config.dbuser, config.dbpassword)
-        } catch (e: SQLException) {
-            throw IllegalStateException("Unable to connect: ${e.localizedMessage}")
+            } catch (e: SQLException) {
+                lastError = e
+            }
+            Thread.sleep(1000)
+        } while (tempConnect == null)
+        if (tempConnect != null) {
+            internalConnection = tempConnect
+        } else {
+            throw IllegalStateException("Unable to connect to database: ${lastError?.localizedMessage ?: "Unknown error"}")
         }
         init()
         return connection
