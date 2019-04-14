@@ -20,11 +20,13 @@ import io.ktor.features.DefaultHeaders
 import io.ktor.features.PartialContent
 import io.ktor.features.StatusPages
 import io.ktor.features.XForwardedHeaderSupport
+import io.ktor.features.statusFile
 import io.ktor.freemarker.FreeMarker
 import io.ktor.freemarker.FreeMarkerContent
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.content.files
+import io.ktor.http.content.resolveResource
 import io.ktor.http.content.resources
 import io.ktor.http.content.static
 import io.ktor.request.receive
@@ -72,6 +74,7 @@ class Web(
                 }
             }
             install(StatusPages) {
+                statusFile(HttpStatusCode.NotFound, HttpStatusCode.Unauthorized, filePattern = "statusFiles/#.html")
                 exception<Throwable> { cause ->
                     call.respond(HttpStatusCode.InternalServerError, "Internal Server Error")
                     cause.printStackTrace()
@@ -108,6 +111,9 @@ class Web(
                     call.respond(FreeMarkerContent("login.ftl",
                         mapOf("profiles" to database.getProfiles()
                     )))
+                }
+                get("/favicon.ico") {
+                    call.respond(call.resolveResource("/favicon.ico", "") ?: HttpStatusCode.NotFound)
                 }
                 authenticate("auth") {
                     post("/login") {

@@ -85,3 +85,14 @@ html, body {
 .form .register-form {
   display: none;
 }
+
+.centercontainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 95%;
+}
+
+html,body {
+    height: 100%; margin: 0px; padding: 0px;
+}
