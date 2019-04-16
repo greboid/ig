@@ -5,6 +5,9 @@
         <#include "/image.ftl">
     </#list>
 </div>
-<script src="/js/jquery-3.3.1.min.js" charset="utf-8" nonce="uXhb3jHDu7bM9z4P"></script>
-<script src="/js/app.js" charset="utf-8" nonce="uXhb3jHDu7bM9z4P"></script>
+<script src="/js/jquery-3.3.1.min.js"></script>
+<script src="/js/popper-1.14.7.min.js"></script>
+<script src="/js/bootstrap-4.3.1.min.js"></script>
+<script src="/js/ekko-lightbox-5.3.0.min.js"></script>
+<script src="/js/app.js"></script>
 <#include "/footer.ftl">

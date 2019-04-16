@@ -262,6 +262,16 @@ class Web(
                             "username" to call.sessions.get<IGSession>()?.user
                         )))
                 }
+                get("/video/{shortcode}/{ord?}") {
+                    val shortcode = call.parameters["shortcode"] ?: ""
+                    val ord = call.parameters["ord"]?.toInt() ?: 0
+                    val post = database.getIGPost(shortcode, ord)
+                    call.respond(FreeMarkerContent("video.ftl",
+                        mapOf("profiles" to database.getProfiles(),
+                            "source" to post.url,
+                            "username" to call.sessions.get<IGSession>()?.user
+                        )))
+                }
                 get("/") {
                     val profiles = database.getProfiles()
                     if (profiles.isNotEmpty()) {

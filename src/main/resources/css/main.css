@@ -96,3 +96,39 @@ html, body {
 html,body {
     height: 100%; margin: 0px; padding: 0px;
 }
+
+.ekko-lightbox .modal-footer {
+    flex-wrap: wrap;
+    padding: 0;
+}
+
+.ekko-lightbox .modal-footer p {
+    flex-basis: 100%;
+    margin-bottom: 0;
+    line-height: 1.5;
+}
+
+.ekko-lightbox .modal-footer a {
+    color: white;
+    text-decoration: none;
+}
+
+.ekko-lightbox .modal-footer {
+    border: none;
+    text-align: center;
+    color: white;
+    max-height: 5em;
+    overflow-y:  auto;
+}
+.ekko-lightbox {
+    background: rgba(0, 0, 0, 0.8);
+}
+
+.ekko-lightbox .modal-content {
+    background: rgba(0, 0, 0, 0.0);
+}
+
+.ekko-lightbox video {
+    height: 100%;
+    width: 100%;
+}
