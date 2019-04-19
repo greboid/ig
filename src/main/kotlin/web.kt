@@ -48,6 +48,8 @@ import io.ktor.sessions.get
 import io.ktor.sessions.sessions
 import io.ktor.util.KtorExperimentalAPI
 import io.ktor.util.hex
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.io.StringWriter
 import java.security.Security
 
@@ -210,6 +212,14 @@ class Web(
                         val profilesToAdd = newProfiles.subtract(currentProfiles)
                         profilesToRemove.forEach { profile -> database.delProfile(profile) }
                         profilesToAdd.forEach { profile -> database.addProfile(profile) }
+                        call.respond(HttpStatusCode.OK, "Backfilling")
+                    }
+                    get("/backfill/{user}/{number}") {
+                        val user = call.parameters["user"] ?: ""
+                        val number = call.parameters["number"]?.toInt() ?: 0
+                        GlobalScope.launch {
+                            retriever.backfill(user, number)
+                        }
                         call.respond(HttpStatusCode.OK, "{}")
                     }
                 }

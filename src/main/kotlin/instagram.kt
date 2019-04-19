@@ -230,7 +230,7 @@ class Profile(
     }
 }
 
-class Post(
+data class Post(
         val id: String,
         val type: PostType,
         val shortcode: String,

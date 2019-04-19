@@ -93,6 +93,11 @@ class IGRetriever(
             }
         }
     }
+    override suspend fun backfill(identifier: String, capacity: Int) {
+        logger.info("Backfilling: ${identifier} to ${capacity}")
+        val profile = instagram.getUserProfile(identifier)
+        profile?.backfill(instagram, capacity)
+    }
 }
 
 private fun thumbnail(input: URL, output: File) {
