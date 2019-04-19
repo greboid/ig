@@ -50,6 +50,10 @@ class IGRetriever(
         } else {
             (config.refreshDelay * 60) / users.size
         }
+        if (users.isEmpty()) {
+            delay(Duration.ofSeconds(delay.toLong()))
+            return
+        }
         for (user in users) {
             try {
                 retrieve(user)
