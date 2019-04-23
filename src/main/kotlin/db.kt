@@ -313,7 +313,6 @@ class Database(private val config: Config) {
             SELECT shortcode, users.username, thumbnailURL, imageURL, caption, timestamp, ord
             FROM igposts
             LEFT JOIN users on users.id=igposts.userID
-            LEFT JOIN profile_users on profile_users.userid=users.id
             WHERE users.username=?
             ORDER BY timestamp DESC
             LIMIT ?
