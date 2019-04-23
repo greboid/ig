@@ -201,8 +201,10 @@ class Profile(
             return
         }
         for (i in fullruns downTo 1) {
+            logger.info("Backfilling older data: ${i}/${fullruns}")
             getOlderData(instagram, count)
         }
+        logger.info("Backfilling from final page");
         getOlderData(instagram, partRuns)
     }
 
@@ -227,6 +229,7 @@ class Profile(
         end_cursor = data.data.user.edge_owner_to_timeline_media.page_info.end_cursor
         hasMore = data.data.user.edge_owner_to_timeline_media.page_info.has_next_page
         posts.addAll(data.data.user.edge_owner_to_timeline_media.edges.stream().map {
+            logger.debug("Getting older data post: ${it.node.shortcode}")
             instagram.getShortcodePost(it.node.shortcode)
         }.toList().filterNotNull())
     }
