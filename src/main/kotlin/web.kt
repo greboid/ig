@@ -144,7 +144,7 @@ class Web(
                     } else if (user.isNotEmpty()) {
                         call.respondText(Gson().toJson(database.getUserIGPost(user, start, count)), ContentType.Application.Json)
                     } else {
-                        call.respondText("")
+                        call.respondText("", ContentType.Application.Json)
                     }
                 }
                 get("/profiles") {
@@ -223,7 +223,7 @@ class Web(
                         GlobalScope.launch {
                             retriever.backfill(user, number)
                         }
-                        call.respond(HttpStatusCode.OK, "{}")
+                        call.respondRedirect("/admin", false)
                     }
                 }
                 get ("/rss/category/{profile}") {
