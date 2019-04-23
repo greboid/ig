@@ -1,6 +1,6 @@
 $.getJSON($(location).attr('protocol') + '//' + $(location).attr('host') + '/users', {}, function(data) {
     $.each(data, function(index, user) {
-        $("#userList").append("<li class=\"list-group-item\" data-name=\""+user+"\">"+user+" <a class=\"remove\" href=\"\">Remove</a></li>");
+        $("#userList").append("<li class=\"list-group-item\" data-name=\""+user+"\">"+user+" <a class=\"remove\" href=\"\">Remove</a> <a href=\"#\" onclick='backfill()'>Backfill</a></li>");
         $("#userSelect").append("<option value=\""+user+"\">"+user+"</option>");
         $($("#userSelect").find("option")[0]).attr('selected','selected');
         $($("#userSelect").find("option")[0]).change();
@@ -119,3 +119,9 @@ $.postJSON = function(url, data, callback) {
         'success': callback
     });
 };
+
+function backfill() {
+    var user = $(event.target).parent().data("name")
+    var count = prompt("Total number for profile: ");
+    $.getJSON($(location).attr('protocol') + '//' + $(location).attr('host') + '/admin/backfill/'+user+'/'+count, {})
+}
