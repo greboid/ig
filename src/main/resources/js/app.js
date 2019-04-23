@@ -11,7 +11,12 @@ function getImages() {
   scrolling = true;
   offset = $("#app .item img").length
   var images = [];
-  $.getJSON($(location).attr('protocol') + '//' + $(location).attr('host') + '/igposts?start='+offset+'&count='+(offset+150)+'&profile='+$(location).attr('pathname').substr(10), {}, function(data) {
+  if (location.pathname.split('/')[1] == 'user') {
+    var url = $(location).attr('protocol') + '//' + $(location).attr('host') + '/igposts?start='+offset+'&count='+(offset+150)+'&user='+location.pathname.split('/')[2]
+  } else {
+    var url = $(location).attr('protocol') + '//' + $(location).attr('host') + '/igposts?start='+offset+'&count='+(offset+150)+'&profile='+location.pathname.split('/')[2]
+  }
+  $.getJSON(url, {}, function(data) {
     $.each(data, function(index, image) {
       images.push(image);
      })
