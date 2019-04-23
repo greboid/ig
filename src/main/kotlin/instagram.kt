@@ -191,11 +191,13 @@ class Profile(
         private val rhx_gis: String
 ) {
     fun backfill(instagram: Instagram, desiredCapacity: Int) {
+        logger.info("Backfilling: ${username} to ${desiredCapacity}")
         val targetCapacity = min(desiredCapacity, count)
         val count = 12
         val fullruns: Int = (targetCapacity - posts.size) / count
         val partRuns: Int = (targetCapacity - posts.size) % count
         if (fullruns <= 0 && partRuns <= 0) {
+            logger.debug("No runs to do, skipping.")
             return
         }
         for (i in fullruns downTo 1) {

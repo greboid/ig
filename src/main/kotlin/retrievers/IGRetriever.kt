@@ -4,6 +4,7 @@ import com.greboid.scraper.Config
 import com.greboid.scraper.Database
 import com.greboid.scraper.Instagram
 import com.greboid.scraper.PostType
+import com.greboid.scraper.Profile
 import com.greboid.scraper.Retriever
 import com.mortennobel.imagescaling.AdvancedResizeOp
 import com.mortennobel.imagescaling.ResampleOp
@@ -71,8 +72,22 @@ class IGRetriever(
     override suspend fun retrieve(identifier: String) {
         logger.info("Retrieving: $identifier")
         val profile = instagram.getUserProfile(identifier) ?: return
-        val userID = database.getUserID(identifier)
-                ?: run { println("Unable to get id for user: ${profile.username}"); return }
+        saveProfile(profile)
+    }
+    override suspend fun backfill(identifier: String, capacity: Int) {
+        logger.info("Requesting backfill for $identifier to $capacity")
+        val profile = instagram.getUserProfile(identifier)
+        if (profile != null) {
+            profile.backfill(instagram, capacity)
+            saveProfile(profile)
+        } else {
+            logger.error("Request backfill profile does not exist: $identifier")
+        }
+    }
+
+    private fun saveProfile(profile: Profile) {
+        val userID = database.getUserID(profile.username)
+            ?: run { println("Unable to get id for user: ${profile.username}"); return }
         profile.posts.forEach { post ->
             if (post.type == PostType.SIDECAR) {
                 post.displayURL.forEachIndexed { index, url ->
@@ -81,7 +96,7 @@ class IGRetriever(
                         thumbnail(url, out)
                     }
                     database.addIGPost(post.shortcode, index, userID, out.toString(),
-                            url.toString(), post.caption, post.timestamp)
+                        url.toString(), post.caption, post.timestamp)
                 }
             } else {
                 val out = File("thumbs/${post.shortcode}.jpg")
@@ -89,14 +104,9 @@ class IGRetriever(
                     thumbnail(post.thumbnailURL, out)
                 }
                 database.addIGPost(post.shortcode, 0, userID, out.toString(),
-                        post.displayURL.first().toString(), post.caption, post.timestamp)
+                    post.displayURL.first().toString(), post.caption, post.timestamp)
             }
         }
-    }
-    override suspend fun backfill(identifier: String, capacity: Int) {
-        logger.info("Backfilling: ${identifier} to ${capacity}")
-        val profile = instagram.getUserProfile(identifier)
-        profile?.backfill(instagram, capacity)
     }
 }
 
