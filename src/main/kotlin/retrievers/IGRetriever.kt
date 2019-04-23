@@ -83,6 +83,7 @@ class IGRetriever(
         } else {
             logger.error("Request backfill profile does not exist: $identifier")
         }
+        logger.info("Backfilling complete for $identifier")
     }
 
     private fun saveProfile(profile: Profile) {
