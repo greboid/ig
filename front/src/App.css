@@ -1,0 +1,17 @@
+.list-item-value {
+	float: left;
+}
+.list-item-history {
+	float: right;
+}
+.list-item-remove {
+	float: right;
+	margin-right: 5px;
+}
+
+.list-group-item {
+	width: 100%;
+}
+.assign-list {
+	width: 100%;
+}
