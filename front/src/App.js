@@ -34,6 +34,41 @@ class App extends React.Component {
     this.handleAddCategories = this.handleAddCategories.bind(this);
     this.handleCategoryChange = this.handleCategoryChange.bind(this);
     this.handleSave = this.handleSave.bind(this);
+    this.componentDidMount = this.componentDidMount.bind(this);
+    this.loadCategoryMap = this.loadCategoryMap.bind(this);
+  }
+
+  componentDidMount() {
+    fetch('/users')
+      .then(response => response.json())
+      .then(json => {
+        this.setState({users: json})
+      })
+      .then(this.loadCategories())
+  }
+
+  loadCategories() {
+    fetch('/profiles')
+      .then(response => response.json())
+      .then(json => {
+        this.setState({categories: json})
+        return json
+      })
+      .then(json => this.loadCategoryMap(json))
+  }
+
+  loadCategoryMap(categories) {
+    var categoryMap = new Map(this.state.categoryMap)
+    categories.forEach(function(value){
+      fetch('/ProfileUsers/'+value)
+      .then(response => response.json())
+      .then(json => {
+        categoryMap.set(value, Array.prototype.slice.call(json))
+      })
+      .then(empty => {
+        this.setState({categoryMap: categoryMap})
+        })
+    }, this)
   }
 
   handleChangeUser(event) {
