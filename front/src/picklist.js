@@ -7,7 +7,7 @@ class PickList extends React.Component {
 				           {this.props.categories.map(function(category){
 				              return (
 				              	<li className="list-group-item" key={category}>
-				              		{category}&nbsp;&nbsp;&nbsp;&nbsp;
+				              		<p>{category}</p>
 				              		<select 
 				              			onChange={this.props.onChange}
 				              			name={category} 

@@ -8,9 +8,11 @@
 	float: right;
 	margin-right: 5px;
 }
-
 .list-group-item {
 	width: 100%;
+}
+.list-group-item p {
+	display: inline-block;
 }
 .assign-list {
 	width: 100%;

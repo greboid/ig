@@ -9,6 +9,8 @@ import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 
+const BASEURL = ''
+
 function postJSON(url, data) {
   var request = new XMLHttpRequest();
   request.open('POST', url, true);
@@ -39,7 +41,7 @@ class App extends React.Component {
   }
 
   componentDidMount() {
-    fetch('/users')
+    fetch(BASEURL+'/users')
       .then(response => response.json())
       .then(json => {
         this.setState({users: json})
@@ -48,7 +50,7 @@ class App extends React.Component {
   }
 
   loadCategories() {
-    fetch('/profiles')
+    fetch(BASEURL+'/profiles')
       .then(response => response.json())
       .then(json => {
         this.setState({categories: json})
@@ -60,7 +62,7 @@ class App extends React.Component {
   loadCategoryMap(categories) {
     var categoryMap = new Map(this.state.categoryMap)
     categories.forEach(function(value){
-      fetch('/ProfileUsers/'+value)
+      fetch(BASEURL+'/ProfileUsers/'+value)
       .then(response => response.json())
       .then(json => {
         categoryMap.set(value, Array.prototype.slice.call(json))
@@ -116,14 +118,24 @@ class App extends React.Component {
   }
 
   handleSave(event) {
-    postJSON('/admin/users', JSON.stringify(this.state.users))
-    postJSON('/admin/profiles', JSON.stringify(this.state.categories))
-    postJSON('/admin/ProfileUsers', JSON.stringify(Array.from(this.state.categoryMap.entries())))
+    postJSON(BASEURL+'/admin/users', JSON.stringify(this.state.users))
+    postJSON(BASEURL+'/admin/profiles', JSON.stringify(this.state.categories))
+    postJSON(BASEURL+'/admin/ProfileUsers', JSON.stringify(this.getCategoryArray(this.state.categoryMap)))
+  }
+
+  getCategoryArray(map) {
+    var profiles = {}
+    var test = {}
+    for (var [key, value] of map) {
+      test[key] = value;
+    }
+    profiles.profiles = test
+    return profiles
   }
 
   handleHistory(user) {
     var count = prompt("History")
-    fetch('/admin/backfill/'+user+'/'+count)
+    fetch(BASEURL+'/admin/backfill/'+user+'/'+count)
   }
 
   render() {
