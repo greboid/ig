@@ -14,6 +14,7 @@ import io.ktor.auth.UserIdPrincipal
 import io.ktor.auth.authenticate
 import io.ktor.auth.authentication
 import io.ktor.auth.form
+import io.ktor.features.CORS
 import io.ktor.features.Compression
 import io.ktor.features.ConditionalHeaders
 import io.ktor.features.DefaultHeaders
@@ -25,6 +26,7 @@ import io.ktor.freemarker.FreeMarker
 import io.ktor.freemarker.FreeMarkerContent
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
+import io.ktor.http.content.defaultResource
 import io.ktor.http.content.files
 import io.ktor.http.content.resolveResource
 import io.ktor.http.content.resources
@@ -176,25 +178,22 @@ class Web(
                             return@intercept finish()
                         }
                     }
-                    get("/") {
-                        call.respond(FreeMarkerContent("admin.ftl",
-                            mapOf(
-                                "profiles" to database.getProfiles(),
-                                "username" to call.sessions.get<IGSession>()?.user
-                            )))
-                    }
-                    post("/") {
-                        call.respondRedirect("/admin")
+                    static("/") {
+                        resources("/admin")
+                        defaultResource("index.html", "/admin")
                     }
                     post("/ProfileUsers") {
-                        val profileUsers = Gson().fromJson(call.receive<String>(), ProfileUsers::class.java)
-                        val currentProfiles = database.getUserProfiles(profileUsers.selected)
-                        val newProfiles = profileUsers.profiles
-                        val profilesToRemove = currentProfiles.minus(newProfiles)
-                        val profilesToAdd = newProfiles.subtract(currentProfiles)
-                        profilesToRemove.forEach { profile -> database.delUserProfile(profileUsers.selected, profile) }
-                        profilesToAdd.forEach { profile -> database.addUserProfile(profileUsers.selected, profile) }
-                        call.respond(HttpStatusCode.OK, "{}")
+                        val categoryUsers = Gson().fromJson(call.receive<String>(), ProfileUsers::class.java).profiles
+                        for (categoryUser in categoryUsers) {
+                            val currentCategory = categoryUser.key
+                            val newUsers = categoryUser.value
+                            val currentUsers = database.getProfileUsers(currentCategory)
+                            val usersToRemove = currentUsers.minus(newUsers)
+                            val usersToAdd = newUsers.minus(currentUsers)
+                            usersToRemove.forEach { user -> database.delUserProfile(user, currentCategory) }
+                            usersToAdd.forEach { user -> database.addUserProfile(user, currentCategory) }
+                        }
+                        call.respond(HttpStatusCode.Accepted)
                     }
                     post("/users") {
                         val newUsers = Gson().fromJson(call.receive<String>(), Array<String>::class.java).toList()
@@ -206,7 +205,7 @@ class Web(
                                 user -> database.addUser(user)
                                 retriever.retrieve(user)
                         }
-                        call.respond(HttpStatusCode.OK, "{}")
+                        call.respond(HttpStatusCode.Accepted)
                     }
                     post("/profiles") {
                         val newProfiles = Gson().fromJson(call.receive<String>(), Array<String>::class.java).toList()
@@ -215,7 +214,7 @@ class Web(
                         val profilesToAdd = newProfiles.subtract(currentProfiles)
                         profilesToRemove.forEach { profile -> database.delProfile(profile) }
                         profilesToAdd.forEach { profile -> database.addProfile(profile) }
-                        call.respond(HttpStatusCode.OK, "Backfilling")
+                        call.respond(HttpStatusCode.Accepted)
                     }
                     get("/backfill/{user}/{number}") {
                         val user = call.parameters["user"] ?: ""
@@ -309,8 +308,8 @@ class Web(
     }
 }
 
-internal class ProfileUsers(val selected: String = "", val profiles: List<String> = emptyList()) {
+internal class ProfileUsers(val profiles: Map<String, List<String>>) {
     override fun toString(): String {
-        return "[user=$selected, profiles=$profiles]"
+        return "[profiles=$profiles]"
     }
 }
