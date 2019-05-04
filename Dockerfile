@@ -2,7 +2,7 @@ FROM node:8 as react
 WORKDIR /app
 COPY front front
 WORKDIR /app/front
-RUN yarn build
+RUN yarn install && yarn build
 RUN ls -l build
 
 FROM greboid/kotlin as build
