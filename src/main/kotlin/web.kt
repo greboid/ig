@@ -14,6 +14,7 @@ import io.ktor.auth.UserIdPrincipal
 import io.ktor.auth.authenticate
 import io.ktor.auth.authentication
 import io.ktor.auth.form
+import io.ktor.features.CORS
 import io.ktor.features.Compression
 import io.ktor.features.ConditionalHeaders
 import io.ktor.features.DefaultHeaders
@@ -66,6 +67,11 @@ class Web(
         System.setProperty("io.ktor.random.secure.random.provider", "DRBG")
         Security.setProperty("securerandom.drbg.config", "HMAC_DRBG,SHA-512,256,pr_and_reseed")
         val server = embeddedServer(CIO, port = config.webPort) {
+            if (config.testMode) {
+                install(CORS) {
+                    anyHost()
+                }
+            }
             install(DefaultHeaders)
             install(PartialContent)
             install(Compression)
@@ -171,10 +177,12 @@ class Web(
                     }
                 }
                 route("/admin") {
-                    intercept(ApplicationCallPipeline.Features) {
-                        if (call.sessions.get<IGSession>()?.user == null) {
-                            call.respondRedirect("/login", false)
-                            return@intercept finish()
+                    if (!config.testMode) {
+                        intercept(ApplicationCallPipeline.Features) {
+                            if (call.sessions.get<IGSession>()?.user == null) {
+                                call.respondRedirect("/login", false)
+                                return@intercept finish()
+                            }
                         }
                     }
                     static("/") {

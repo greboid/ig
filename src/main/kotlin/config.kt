@@ -58,7 +58,8 @@ class Config(
     val refreshDelay: Int = 15,
     val igLogin: Boolean = false,
     val igUsername: String = "",
-    val igPassword: String = ""
+    val igPassword: String = "",
+    val testMode: Boolean = false
 )
 
 fun randomString(charPool: List<Char>, length: Int) = CharArray(length) { charPool.random() }.joinToString("")
