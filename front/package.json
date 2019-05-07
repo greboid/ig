@@ -1,7 +1,7 @@
 {
   "name": "ig-font",
   "version": "0.1.0",
-  "homepage" : "/admin",
+  "homepage": "/admin",
   "private": true,
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.8.1",

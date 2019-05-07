@@ -77,7 +77,7 @@ class App extends React.Component {
     this.setState({newUser: event.target.value});
   }
 
-  handleChangeCategory(event) {
+  handleChangeCategory(event, type) {
     this.setState({newCategory: event.target.value});
   }
 
@@ -108,11 +108,9 @@ class App extends React.Component {
     event.preventDefault()
   }
 
-  handleCategoryChange(event) {
-    this.state.categoryMap.set(event.target.name, 
-        Array.prototype.slice.call(event.target.options)
-        .filter(option => option.selected)
-        .map(option => option.value)
+  handleCategoryChange(selected, type) {
+    this.state.categoryMap.set(type.name, 
+        Array.prototype.slice.call(selected)
       )
     this.setState({categoryMap: this.state.categoryMap})
   }
@@ -153,7 +151,7 @@ class App extends React.Component {
             </Col>
           </Row>
           <Row className="justify-content-md-center">
-            <Col sm="auto">
+            <Col sm="3">
               <h2>Users</h2>
               <List 
                 items={this.state.users}
@@ -165,7 +163,7 @@ class App extends React.Component {
                 handleHistory={this.handleHistory}
               />
             </Col>
-            <Col sm="auto">
+            <Col sm="3">
               <h2>Categories</h2>
               <List 
                 items={this.state.categories}
@@ -175,7 +173,7 @@ class App extends React.Component {
                 handleChange={this.handleChangeCategory}
               />
             </Col>
-            <Col sm="auto">
+            <Col sm="3">
               <h2>Assignment</h2>
               <PickList 
                 onChange={this.handleCategoryChange}

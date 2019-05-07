@@ -1,4 +1,5 @@
 import React from 'react';
+import Select from 'react-select';
 
 class PickList extends React.Component {
 	render() {
@@ -8,22 +9,16 @@ class PickList extends React.Component {
 				              return (
 				              	<li className="list-group-item" key={category}>
 				              		<p>{category}</p>
-				              		<select 
-				              			onChange={this.props.onChange}
+				              		<Select
+				              			options={this.props.users}
+				              			closeMenuOnSelect={false}
+				              			getOptionValue={(option) => (option)}
+				              			getOptionLabel={(option) => (option)}
 				              			name={category} 
-				              			value={this.props.categoryMap.get(category)} 
-				              			multiple
-				              		>
-				              			{this.props.users.map(function(user){
-				              				return (
-				              					<option 
-				              						key={user} 
-				              					>
-				              						{user}
-				              					</option>
-				              				);
-				              			}, this)}
-				              		</select>
+				              			value={this.props.categoryMap.get(category)}
+				              			isMulti
+				              			onChange={this.props.onChange}
+				              		/>
 				              	</li>
 				             	);
 				            }, this)}
