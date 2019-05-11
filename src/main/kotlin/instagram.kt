@@ -83,7 +83,11 @@ class Instagram {
 
     internal fun getShortcodePost(shortcode: String?): Post? {
         val json = try {
-            val contents = getURL("$ig/p/$shortcode") ?: ""
+            val contents = getURL("$ig/p/$shortcode")
+            if (contents == null) {
+                logger.error("Failed to get contents")
+                return null
+            }
             Jsoup.parse(contents, "$ig/p/$shortcode")
         } catch (e: IOException) {
             return null
