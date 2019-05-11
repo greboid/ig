@@ -25,6 +25,8 @@ import io.ktor.features.statusFile
 import io.ktor.freemarker.FreeMarker
 import io.ktor.freemarker.FreeMarkerContent
 import io.ktor.http.ContentType
+import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.content.defaultResource
 import io.ktor.http.content.files
@@ -67,10 +69,16 @@ class Web(
         System.setProperty("io.ktor.random.secure.random.provider", "DRBG")
         Security.setProperty("securerandom.drbg.config", "HMAC_DRBG,SHA-512,256,pr_and_reseed")
         val server = embeddedServer(CIO, port = config.webPort) {
-            if (config.testMode) {
-                install(CORS) {
-                    anyHost()
-                }
+            install(CORS) {
+                method(HttpMethod.Options)
+                method(HttpMethod.Get)
+                method(HttpMethod.Post)
+                method(HttpMethod.Put)
+                method(HttpMethod.Delete)
+                method(HttpMethod.Patch)
+                header(HttpHeaders.Authorization)
+                allowCredentials = true
+                anyHost()
             }
             install(DefaultHeaders)
             install(PartialContent)
