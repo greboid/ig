@@ -128,7 +128,10 @@ class Database(private val config: Config) {
         val statement = connection.prepareStatement(Schema.getProfileID) ?: return null
         statement.setString(1, name)
         val result = statement.executeQuery()
-        result.first()
+        val check = result.first()
+        if (!check) {
+            return null
+        }
         val returnValue = result.getInt(1)
         result.close()
         statement.close()
