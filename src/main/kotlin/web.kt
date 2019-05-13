@@ -1,22 +1,25 @@
 package com.greboid.scraper
 
+import com.auth0.jwt.JWT
+import com.auth0.jwt.JWTVerifier
+import com.auth0.jwt.algorithms.Algorithm
 import com.google.gson.Gson
+import com.google.gson.JsonParseException
 import com.greboid.scraper.retrievers.IGRetriever
 import freemarker.cache.ClassTemplateLoader
 import freemarker.template.Configuration
 import freemarker.template.Configuration.DEFAULT_INCOMPATIBLE_IMPROVEMENTS
-import io.ktor.application.ApplicationCallPipeline
 import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.auth.Authentication
-import io.ktor.auth.FormAuthChallenge
 import io.ktor.auth.UserIdPrincipal
 import io.ktor.auth.authenticate
-import io.ktor.auth.authentication
-import io.ktor.auth.form
+import io.ktor.auth.jwt.jwt
 import io.ktor.features.CORS
 import io.ktor.features.Compression
 import io.ktor.features.ConditionalHeaders
+import io.ktor.features.ContentNegotiation
+import io.ktor.features.ContentTransformationException
 import io.ktor.features.DefaultHeaders
 import io.ktor.features.PartialContent
 import io.ktor.features.StatusPages
@@ -24,6 +27,7 @@ import io.ktor.features.XForwardedHeaderSupport
 import io.ktor.features.statusFile
 import io.ktor.freemarker.FreeMarker
 import io.ktor.freemarker.FreeMarkerContent
+import io.ktor.gson.gson
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
@@ -56,8 +60,31 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.io.StringWriter
 import java.security.Security
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneOffset
+import java.util.Date
 
 data class IGSession(val user: String, val admin: Boolean, var previousPage: String = "/")
+
+open class SimpleJWT(secret: String) {
+    private val algorithm = Algorithm.HMAC256(secret)
+    val verifier: JWTVerifier = JWT.require(algorithm).build()
+    fun sign(name: String): AuthToken {
+        val expires = Date.from(
+            LocalDateTime.ofInstant(Instant.now(), ZoneOffset.UTC)
+            .plusHours(1)
+            .toInstant(ZoneOffset.UTC)
+        )
+        val token = JWT.create().withClaim("name", name)
+            .withExpiresAt(expires)
+            .sign(algorithm)
+        return AuthToken(token, expires)
+    }
+}
+data class AuthToken(val token: String, val expires: Date)
+
+class LoginRegister(val user: String, val password: String)
 
 class Web(
     private val database: Database,
@@ -68,6 +95,7 @@ class Web(
     suspend fun start() {
         System.setProperty("io.ktor.random.secure.random.provider", "DRBG")
         Security.setProperty("securerandom.drbg.config", "HMAC_DRBG,SHA-512,256,pr_and_reseed")
+        val simpleJwt = SimpleJWT(config.jwtKey)
         val server = embeddedServer(CIO, port = config.webPort) {
             install(CORS) {
                 method(HttpMethod.Options)
@@ -85,6 +113,11 @@ class Web(
             install(Compression)
             install(ConditionalHeaders)
             install(XForwardedHeaderSupport)
+            install(ContentNegotiation) {
+                gson {
+                    setPrettyPrinting()
+                }
+            }
             install(Sessions) {
                 cookie<IGSession>("session", SessionStorageMemory()) {
                     transform(SessionTransportTransformerMessageAuthentication(hex(config.sessionKey), "HmacSHA256"))
@@ -101,16 +134,11 @@ class Web(
                 templateLoader = ClassTemplateLoader(this::class.java.classLoader, "templates")
             }
             install(Authentication) {
-                form(name = "auth") {
-                    userParamName = "username"
-                    passwordParamName = "password"
-                    challenge = FormAuthChallenge.Redirect { "/login" }
-                    validate { credentials ->
-                        if (credentials.name == config.adminUsername && credentials.password == config.adminPassword) {
-                            UserIdPrincipal(credentials.name)
-                        } else {
-                            null
-                        }
+                jwt(name="auth") {
+                    verifier(simpleJwt.verifier)
+                    validate {
+                        println("validating: ${it.payload.getClaim("name").asString()}")
+                        UserIdPrincipal(it.payload.getClaim("name").asString())
                     }
                 }
             }
@@ -129,21 +157,29 @@ class Web(
                         mapOf("profiles" to database.getProfiles()
                     )))
                 }
+                post("/login") {
+                    try {
+                        val credentials = call.receive<LoginRegister>()
+                        if (credentials.user == config.adminUsername && credentials.password == config.adminPassword) {
+                            val token = simpleJwt.sign(credentials.user)
+                            call.respond(
+                                mapOf(
+                                    "token" to token.token,
+                                    "expires" to token.expires.toInstant().epochSecond
+                                )
+                            )
+                        } else {
+                            call.respond(HttpStatusCode.Unauthorized, mapOf("message" to "Invalid Credentials")
+                            )
+                        }
+                    } catch (e: JsonParseException) {
+                        call.respond(HttpStatusCode.BadRequest, mapOf("message" to "Bad payload"))
+                    } catch (e: ContentTransformationException) {
+                        call.respond(HttpStatusCode.BadRequest, mapOf("message" to "Bad payload"))
+                    }
+                }
                 get("/favicon.ico") {
                     call.respond(call.resolveResource("/favicon.ico", "") ?: HttpStatusCode.NotFound)
-                }
-                authenticate("auth") {
-                    post("/login") {
-                        val principal = call.authentication.principal<UserIdPrincipal>()
-                        if (principal == null) {
-                            call.respond(FreeMarkerContent("index.ftl",
-                                mapOf("profiles" to database.getProfiles()
-                                )))
-                        } else {
-                            call.sessions.set("session", IGSession(principal.name, true))
-                            call.respondRedirect("/admin", false)
-                        }
-                    }
                 }
                 get("/logout") {
                     call.sessions.clear<IGSession>()
@@ -184,60 +220,57 @@ class Web(
                         call.respondText(Gson().toJson(database.getUserProfiles(user)), ContentType.Application.Json)
                     }
                 }
-                route("/admin") {
-                    if (!config.testMode) {
-                        intercept(ApplicationCallPipeline.Features) {
-                            if (call.sessions.get<IGSession>()?.user == null) {
-                                call.respondRedirect("/login", false)
-                                return@intercept finish()
+                authenticate("auth") {
+                    route("/admin") {
+                        static("/") {
+                            resources("/admin")
+                            defaultResource("index.html", "/admin")
+                        }
+                        post("/ProfileUsers") {
+                            val categoryUsers =
+                                Gson().fromJson(call.receive<String>(), ProfileUsers::class.java).profiles
+                            println(categoryUsers)
+                            for (categoryUser in categoryUsers) {
+                                val currentCategory = categoryUser.key
+                                val newUsers = categoryUser.value
+                                val currentUsers = database.getProfileUsers(currentCategory)
+                                val usersToRemove = currentUsers.minus(newUsers)
+                                val usersToAdd = newUsers.minus(currentUsers)
+                                usersToRemove.forEach { user -> database.delUserProfile(user, currentCategory) }
+                                usersToAdd.forEach { user -> database.addUserProfile(user, currentCategory) }
                             }
+                            call.respond(HttpStatusCode.Accepted)
                         }
-                    }
-                    static("/") {
-                        resources("/admin")
-                        defaultResource("index.html", "/admin")
-                    }
-                    post("/ProfileUsers") {
-                        val categoryUsers = Gson().fromJson(call.receive<String>(), ProfileUsers::class.java).profiles
-                        for (categoryUser in categoryUsers) {
-                            val currentCategory = categoryUser.key
-                            val newUsers = categoryUser.value
-                            val currentUsers = database.getProfileUsers(currentCategory)
+                        post("/users") {
+                            val newUsers = Gson().fromJson(call.receive<String>(), Array<String>::class.java).toList()
+                            val currentUsers = database.getUsers()
                             val usersToRemove = currentUsers.minus(newUsers)
-                            val usersToAdd = newUsers.minus(currentUsers)
-                            usersToRemove.forEach { user -> database.delUserProfile(user, currentCategory) }
-                            usersToAdd.forEach { user -> database.addUserProfile(user, currentCategory) }
-                        }
-                        call.respond(HttpStatusCode.Accepted)
-                    }
-                    post("/users") {
-                        val newUsers = Gson().fromJson(call.receive<String>(), Array<String>::class.java).toList()
-                        val currentUsers = database.getUsers()
-                        val usersToRemove = currentUsers.minus(newUsers)
-                        val usersToAdd = newUsers.subtract(currentUsers)
-                        usersToRemove.forEach { user -> database.delUser(user) }
-                        usersToAdd.forEach {
-                                user -> database.addUser(user)
+                            val usersToAdd = newUsers.subtract(currentUsers)
+                            usersToRemove.forEach { user -> database.delUser(user) }
+                            usersToAdd.forEach { user ->
+                                database.addUser(user)
                                 retriever.retrieve(user)
+                            }
+                            call.respond(HttpStatusCode.Accepted)
                         }
-                        call.respond(HttpStatusCode.Accepted)
-                    }
-                    post("/profiles") {
-                        val newProfiles = Gson().fromJson(call.receive<String>(), Array<String>::class.java).toList()
-                        val currentProfiles = database.getProfiles()
-                        val profilesToRemove = currentProfiles.minus(newProfiles)
-                        val profilesToAdd = newProfiles.subtract(currentProfiles)
-                        profilesToRemove.forEach { profile -> database.delProfile(profile) }
-                        profilesToAdd.forEach { profile -> database.addProfile(profile) }
-                        call.respond(HttpStatusCode.Accepted)
-                    }
-                    get("/backfill/{user}/{number}") {
-                        val user = call.parameters["user"] ?: ""
-                        val number = call.parameters["number"]?.toInt() ?: 0
-                        GlobalScope.launch {
-                            retriever.backfill(user, number)
+                        post("/profiles") {
+                            val newProfiles =
+                                Gson().fromJson(call.receive<String>(), Array<String>::class.java).toList()
+                            val currentProfiles = database.getProfiles()
+                            val profilesToRemove = currentProfiles.minus(newProfiles)
+                            val profilesToAdd = newProfiles.subtract(currentProfiles)
+                            profilesToRemove.forEach { profile -> database.delProfile(profile) }
+                            profilesToAdd.forEach { profile -> database.addProfile(profile) }
+                            call.respond(HttpStatusCode.Accepted)
                         }
-                        call.respondRedirect("/admin", false)
+                        get("/backfill/{user}/{number}") {
+                            val user = call.parameters["user"] ?: ""
+                            val number = call.parameters["number"]?.toInt() ?: 0
+                            GlobalScope.launch {
+                                retriever.backfill(user, number)
+                            }
+                            call.respondRedirect("/admin", false)
+                        }
                     }
                 }
                 get ("/rss/category/{profile}") {
