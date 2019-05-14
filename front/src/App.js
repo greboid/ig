@@ -12,14 +12,6 @@ import '@fortawesome/fontawesome-free/css/all.min.css';
 
 const BASEURL = ''
 
-function postJSON(url, data, response = function(){}) {
-  var request = new XMLHttpRequest();
-  request.open('POST', url, true);
-  request.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
-  request.onreadystatechange = response
-  request.send(data);
-}
-
 class App extends React.Component {
   constructor(props) {
     super(props);
@@ -141,7 +133,7 @@ class App extends React.Component {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer '+this.state.authToken
         },
-        body: JSON.stringify(this.state.users)
+        body: JSON.stringify(this.state.categories)
     })
     fetch(
       BASEURL+'/admin/ProfileUsers', {
@@ -180,25 +172,29 @@ class App extends React.Component {
   handleLoginSubmit(event) {
     event.preventDefault()
     var app = this
-    postJSON(
-      BASEURL+'/login', 
-      JSON.stringify({ user: this.state.loginUsername, password: this.state.loginPassword}),
-      function() {
-        if (this.readyState === 4) {
-          var response = JSON.parse(this.responseText)
-          if (response.hasOwnProperty("token") && response.hasOwnProperty("expires")) {
-            app.setState({
-              loginPassword: "", 
-              loginUsername: "",
-              authToken: response.token,
-              authExpires: response.expires
-            });
-          } else {
-            app.setState({loginPassword: "", loginUsername: ""});
-          }
-        }
+    fetch(
+      BASEURL+'/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }, 
+        body: JSON.stringify({ user: this.state.loginUsername, password: this.state.loginPassword})
+    })
+    .then(function(response) {
+      return response.json();
+    })
+    .then(function(response) {
+      if (response.hasOwnProperty("token") && response.hasOwnProperty("expires")) {
+        app.setState({
+          loginPassword: "", 
+          loginUsername: "",
+          authToken: response.token,
+          authExpires: response.expires
+        });
+      } else {
+        app.setState({loginPassword: "", loginUsername: ""});
       }
-    )
+    })
   }
 
   render() {
