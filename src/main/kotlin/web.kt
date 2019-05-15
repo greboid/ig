@@ -137,7 +137,6 @@ class Web(
                 jwt(name="auth") {
                     verifier(simpleJwt.verifier)
                     validate {
-                        println("validating: ${it.payload.getClaim("name").asString()}")
                         UserIdPrincipal(it.payload.getClaim("name").asString())
                     }
                 }
@@ -229,7 +228,6 @@ class Web(
                         post("/ProfileUsers") {
                             val categoryUsers =
                                 Gson().fromJson(call.receive<String>(), ProfileUsers::class.java).profiles
-                            println(categoryUsers)
                             for (categoryUser in categoryUsers) {
                                 val currentCategory = categoryUser.key
                                 val newUsers = categoryUser.value
