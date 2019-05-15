@@ -21,11 +21,21 @@ class App extends React.Component {
       categories: [],
       newCategory: '',
       categoryMap: new Map(),
-      authToken: "",
-      authExpires: "",
+      authToken: sessionStorage.getItem('authToken'),
+      authExpires: sessionStorage.getItem('authExpires'),
       loginUsername: "",
       loginPassword: ""
     };
+    if (sessionStorage.getItem('authToken')) {
+      this.state.authToken = sessionStorage.getItem('authToken')
+    } else {
+      this.state.authToken = ""
+    }
+    if (sessionStorage.getItem('authExpires')) {
+      this.state.authExpires = sessionStorage.getItem('authExpires')
+    } else {
+      this.state.authExpires = ""
+    }
     this.handleChangeUser = this.handleChangeUser.bind(this);
     this.handleRemoveUser = this.handleRemoveUser.bind(this);
     this.handleAddUsers = this.handleAddUsers.bind(this);
@@ -185,6 +195,8 @@ class App extends React.Component {
     })
     .then(function(response) {
       if (response.hasOwnProperty("token") && response.hasOwnProperty("expires")) {
+        sessionStorage.setItem('authToken', response.token)
+        sessionStorage.setItem('authExpires', response.expires)
         app.setState({
           loginPassword: "", 
           loginUsername: "",
