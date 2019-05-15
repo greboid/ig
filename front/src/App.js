@@ -7,6 +7,7 @@ import PickList from './picklist.js'
 import Button from 'react-bootstrap/Button'
 import './App.css';
 import LoginForm from './LoginForm';
+import MenuBar from './MenuBar'
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 
@@ -216,6 +217,9 @@ class App extends React.Component {
           this.state.authToken.length ? (
             <React.Fragment>
               <Container fluid={true}>
+                <MenuBar 
+                  authToken={this.state.authToken}
+                />
                 <Row className="justify-content-md-center">
                   <Col sm="auto">
                     <h2>User and Category Management</h2>
