@@ -42,8 +42,8 @@ dependencies {
     implementation "io.ktor:ktor-server-host-common:1.2.0"
     implementation "io.ktor:ktor-auth:1.2.0"
     implementation "io.ktor:ktor-freemarker:1.2.0"
-    implementation "io.ktor:ktor-auth-jwt:1.1.5"
-    implementation "io.ktor:ktor-gson:1.1.5"
+    implementation "io.ktor:ktor-auth-jwt:1.2.0"
+    implementation "io.ktor:ktor-gson:1.2.0"
     implementation "com.mortennobel:java-image-scaling:0.8.6"
     implementation 'org.jsoup:jsoup:1.12.1'
     implementation 'com.google.code.gson:gson:2.8.5'
