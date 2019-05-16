@@ -98,7 +98,11 @@ class App extends React.Component {
   }
 
   handleRemoveCategory(value) {
-    this.setState({categories: this.state.categories.filter(category => category !== value)});
+    this.state.categoryMap.delete(value)
+    this.setState({
+      categories: this.state.categories.filter(category => category !== value),
+      categoryMap: this.state.categoryMap
+    });
   }
 
   handleAddUsers(event) {
