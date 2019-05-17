@@ -7,11 +7,6 @@
         </#list>
     </ul>
     <ul class="navbar-nav ml-auto">
-        <#if username??>
-            <li class="nav-item"><a class="nav-link" href="/admin">Admin</a></li>
-            <li class="nav-item"><a class="nav-link" href="/logout">Logout</a></li>
-        <#else>
-            <li class="nav-item"><a class="nav-link" href="/login">Login</a></li>
-        </#if>
+        <li class="nav-item"><a class="nav-link" href="/admin">Login</a></li>
     </ul>
 </nav>
