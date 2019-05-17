@@ -14,7 +14,7 @@ class MenuBar extends React.Component {
 			  	{this.props.authToken === "" ?
 			  		<Nav.Link href='/login'>Login</Nav.Link>
 			  	:
-			  		<Nav.Link href='/logout'>Logout</Nav.Link>
+			  		<Nav.Link href='/logout' onClick={this.props.handleLogout}>Logout</Nav.Link>
 			  	}
 			  </Nav>
 			</Navbar>

@@ -50,6 +50,7 @@ class App extends React.Component {
     this.handleSave = this.handleSave.bind(this);
     this.componentDidMount = this.componentDidMount.bind(this);
     this.loadCategoryMap = this.loadCategoryMap.bind(this);
+    this.handleLogout = this.handleLogout.bind(this);
   }
 
   componentDidMount() {
@@ -214,6 +215,16 @@ class App extends React.Component {
     })
   }
 
+  handleLogout(event) {
+    event.preventDefault()
+    sessionStorage.setItem('authToken', "")
+    sessionStorage.setItem('authExpires', "")
+    this.setState({
+      authToken: "",
+      authExpires: ""
+    });
+  }
+
   render() {
     return (
       <React.Fragment>
@@ -223,6 +234,7 @@ class App extends React.Component {
               <Container fluid={true}>
                 <MenuBar 
                   authToken={this.state.authToken}
+                  handleLogout={this.handleLogout}
                 />
                 <Row className="justify-content-md-center">
                   <Col sm="auto">
