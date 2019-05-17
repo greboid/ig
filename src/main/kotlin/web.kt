@@ -219,12 +219,12 @@ class Web(
                         call.respondText(Gson().toJson(database.getUserProfiles(user)), ContentType.Application.Json)
                     }
                 }
-                authenticate("auth") {
-                    route("/admin") {
-                        static("/") {
-                            resources("/admin")
-                            defaultResource("index.html", "/admin")
-                        }
+                route("/admin") {
+                    static("/") {
+                        resources("/admin")
+                        defaultResource("index.html", "/admin")
+                    }
+                    authenticate("auth") {
                         post("/ProfileUsers") {
                             val categoryUsers =
                                 Gson().fromJson(call.receive<String>(), ProfileUsers::class.java).profiles
