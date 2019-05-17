@@ -192,7 +192,7 @@ class Profile(
         private var end_cursor: String?,
         private var hasMore: Boolean,
         private val count: Int,
-        private val rhx_gis: String
+        private val rhx_gis: String?
 ) {
     fun backfill(instagram: Instagram, desiredCapacity: Int) {
         logger.info("Backfilling: ${username} to ${desiredCapacity}")
@@ -272,7 +272,7 @@ internal data class InstagramData(val data: Data)
 internal data class Data(val user: User)
 
 internal data class InstagramSharedData(
-        val rhx_gis: String,
+        val rhx_gis: String?,
         val entry_data: EntryData,
         val config: DataConfig?
 )
