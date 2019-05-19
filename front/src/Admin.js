@@ -5,7 +5,7 @@ import Col from 'react-bootstrap/Col'
 import List from './EditableList.js'
 import PickList from './picklist.js'
 import Button from 'react-bootstrap/Button'
-import './App.css';
+import './Admin.css';
 import LoginForm from './LoginForm';
 import MenuBar from './MenuBar'
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -13,7 +13,7 @@ import '@fortawesome/fontawesome-free/css/all.min.css';
 
 const BASEURL = ''
 
-class App extends React.Component {
+class Admin extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -301,4 +301,4 @@ class App extends React.Component {
   }
 }
 
-export default App;
+export default Admin;
