@@ -25,7 +25,8 @@ class Admin extends React.Component {
       authToken: sessionStorage.getItem('authToken'),
       authExpires: sessionStorage.getItem('authExpires'),
       loginUsername: "",
-      loginPassword: ""
+      loginPassword: "",
+      loginError: ""
     };
     if (sessionStorage.getItem('authToken')) {
       this.state.authToken = sessionStorage.getItem('authToken')
@@ -206,12 +207,16 @@ class Admin extends React.Component {
         app.setState({
           loginPassword: "", 
           loginUsername: "",
+          loginError: "",
           authToken: response.token,
           authExpires: response.expires
         });
       } else {
-        app.setState({loginPassword: "", loginUsername: ""});
+        app.setState({loginPassword: "", loginUsername: "", loginError: response.message});
       }
+    })
+    .catch(function(error) {
+      app.setState({loginPassword: "", loginUsername: "", loginError: "Unable to login, try again later"});
     })
   }
 
@@ -290,6 +295,7 @@ class Admin extends React.Component {
                   <LoginForm 
                     username={this.state.loginUsername}
                     password={this.state.loginPassword}
+                    error={this.state.loginError}
                     handleUsernameChange={this.handleUsernameChange}
                     handlePasswordChange={this.handlePasswordChange}
                     handleSubmit={this.handleLoginSubmit}
