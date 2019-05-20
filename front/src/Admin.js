@@ -21,20 +21,10 @@ class Admin extends React.Component {
       newUser: '',
       categories: [],
       newCategory: '',
-      categoryMap: new Map(),
-      authToken: sessionStorage.getItem('authToken'),
-      authExpires: sessionStorage.getItem('authExpires'),
+      categoryMap: new Map()
     };
-    if (sessionStorage.getItem('authToken')) {
-      this.state.authToken = sessionStorage.getItem('authToken')
-    } else {
-      this.state.authToken = ""
-    }
-    if (sessionStorage.getItem('authExpires')) {
-      this.state.authExpires = sessionStorage.getItem('authExpires')
-    } else {
-      this.state.authExpires = ""
-    }
+    this.state.authToken = sessionStorage.getItem('authToken') ? sessionStorage.getItem('authToken') : ""
+    this.state.authExpires = sessionStorage.getItem('authExpires') ? sessionStorage.getItem('authExpires') : ""
     this.handleChangeUser = this.handleChangeUser.bind(this);
     this.handleRemoveUser = this.handleRemoveUser.bind(this);
     this.handleAddUsers = this.handleAddUsers.bind(this);
