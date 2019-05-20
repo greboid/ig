@@ -24,9 +24,6 @@ class Admin extends React.Component {
       categoryMap: new Map(),
       authToken: sessionStorage.getItem('authToken'),
       authExpires: sessionStorage.getItem('authExpires'),
-      loginUsername: "",
-      loginPassword: "",
-      loginError: ""
     };
     if (sessionStorage.getItem('authToken')) {
       this.state.authToken = sessionStorage.getItem('authToken')
@@ -45,13 +42,11 @@ class Admin extends React.Component {
     this.handleRemoveCategory = this.handleRemoveCategory.bind(this);
     this.handleAddCategories = this.handleAddCategories.bind(this);
     this.handleCategoryChange = this.handleCategoryChange.bind(this);
-    this.handleUsernameChange = this.handleUsernameChange.bind(this);
-    this.handlePasswordChange = this.handlePasswordChange.bind(this);
-    this.handleLoginSubmit = this.handleLoginSubmit.bind(this);
     this.handleSave = this.handleSave.bind(this);
     this.componentDidMount = this.componentDidMount.bind(this);
     this.loadCategoryMap = this.loadCategoryMap.bind(this);
     this.handleLogout = this.handleLogout.bind(this);
+    this.setAuthInfo = this.setAuthInfo.bind(this);
   }
 
   componentDidMount() {
@@ -178,48 +173,6 @@ class Admin extends React.Component {
     fetch(BASEURL+'/admin/backfill/'+user+'/'+count)
   }
 
-  handleUsernameChange(event) {
-    this.setState({loginUsername: event.target.value});
-  }
-
-  handlePasswordChange(event) {
-    this.setState({loginPassword: event.target.value});
-  }
-
-  handleLoginSubmit(event) {
-    event.preventDefault()
-    var app = this
-    fetch(
-      BASEURL+'/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        }, 
-        body: JSON.stringify({ user: this.state.loginUsername, password: this.state.loginPassword})
-    })
-    .then(function(response) {
-      return response.json();
-    })
-    .then(function(response) {
-      if (response.hasOwnProperty("token") && response.hasOwnProperty("expires")) {
-        sessionStorage.setItem('authToken', response.token)
-        sessionStorage.setItem('authExpires', response.expires)
-        app.setState({
-          loginPassword: "", 
-          loginUsername: "",
-          loginError: "",
-          authToken: response.token,
-          authExpires: response.expires
-        });
-      } else {
-        app.setState({loginPassword: "", loginUsername: "", loginError: response.message});
-      }
-    })
-    .catch(function(error) {
-      app.setState({loginPassword: "", loginUsername: "", loginError: "Unable to login, try again later"});
-    })
-  }
-
   handleLogout(event) {
     event.preventDefault()
     sessionStorage.setItem('authToken', "")
@@ -227,6 +180,15 @@ class Admin extends React.Component {
     this.setState({
       authToken: "",
       authExpires: ""
+    });
+  }
+
+  setAuthInfo(token = "", expires = "") {
+    sessionStorage.setItem('authToken', token)
+    sessionStorage.setItem('authExpires', expires)
+    this.setState({
+      authToken: token,
+      authExpires: expires
     });
   }
 
@@ -293,12 +255,8 @@ class Admin extends React.Component {
             </React.Fragment>
           ) : (
                   <LoginForm 
-                    username={this.state.loginUsername}
-                    password={this.state.loginPassword}
-                    error={this.state.loginError}
-                    handleUsernameChange={this.handleUsernameChange}
-                    handlePasswordChange={this.handlePasswordChange}
-                    handleSubmit={this.handleLoginSubmit}
+                    setAuthInfo={this.setAuthInfo}
+                    baseURL={BASEURL}
                   />
           )
         }
