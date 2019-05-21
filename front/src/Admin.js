@@ -11,8 +11,6 @@ import MenuBar from './MenuBar'
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 
-const BASEURL = ''
-
 class Admin extends React.Component {
   constructor(props) {
     super(props);
@@ -40,7 +38,7 @@ class Admin extends React.Component {
   }
 
   componentDidMount() {
-    fetch(BASEURL+'/users')
+    fetch(this.props.apiURL+'/users')
       .then(response => response.json())
       .then(json => {
         this.setState({users: json})
@@ -49,7 +47,7 @@ class Admin extends React.Component {
   }
 
   loadCategories() {
-    fetch(BASEURL+'/profiles')
+    fetch(this.props.apiURL+'/profiles')
       .then(response => response.json())
       .then(json => {
         this.setState({categories: json})
@@ -61,7 +59,7 @@ class Admin extends React.Component {
   loadCategoryMap(categories) {
     var categoryMap = new Map(this.state.categoryMap)
     categories.forEach(function(value){
-      fetch(BASEURL+'/ProfileUsers/'+value)
+      fetch(this.props.apiURL+'/ProfileUsers/'+value)
       .then(response => response.json())
       .then(json => {
         categoryMap.set(value, Array.prototype.slice.call(json))
@@ -120,7 +118,7 @@ class Admin extends React.Component {
 
   handleSave(event) {
     fetch(
-      BASEURL+'/admin/users', {
+      this.props.apiURL+'/admin/users', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -129,7 +127,7 @@ class Admin extends React.Component {
         body: JSON.stringify(this.state.users)
     })
     fetch(
-      BASEURL+'/admin/profiles', {
+      this.props.apiURL+'/admin/profiles', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -138,7 +136,7 @@ class Admin extends React.Component {
         body: JSON.stringify(this.state.categories)
     })
     fetch(
-      BASEURL+'/admin/ProfileUsers', {
+      this.props.apiURL+'/admin/ProfileUsers', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -160,7 +158,7 @@ class Admin extends React.Component {
 
   handleHistory(user) {
     var count = prompt("History")
-    fetch(BASEURL+'/admin/backfill/'+user+'/'+count)
+    fetch(this.props.apiURL+'/admin/backfill/'+user+'/'+count)
   }
 
   handleLogout(event) {
@@ -246,7 +244,7 @@ class Admin extends React.Component {
           ) : (
                   <LoginForm 
                     setAuthInfo={this.setAuthInfo}
-                    baseURL={BASEURL}
+                    apiURL={this.props.apiURL}
                   />
           )
         }

@@ -27,7 +27,7 @@ class LoginForm extends React.Component {
 		event.preventDefault()
 		var login = this
 		fetch(
-			login.props.baseURL+'/login', {
+			login.props.apiURL+'/login', {
 				method: 'POST',
 				headers: {
 				'Content-Type': 'application/json'
