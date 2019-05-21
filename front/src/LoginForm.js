@@ -1,4 +1,5 @@
 import React from 'react'
+import MenuBar from './MenuBar'
 import "./LoginForm.css"
 
 class LoginForm extends React.Component {
@@ -62,6 +63,9 @@ class LoginForm extends React.Component {
 	render() {
 	    return (
 	    	<React.Fragment>
+	    		<MenuBar 
+                  authToken=""
+                />
 	    		<div className="login-page" action="#" method="post">
 				    <div className="form">
 				    	<div>{this.state.loginError && this.state.loginError}</div>
