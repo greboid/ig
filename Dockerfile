@@ -2,14 +2,13 @@ FROM node:8 as react
 WORKDIR /app
 COPY front front
 WORKDIR /app/front
+ENV GENERATE_SOURCEMAP false
 RUN yarn install && yarn build
-RUN ls -l build
 
 FROM greboid/kotlin as build
 WORKDIR /app
 COPY --from=react /app/front/build src/main/resources/admin
 COPY . /app
-RUN ls -l src/main/resources/admin
 RUN /entrypoint.sh
 ENTRYPOINT [""]
 EXPOSE 80
