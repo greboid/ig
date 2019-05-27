@@ -14,7 +14,10 @@ function MenuBar() {
 			  </Nav>
 			  <Nav>
 			  	{authed ?
-			  		<Nav.Link as={Link} to='#' onClick={() => setLoggedOut()}>Logout</Nav.Link>
+			  		<React.Fragment>
+				  		<Nav.Link as={Link} to='/admin'>Admin</Nav.Link>
+				  		<Nav.Link as={Link} to='#' onClick={() => setLoggedOut()}>Logout</Nav.Link>
+			  		</React.Fragment>
 			  	:
 			  		<Nav.Link as={Link} to='/login'>Login</Nav.Link>
 			  	}
