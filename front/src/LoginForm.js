@@ -1,96 +1,42 @@
 import React from 'react'
-import MenuBar from './MenuBar'
 import "./LoginForm.css"
+import useLoginForm from './useLoginForm';
+import useAuthContext from './useAuthContext';
+import { Redirect } from 'react-router-dom'
+import MenuBar from './MenuBar'
 
-class LoginForm extends React.Component {
+export default function LoginForm() {
 
-	constructor(props) {
-    	super(props);
-    	this.state = {
-			loginUsername: "",
-			loginPassword: "",
-			loginError: ""
-    	}
-    	this.handleLoginSubmit = this.handleLoginSubmit.bind(this);
-    	this.handleUsernameChange = this.handleUsernameChange.bind(this);
-    	this.handlePasswordChange = this.handlePasswordChange.bind(this);
-	}
+	const { authed } = useAuthContext();
+	const {inputs, handleInputChange, handleSubmit } = useLoginForm("http://localhost:8080/login");
 
-	handleUsernameChange(event) {
-		this.setState({loginUsername: event.target.value});
-	}
-
-	handlePasswordChange(event) {
-		this.setState({loginPassword: event.target.value});
-	}
-
-	handleLoginSubmit(event) {
-		event.preventDefault()
-		var login = this
-		fetch(
-			login.props.apiURL+'/login', {
-				method: 'POST',
-				headers: {
-				'Content-Type': 'application/json'
-			}, 
-			body: JSON.stringify({ 
-				user: this.state.loginUsername, password: this.state.loginPassword
-			})
-		})
-		.then(function(response) {
-			return response.json();
-		})
-		.then(function(response) {
-			if (response.hasOwnProperty("token") && response.hasOwnProperty("expires")) {
-				login.props.setAuthInfo(response.token, response.expires)
-			} else {
-				login.setState({
-					loginPassword: "", 
-					loginUsername: "", 
-					loginError: response.message
-				});
-			}
-		})
-		.catch(function(error) {
-			login.setState({
-				loginPassword: "", 
-				loginUsername: "", 
-				loginError: "Unable to login, try again later"
-			});
-		})
-	}
-
-	render() {
-	    return (
-	    	<React.Fragment>
-	    		<MenuBar 
-                  authToken=""
-                />
-	    		<div className="login-page" action="#" method="post">
-				    <div className="form">
-				    	<div>{this.state.loginError && this.state.loginError}</div>
-				        <form className="login-form" onSubmit={this.handleLoginSubmit}>
-				            <input 
-				            	value={this.state.username} 
-				            	onChange={this.handleUsernameChange} 
-				            	required={true} 
-				            	type="text" 
-				            	placeholder="username"
-				            />
-				            <input 
-				            	value={this.state.password}
-				            	onChange={this.handlePasswordChange}
-				            	required={true}
-				            	type="password"
-				            	placeholder="password"
-				            />
-				            <button>login</button>
-				        </form>
-				    </div>
-				</div>
-	    	</React.Fragment>
-    	);
-  	}
+	return (
+		<React.Fragment>
+			{ authed && <Redirect to="/admin" /> }
+			<MenuBar />
+    		<div className="login-page" action="#" method="post">
+			    <div className="form">
+			        <form className="login-form" onSubmit={handleSubmit}>
+			            <input 
+			            	name="username"
+			            	value={inputs.username} 
+			            	onChange={handleInputChange}
+			            	required={true} 
+			            	type="text" 
+			            	placeholder="username"
+			            />
+			            <input 
+			            	name="password"
+			            	value={inputs.password}
+			            	onChange={handleInputChange}
+			            	required={true}
+			            	type="password"
+			            	placeholder="password"
+			            />
+			            <button>login</button>
+			        </form>
+			    </div>
+			</div>
+    	</React.Fragment>
+	);
 }
-
-export default LoginForm;

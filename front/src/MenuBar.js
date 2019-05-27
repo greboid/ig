@@ -1,26 +1,27 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
 import { Navbar, Nav } from 'react-bootstrap'
+import useAuthContext from './useAuthContext'
 
-class MenuBar extends React.Component {
-	render() {
+function MenuBar() {
+	const { authed, setLoggedOut } = useAuthContext();
 	    return (
 	      <React.Fragment>
 	      	<Navbar>
 			  <Navbar.Brand>IG</Navbar.Brand>
 			  <Nav className="mr-auto">
-			    <Nav.Link href='/'>Home</Nav.Link>
+			    <Nav.Link as={Link} to='/'>Home</Nav.Link>
 			  </Nav>
 			  <Nav>
-			  	{this.props.authToken === "" ?
-			  		<Nav.Link href='/login'>Login</Nav.Link>
+			  	{authed ?
+			  		<Nav.Link as={Link} to='#' onClick={() => setLoggedOut()}>Logout</Nav.Link>
 			  	:
-			  		<Nav.Link href='/logout' onClick={this.props.handleLogout}>Logout</Nav.Link>
+			  		<Nav.Link as={Link} to='/login'>Login</Nav.Link>
 			  	}
 			  </Nav>
 			</Navbar>
 	      </React.Fragment>
 	    )
 	}
-}
 
 export default MenuBar;

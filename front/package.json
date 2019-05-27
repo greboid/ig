@@ -6,6 +6,7 @@
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.8.1",
     "bootstrap": "4.3.1",
+    "constate": "^1.1.1",
     "formik": "^1.5.2",
     "react": "^16.8.6",
     "react-bootstrap": "^1.0.0-beta.8",
@@ -14,7 +15,8 @@
     "react-helmet": "^5.2.0",
     "react-router-dom": "^5.0.0",
     "react-scripts": "^3",
-    "react-select": "^2.4.3"
+    "react-select": "^2.4.3",
+    "react-use-session": "^1.1.0"
   },
   "scripts": {
     "start": "react-scripts start",

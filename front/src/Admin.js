@@ -6,10 +6,10 @@ import List from './EditableList.js'
 import PickList from './picklist.js'
 import Button from 'react-bootstrap/Button'
 import './Admin.css';
-import LoginForm from './LoginForm';
 import MenuBar from './MenuBar'
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
+import useAuthContext from './useAuthContext';
 
 class Admin extends React.Component {
   constructor(props) {
@@ -21,8 +21,6 @@ class Admin extends React.Component {
       newCategory: '',
       categoryMap: new Map()
     };
-    this.state.authToken = sessionStorage.getItem('authToken') ? sessionStorage.getItem('authToken') : ""
-    this.state.authExpires = sessionStorage.getItem('authExpires') ? sessionStorage.getItem('authExpires') : ""
     this.handleChangeUser = this.handleChangeUser.bind(this);
     this.handleRemoveUser = this.handleRemoveUser.bind(this);
     this.handleAddUsers = this.handleAddUsers.bind(this);
@@ -33,8 +31,6 @@ class Admin extends React.Component {
     this.handleSave = this.handleSave.bind(this);
     this.componentDidMount = this.componentDidMount.bind(this);
     this.loadCategoryMap = this.loadCategoryMap.bind(this);
-    this.handleLogout = this.handleLogout.bind(this);
-    this.setAuthInfo = this.setAuthInfo.bind(this);
   }
 
   componentDidMount() {
@@ -117,12 +113,13 @@ class Admin extends React.Component {
   }
 
   handleSave(event) {
+    const { getToken } = useAuthContext();
     fetch(
       this.props.apiURL+'/admin/users', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer '+this.state.authToken,
+          'Authorization': 'Bearer '+getToken(),
         }, 
         body: JSON.stringify(this.state.users)
     })
@@ -131,7 +128,7 @@ class Admin extends React.Component {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer '+this.state.authToken
+          'Authorization': 'Bearer '+getToken()
         },
         body: JSON.stringify(this.state.categories)
     })
@@ -140,7 +137,7 @@ class Admin extends React.Component {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer '+this.state.authToken
+          'Authorization': 'Bearer '+getToken()
         }, 
         body: JSON.stringify(this.getCategoryArray(this.state.categoryMap))
     })
@@ -161,92 +158,63 @@ class Admin extends React.Component {
     fetch(this.props.apiURL+'/admin/backfill/'+user+'/'+count)
   }
 
-  handleLogout(event) {
-    event.preventDefault()
-    sessionStorage.setItem('authToken', "")
-    sessionStorage.setItem('authExpires', "")
-    this.setState({
-      authToken: "",
-      authExpires: ""
-    });
-  }
-
-  setAuthInfo(token = "", expires = "") {
-    sessionStorage.setItem('authToken', token)
-    sessionStorage.setItem('authExpires', expires)
-    this.setState({
-      authToken: token,
-      authExpires: expires
-    });
-  }
-
   render() {
     return (
       <React.Fragment>
         {
-          this.state.authToken.length ? (
-            <React.Fragment>
-              <Container fluid={true}>
-                <MenuBar 
-                  authToken={this.state.authToken}
-                  handleLogout={this.handleLogout}
-                />
-                <Row className="justify-content-md-center">
-                  <Col sm="auto">
-                    <h2>User and Category Management</h2>
-                    <ol>
-                      <li>Add users you want to follow</li>
-                      <li>Add categories to organise them</li>
-                      <li>Assign users to categories so you can view them</li>
-                    </ol>
-                  </Col>
-                </Row>
-                <Row className="justify-content-md-center">
-                  <Col sm="3">
-                    <h2>Users</h2>
-                    <List 
-                      items={this.state.users}
-                      newItem={this.state.newUser}
-                      showHistory = {true}
-                      handleAdd={this.handleAddUsers}
-                      handleRemove={this.handleRemoveUser}
-                      handleChange={this.handleChangeUser}
-                      handleHistory={this.handleHistory}
-                    />
-                  </Col>
-                  <Col sm="3">
-                    <h2>Categories</h2>
-                    <List 
-                      items={this.state.categories}
-                      newItem={this.state.newCategory}
-                      handleAdd={this.handleAddCategories}
-                      handleRemove={this.handleRemoveCategory}
-                      handleChange={this.handleChangeCategory}
-                    />
-                  </Col>
-                  <Col sm="3">
-                    <h2>Assignment</h2>
-                    <PickList 
-                      onChange={this.handleCategoryChange}
-                      users={this.state.users}
-                      categories={this.state.categories}
-                      categoryMap={this.state.categoryMap}
-                    />
-                  </Col>
-                </Row>
-                <Row className="justify-content-md-center">
-                  <Col sm="auto">
-                    <Button onClick={this.handleSave}>Save</Button>
-                  </Col>
-                </Row>
-              </Container>
-            </React.Fragment>
-          ) : (
-                  <LoginForm 
-                    setAuthInfo={this.setAuthInfo}
-                    apiURL={this.props.apiURL}
+          <React.Fragment>
+            <Container fluid={true}>
+              <MenuBar />
+              <Row className="justify-content-md-center">
+                <Col sm="auto">
+                  <h2>User and Category Management</h2>
+                  <ol>
+                    <li>Add users you want to follow</li>
+                    <li>Add categories to organise them</li>
+                    <li>Assign users to categories so you can view them</li>
+                  </ol>
+                </Col>
+              </Row>
+              <Row className="justify-content-md-center">
+                <Col sm="3">
+                  <h2>Users</h2>
+                  <List 
+                    items={this.state.users}
+                    newItem={this.state.newUser}
+                    showHistory = {true}
+                    handleAdd={this.handleAddUsers}
+                    handleRemove={this.handleRemoveUser}
+                    handleChange={this.handleChangeUser}
+                    handleHistory={this.handleHistory}
                   />
-          )
+                </Col>
+                <Col sm="3">
+                  <h2>Categories</h2>
+                  <List 
+                    items={this.state.categories}
+                    newItem={this.state.newCategory}
+                    handleAdd={this.handleAddCategories}
+                    handleRemove={this.handleRemoveCategory}
+                    handleChange={this.handleChangeCategory}
+                  />
+                </Col>
+                <Col sm="3">
+                  <h2>Assignment</h2>
+                  <PickList 
+                    onChange={this.handleCategoryChange}
+                    users={this.state.users}
+                    categories={this.state.categories}
+                    categoryMap={this.state.categoryMap}
+                  />
+                </Col>
+              </Row>
+              <Row className="justify-content-md-center">
+                <Col sm="auto">
+                  <Button onClick={this.handleSave}>Save</Button>
+                </Col>
+              </Row>
+            </Container>
+          </React.Fragment>
         }
       </React.Fragment>
     );

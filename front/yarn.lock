@@ -2601,6 +2601,11 @@ constants-browserify@^1.0.0:
   resolved "https://registry.yarnpkg.com/constants-browserify/-/constants-browserify-1.0.0.tgz#c20b96d8c617748aaf1c16021760cd27fcb8cb75"
   integrity sha1-wguW2MYXdIqvHBYCF2DNJ/y4y3U=
 
+constate@^1.1.1:
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/constate/-/constate-1.1.1.tgz#444f27fb8178ce8a0f5483c06b5153927eed5409"
+  integrity sha512-5NSP5HuZoIcRjpWdLgKLk3kXkJWoD6qV9Dv6XsZz9Dk17E4jDEdi6pTtStv5TDC06+4fXW3Qq4VVUD0pWaaccA==
+
 contains-path@^0.1.0:
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/contains-path/-/contains-path-0.1.0.tgz#fe8cf184ff6670b6baef01a9d4861a5cbec4120a"
@@ -8284,6 +8289,11 @@ react-transition-group@^2.2.1, react-transition-group@^2.7.1:
     loose-envify "^1.4.0"
     prop-types "^15.6.2"
     react-lifecycles-compat "^3.0.4"
+
+react-use-session@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/react-use-session/-/react-use-session-1.1.0.tgz#5237e37a7c00f5d93a6a127f8e1455a0a3705cbf"
+  integrity sha512-cIUd4FX/O22pU4eizj4nVSbvErBekpv8ldtmkv/BFwy0fupyMGKdxdfvpQNl2jPo6lN4h6Xj0rKAPSDhOPET8g==
 
 react@^16.8.6:
   version "16.8.6"
