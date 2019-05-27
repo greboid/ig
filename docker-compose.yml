@@ -8,6 +8,8 @@ services:
     links:
       - database
     restart: always
+    ports:
+      - 8080:80
   database:
     image: mysql:8
     volumes:
