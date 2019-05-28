@@ -8,7 +8,7 @@ import MenuBar from './MenuBar'
 export default function LoginForm() {
 
 	const { authed } = useAuthContext();
-	const {inputs, handleInputChange, handleSubmit } = useLoginForm("/login");
+	const {inputs, handleInputChange, handleSubmit } = useLoginForm(process.env.REACT_APP_API_URL+"login");
 
 	return (
 		<React.Fragment>

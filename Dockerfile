@@ -3,7 +3,7 @@ WORKDIR /app
 COPY front front
 WORKDIR /app/front
 ENV GENERATE_SOURCEMAP false
-RUN yarn install && yarn build
+RUN yarn install --production && yarn build
 
 FROM greboid/kotlin as build
 WORKDIR /app

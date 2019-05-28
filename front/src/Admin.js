@@ -34,7 +34,7 @@ class Admin extends React.Component {
   }
 
   componentDidMount() {
-    fetch(this.props.apiURL+'/users')
+    fetch(process.env.REACT_APP_API_URL+'users')
       .then(response => response.json())
       .then(json => {
         this.setState({users: json})
@@ -43,7 +43,7 @@ class Admin extends React.Component {
   }
 
   loadCategories() {
-    fetch(this.props.apiURL+'/profiles')
+    fetch(process.env.REACT_APP_API_URL+'profiles')
       .then(response => response.json())
       .then(json => {
         this.setState({categories: json})
@@ -55,7 +55,7 @@ class Admin extends React.Component {
   loadCategoryMap(categories) {
     var categoryMap = new Map(this.state.categoryMap)
     categories.forEach(function(value){
-      fetch(this.props.apiURL+'/ProfileUsers/'+value)
+      fetch(process.env.REACT_APP_API_URL+'ProfileUsers/'+value)
       .then(response => response.json())
       .then(json => {
         categoryMap.set(value, Array.prototype.slice.call(json))
@@ -115,7 +115,7 @@ class Admin extends React.Component {
   handleSave(event) {
     const { getToken } = useAuthContext();
     fetch(
-      this.props.apiURL+'/admin/users', {
+      process.env.REACT_APP_API_URL+'admin/users', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -124,7 +124,7 @@ class Admin extends React.Component {
         body: JSON.stringify(this.state.users)
     })
     fetch(
-      this.props.apiURL+'/admin/profiles', {
+      process.env.REACT_APP_API_URL+'admin/profiles', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -133,7 +133,7 @@ class Admin extends React.Component {
         body: JSON.stringify(this.state.categories)
     })
     fetch(
-      this.props.apiURL+'/admin/ProfileUsers', {
+      process.env.REACT_APP_API_URL+'admin/ProfileUsers', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -155,7 +155,7 @@ class Admin extends React.Component {
 
   handleHistory(user) {
     var count = prompt("History")
-    fetch(this.props.apiURL+'/admin/backfill/'+user+'/'+count)
+    fetch(process.env.REACT_APP_API_URL+'admin/backfill/'+user+'/'+count)
   }
 
   render() {
