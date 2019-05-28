@@ -1,30 +1,26 @@
 import React from 'react';
 import Select from 'react-select';
 
-class PickList extends React.Component {
-	render() {
-		return (
-	                  <ul className="list-group sorted"> 
-				           {this.props.categories.map(function(category){
-				              return (
-				              	<li className="list-group-item" key={category}>
-				              		<p>{category}</p>
-				              		<Select
-				              			options={this.props.users}
-				              			closeMenuOnSelect={false}
-				              			getOptionValue={(option) => (option)}
-				              			getOptionLabel={(option) => (option)}
-				              			name={category} 
-				              			value={this.props.categoryMap.get(category)}
-				              			isMulti
-				              			onChange={this.props.onChange}
-				              		/>
-				              	</li>
-				             	);
-				            }, this)}
-				        </ul>
-		);
-	}
+export default function PickList(props) {
+	return (
+      <ul className="list-group sorted"> 
+           {props.categories.map(function(category){
+              return (
+              	<li className="list-group-item" key={category}>
+              		<p>{category}</p>
+              		<Select
+              			options={props.users}
+              			closeMenuOnSelect={false}
+              			getOptionValue={(option) => (option)}
+              			getOptionLabel={(option) => (option)}
+              			name={category} 
+              			value={props.categoryMap.get(category)}
+              			isMulti
+              			onChange={props.onChange}
+              		/>
+              	</li>
+             	);
+            })}
+        </ul>
+	);
 }
-
-export default PickList
