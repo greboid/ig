@@ -109,18 +109,11 @@ function AdminPage() {
               <Row className="justify-content-md-center">
                 <Col sm="3">
                   <h2>Users</h2>
-                  <List 
-                    items={users}
-                    showHistory = {true}
-                    setItems={setUsers}
-                  />
+                  {List(users, setUsers, true)}
                 </Col>
                 <Col sm="3">
                   <h2>Categories</h2>
-                  <List 
-                    items={categories}
-                    setItems={setCategories}
-                  />
+                  {List(categories, setCategories, false)}
                 </Col>
                 <Col sm="3">
                   <h2>Assignment</h2>

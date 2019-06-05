@@ -1,85 +1,57 @@
-import React from 'react';
+import React, { useState } from 'react';
 import FontAwesome from 'react-fontawesome';
 
-class List extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      newItem: ''
-    }
-    this.handleChange = this.handleChange.bind(this);
-    this.handleRemove = this.handleRemove.bind(this);
-    this.handleAdd = this.handleAdd.bind(this);
-  }
-
-  handleChange(event) {
-    this.setState({newItem: event.target.value});
-  }
-
-  handleRemove(value) {
-    this.props.setItems(this.props.items.filter(user => user !== value))
-  }
-
-  handleAdd(value) {
-    value.preventDefault()
-    var newItems = this.props.items.slice()
-    newItems.push(this.state.newItem)
-    this.props.setItems(newItems)
-    this.setState({newItem: ""});
-  }
-
-  renderInputField() {
-    return (
-      <InputField
-        value={this.state.newItem}
-        handleSubmit={ this.handleAdd }
-        handleChange={ this.handleChange }
-      />
-    );
-  }
-
-  renderListItem(value, showHistory = false) {
-    return (
-        <ListItem 
-          value={value} 
-          onRemove={() => this.handleRemove(value)}
-          onHistory={() => this.props.handleHistory(value)}
-          showHistory={showHistory}
-        />
-    );
-  }
-
-  render() {
-    return (
-      <React.Fragment>
-        {this.renderInputField()}
-        <ul className="list-group sorted"> 
-           {this.props.items.map(function(value){
-              return <li className="list-group-item" key={value}>{this.renderListItem(value, this.props.showHistory)}</li>;
-            }, this)}
-        </ul>
-      </React.Fragment>
-    );
-  }
+function handleChange(event, setNewItem) {
+  setNewItem(event.target.value)
 }
 
-function ListItem(props) {
+function handleAdd(event, newItem, items, setItems, setNewItem) {
+  event.preventDefault()
+  var newItems = items.slice()
+  newItems.push(newItem)
+  setItems(newItems)
+  setNewItem("")
+}
+
+function onHistory() {
+
+}
+
+function onRemove(value, items, setItems) {
+  setItems(items.filter(item => item !== value))
+}
+
+function List(items, setItems, showHistory) {
+  return (
+    <React.Fragment>
+      {InputField(items, setItems)}
+      <ul className="list-group sorted"> 
+          {items.map(function(value){
+             return <li className="list-group-item" key={value}>{ListItem(value, showHistory, onHistory, () => onRemove(value, items, setItems))}</li>;
+           }, this)} 
+      </ul>
+    </React.Fragment>
+  );
+}
+
+function ListItem(item, showHistory, onHistory, onRemove) {
   return (
       <React.Fragment>
-        <span className="list-item-value">{props.value}</span>
-        {props.showHistory &&
-          <FontAwesome className="list-item-history" name="history" onClick={() => props.onHistory(props.value)} />
+        <span className="list-item-value">{item}</span>
+        {showHistory &&
+          <FontAwesome className="list-item-history" name="history" onClick={() => onHistory(item)} />
         }
-        <FontAwesome className="list-item-remove" name="trash-alt" onClick={() => props.onRemove(props.value)} />
+        <FontAwesome className="list-item-remove" name="trash-alt" onClick={() => onRemove(item)} />
       </React.Fragment>
   );
 }
 
-function InputField(props) {
+function InputField(items, setItems) {
+  const [newItem, setNewItem] = useState("");
   return (
-    <form onSubmit={props.handleSubmit} className="form-inline">
+    <form onSubmit={(event) => handleAdd(event, newItem, items, setItems, setNewItem)} className="form-inline">
       <div className="form-group">
-        <input className="form-control" type="text" value={props.value} onChange={props.handleChange} />
+        <input className="form-control" type="text" value={newItem} onChange={(event) => handleChange(event, setNewItem)} />
         <input className="btn btn-light" type="submit" value="Add" />
       </div>
     </form>
