@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import Container from 'react-bootstrap/Container'
 import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
@@ -11,109 +11,12 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import useAuthContext from './useAuthContext';
 
-class Admin extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      users: [],
-      newUser: '',
-      categories: [],
-      newCategory: '',
-      categoryMap: new Map()
-    };
-    this.handleChangeUser = this.handleChangeUser.bind(this);
-    this.handleRemoveUser = this.handleRemoveUser.bind(this);
-    this.handleAddUsers = this.handleAddUsers.bind(this);
-    this.handleChangeCategory = this.handleChangeCategory.bind(this);
-    this.handleRemoveCategory = this.handleRemoveCategory.bind(this);
-    this.handleAddCategories = this.handleAddCategories.bind(this);
-    this.handleCategoryChange = this.handleCategoryChange.bind(this);
-    this.handleSave = this.handleSave.bind(this);
-    this.componentDidMount = this.componentDidMount.bind(this);
-    this.loadCategoryMap = this.loadCategoryMap.bind(this);
+function handleHistory(user) {
+    var count = prompt("History")
+    fetch(process.env.REACT_APP_API_URL+'admin/backfill/'+user+'/'+count)
   }
 
-  componentDidMount() {
-    fetch(process.env.REACT_APP_API_URL+'users')
-      .then(response => response.json())
-      .then(json => {
-        this.setState({users: json})
-      })
-      .then(this.loadCategories())
-  }
-
-  loadCategories() {
-    fetch(process.env.REACT_APP_API_URL+'profiles')
-      .then(response => response.json())
-      .then(json => {
-        this.setState({categories: json})
-        return json
-      })
-      .then(json => this.loadCategoryMap(json))
-  }
-
-  loadCategoryMap(categories) {
-    var categoryMap = new Map(this.state.categoryMap)
-    categories.forEach(function(value){
-      fetch(process.env.REACT_APP_API_URL+'ProfileUsers/'+value)
-      .then(response => response.json())
-      .then(json => {
-        categoryMap.set(value, Array.prototype.slice.call(json))
-      })
-      .then(empty => {
-        this.setState({categoryMap: categoryMap})
-        })
-    }, this)
-  }
-
-  handleChangeUser(event) {
-    this.setState({newUser: event.target.value});
-  }
-
-  handleChangeCategory(event, type) {
-    this.setState({newCategory: event.target.value});
-  }
-
-  handleRemoveUser(value) {
-    this.setState({users: this.state.users.filter(user => user !== value)});
-  }
-
-  handleRemoveCategory(value) {
-    this.state.categoryMap.delete(value)
-    this.setState({
-      categories: this.state.categories.filter(category => category !== value),
-      categoryMap: this.state.categoryMap
-    });
-  }
-
-  handleAddUsers(event) {
-    if (this.state.newUser !== "" && !this.state.users.includes(this.state.newUser)) {
-      var newUsers = this.state.users.slice()
-      newUsers.push(this.state.newUser)
-      this.setState({users: newUsers, newUser: ''})
-    }
-    event.preventDefault()
-  }
-
-  handleAddCategories(event) {
-    if (this.state.newCategory !== "" && !this.state.categories.includes(this.state.newCategory)) {
-      var newCategories = this.state.categories.slice()
-      newCategories.push(this.state.newCategory)
-      this.state.categoryMap.set(this.state.newCategory, [])
-      this.setState({categories: newCategories, newCategory: ''})
-    }
-    event.preventDefault()
-  }
-
-  handleCategoryChange(selected, type) {
-    this.state.categoryMap.set(type.name, 
-        Array.prototype.slice.call(selected)
-      )
-    this.setState({categoryMap: this.state.categoryMap})
-  }
-
-  handleSave(event) {
-    const { getToken } = useAuthContext();
+function handleSave(getToken, users, categories, categoryMap) {
     fetch(
       process.env.REACT_APP_API_URL+'admin/users', {
         method: 'POST',
@@ -121,7 +24,7 @@ class Admin extends React.Component {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer '+getToken(),
         }, 
-        body: JSON.stringify(this.state.users)
+        body: JSON.stringify(users)
     })
     fetch(
       process.env.REACT_APP_API_URL+'admin/profiles', {
@@ -130,7 +33,7 @@ class Admin extends React.Component {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer '+getToken()
         },
-        body: JSON.stringify(this.state.categories)
+        body: JSON.stringify(categories)
     })
     fetch(
       process.env.REACT_APP_API_URL+'admin/ProfileUsers', {
@@ -139,11 +42,11 @@ class Admin extends React.Component {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer '+getToken()
         }, 
-        body: JSON.stringify(this.getCategoryArray(this.state.categoryMap))
+        body: JSON.stringify(getCategoryArray(categoryMap))
     })
   }
 
-  getCategoryArray(map) {
+function getCategoryArray(map) {
     var profiles = {}
     var test = {}
     for (var [key, value] of map) {
@@ -153,12 +56,40 @@ class Admin extends React.Component {
     return profiles
   }
 
-  handleHistory(user) {
-    var count = prompt("History")
-    fetch(process.env.REACT_APP_API_URL+'admin/backfill/'+user+'/'+count)
-  }
+async function getCategoryMap(categories) {
+  var localMap = new Map()
+  return Promise.all(categories.map(async (value) => {
+      await localMap.set(value, await fetch(process.env.REACT_APP_API_URL+'ProfileUsers/'+value)
+      .then(response => response.json())
+      .then(json => Array.prototype.slice.call(json)))
+    })).then (empty => localMap)
+}
 
-  render() {
+function AdminPage() {
+  const [users, setUsers] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [categoryMap, setCategoryMap] = useState(new Map())
+  const {getToken} = useAuthContext();
+  useEffect(() => {
+    fetch(process.env.REACT_APP_API_URL+'users')
+      .then(response => response.json())
+      .then(json => {
+        setUsers(json)
+        return json
+      })
+      .then(users => {
+        fetch(process.env.REACT_APP_API_URL+'profiles')
+        .then(response => response.json())
+        .then(json => {
+          setCategories(json)
+          return json
+        })
+        .then(categories => {
+          getCategoryMap(categories).then(map => setCategoryMap(map))
+        })
+      })
+  }, []);
+
     return (
       <React.Fragment>
         {
@@ -179,38 +110,31 @@ class Admin extends React.Component {
                 <Col sm="3">
                   <h2>Users</h2>
                   <List 
-                    items={this.state.users}
-                    newItem={this.state.newUser}
+                    items={users}
                     showHistory = {true}
-                    handleAdd={this.handleAddUsers}
-                    handleRemove={this.handleRemoveUser}
-                    handleChange={this.handleChangeUser}
-                    handleHistory={this.handleHistory}
+                    setItems={setUsers}
                   />
                 </Col>
                 <Col sm="3">
                   <h2>Categories</h2>
                   <List 
-                    items={this.state.categories}
-                    newItem={this.state.newCategory}
-                    handleAdd={this.handleAddCategories}
-                    handleRemove={this.handleRemoveCategory}
-                    handleChange={this.handleChangeCategory}
+                    items={categories}
+                    setItems={setCategories}
                   />
                 </Col>
                 <Col sm="3">
                   <h2>Assignment</h2>
                   <PickList 
-                    onChange={this.handleCategoryChange}
-                    users={this.state.users}
-                    categories={this.state.categories}
-                    categoryMap={this.state.categoryMap}
+                    users={users}
+                    categories={categories}
+                    categoryMap={categoryMap}
+                    setCategoryMap={setCategoryMap}
                   />
                 </Col>
               </Row>
               <Row className="justify-content-md-center">
                 <Col sm="auto">
-                  <Button onClick={this.handleSave}>Save</Button>
+                  <Button onClick={() => handleSave(getToken, users, categories, categoryMap)}>Save</Button>
                 </Col>
               </Row>
             </Container>
@@ -218,7 +142,6 @@ class Admin extends React.Component {
         }
       </React.Fragment>
     );
-  }
 }
 
-export default Admin;
+export default AdminPage

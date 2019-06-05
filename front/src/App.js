@@ -1,6 +1,6 @@
 import React from 'react'
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom'
-import Admin from './Admin'
+import AdminPage from './Admin'
 import LoginForm from './LoginForm'
 import MenuBar from './MenuBar'
 import useAuthContext from './useAuthContext';
@@ -12,7 +12,7 @@ export default function App() {
 			<Router>
 				<Switch>
 					<Route exact path="/" component={MenuBar} />
-					<PrivateRoute exact path="/admin" component={Admin} />
+					<PrivateRoute exact path="/admin" component={AdminPage} />
 					<Route exact path="/login" component={LoginForm} />
 				</Switch>
 			</Router>

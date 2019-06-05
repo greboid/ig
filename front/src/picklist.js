@@ -1,6 +1,14 @@
 import React from 'react';
 import Select from 'react-select';
 
+function handleCategoryChange(selected, type, categoryMap, setCategoryMap) {
+  var newCategoryMap = new Map(categoryMap)
+  newCategoryMap.set(type.name, 
+    Array.prototype.slice.call(selected)
+  )
+  setCategoryMap(newCategoryMap)
+}
+
 export default function PickList(props) {
   return (
     <ul className="list-group sorted"> 
@@ -16,7 +24,7 @@ export default function PickList(props) {
               name={category} 
               value={props.categoryMap.get(category)}
               isMulti
-              onChange={props.onChange}
+              onChange={(selected, type) => handleCategoryChange(selected, type, props.categoryMap, props.setCategoryMap)}
             />
           </li>
         );

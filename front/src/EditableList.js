@@ -2,12 +2,38 @@ import React from 'react';
 import FontAwesome from 'react-fontawesome';
 
 class List extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      newItem: ''
+    }
+    this.handleChange = this.handleChange.bind(this);
+    this.handleRemove = this.handleRemove.bind(this);
+    this.handleAdd = this.handleAdd.bind(this);
+  }
+
+  handleChange(event) {
+    this.setState({newItem: event.target.value});
+  }
+
+  handleRemove(value) {
+    this.props.setItems(this.props.items.filter(user => user !== value))
+  }
+
+  handleAdd(value) {
+    value.preventDefault()
+    var newItems = this.props.items.slice()
+    newItems.push(this.state.newItem)
+    this.props.setItems(newItems)
+    this.setState({newItem: ""});
+  }
+
   renderInputField() {
     return (
       <InputField
-        value={this.props.newItem}
-        handleSubmit={ this.props.handleAdd }
-        handleChange={ this.props.handleChange }
+        value={this.state.newItem}
+        handleSubmit={ this.handleAdd }
+        handleChange={ this.handleChange }
       />
     );
   }
@@ -16,7 +42,7 @@ class List extends React.Component {
     return (
         <ListItem 
           value={value} 
-          onRemove={() => this.props.handleRemove(value)}
+          onRemove={() => this.handleRemove(value)}
           onHistory={() => this.props.handleHistory(value)}
           showHistory={showHistory}
         />
