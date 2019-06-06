@@ -13,8 +13,9 @@ function handleAdd(event, newItem, items, setItems, setNewItem) {
   setNewItem("")
 }
 
-function onHistory() {
-
+function onHistory(user) {
+  var count = prompt("History")
+    fetch(process.env.REACT_APP_API_URL+'admin/backfill/'+user+'/'+count)
 }
 
 function onRemove(value, items, setItems) {
@@ -27,14 +28,14 @@ function List(items, setItems, showHistory) {
       {InputField(items, setItems)}
       <ul className="list-group sorted"> 
           {items.map(function(value){
-             return <li className="list-group-item" key={value}>{ListItem(value, showHistory, onHistory, () => onRemove(value, items, setItems))}</li>;
+             return <li className="list-group-item" key={value}>{ListItem(value, showHistory, () => onRemove(value, items, setItems))}</li>;
            }, this)} 
       </ul>
     </React.Fragment>
   );
 }
 
-function ListItem(item, showHistory, onHistory, onRemove) {
+function ListItem(item, showHistory, onRemove) {
   return (
       <React.Fragment>
         <span className="list-item-value">{item}</span>
