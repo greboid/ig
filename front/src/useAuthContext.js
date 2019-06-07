@@ -12,6 +12,11 @@ function useAuthState() {
     sessionToken = session.token
     sessionExpires = session.expires
   }
+  if (new Date(sessionExpires * 1000) < new Date()) {
+    sessionAuthed = false
+    sessionToken = ""
+    sessionExpires = 0
+  }
   const [authed, setAuthed] = useState(sessionAuthed);
   const [token, setToken] = useState(sessionToken);
   const [expires, setExpires] = useState(sessionExpires);
