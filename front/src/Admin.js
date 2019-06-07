@@ -11,11 +11,6 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import useAuthContext from './useAuthContext';
 
-function handleHistory(user) {
-    var count = prompt("History")
-    fetch(process.env.REACT_APP_API_URL+'admin/backfill/'+user+'/'+count)
-  }
-
 function handleSave(getToken, users, categories, categoryMap) {
     fetch(
       process.env.REACT_APP_API_URL+'admin/users', {
