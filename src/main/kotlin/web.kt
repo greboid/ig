@@ -152,9 +152,13 @@ class Web(
                     files("thumbs")
                 }
                 get("/login") {
-                    call.respond(FreeMarkerContent("login.ftl",
-                        mapOf("profiles" to database.getProfiles()
-                    )))
+                    call.respond(
+                        FreeMarkerContent(
+                            "login.ftl", mapOf(
+                                "profiles" to database.getProfiles()
+                            )
+                        )
+                    )
                 }
                 post("/login") {
                     try {
@@ -163,18 +167,29 @@ class Web(
                             val token = simpleJwt.sign(credentials.user)
                             call.respond(
                                 mapOf(
-                                    "token" to token.token,
-                                    "expires" to token.expires.toInstant().epochSecond
+                                    "token" to token.token, "expires" to token.expires.toInstant().epochSecond
                                 )
                             )
                         } else {
-                            call.respond(HttpStatusCode.Unauthorized, mapOf("message" to "Invalid Credentials")
+                            call.respond(
+                                HttpStatusCode.Unauthorized, mapOf("message" to "Invalid Credentials")
                             )
                         }
                     } catch (e: JsonParseException) {
                         call.respond(HttpStatusCode.BadRequest, mapOf("message" to "Bad payload"))
                     } catch (e: ContentTransformationException) {
                         call.respond(HttpStatusCode.BadRequest, mapOf("message" to "Bad payload"))
+                    }
+                }
+                authenticate("auth") {
+                    get("/refreshtoken") {
+                        val token = simpleJwt.sign(call.sessions.get<IGSession>()?.user ?: "")
+                        call.respond(
+                            mapOf(
+                                "token" to token.token,
+                                "expires" to token.expires.toInstant().epochSecond
+                            )
+                        )
                     }
                 }
                 get("/favicon.ico") {
