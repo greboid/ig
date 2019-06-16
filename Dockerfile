@@ -7,8 +7,8 @@ RUN yarn install --production && yarn build
 
 FROM greboid/kotlin as build
 WORKDIR /app
-COPY --from=react /app/front/build src/main/resources/admin
 COPY . /app
+COPY --from=react /app/front/build src/main/resources/admin
 RUN /entrypoint.sh
 
 FROM openjdk:12-jdk-alpine
