@@ -10,9 +10,6 @@ WORKDIR /app
 COPY --from=react /app/front/build src/main/resources/admin
 COPY . /app
 RUN /entrypoint.sh
-ENTRYPOINT [""]
-EXPOSE 80
-CMD ["java","-jar","build/libs/app.jar"]
 
 FROM openjdk:12-jdk-alpine
 WORKDIR /app
