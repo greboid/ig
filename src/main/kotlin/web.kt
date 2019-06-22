@@ -151,15 +151,6 @@ class Web(
                 static("/thumbs") {
                     files("thumbs")
                 }
-                get("/login") {
-                    call.respond(
-                        FreeMarkerContent(
-                            "login.ftl", mapOf(
-                                "profiles" to database.getProfiles()
-                            )
-                        )
-                    )
-                }
                 post("/login") {
                     try {
                         val credentials = call.receive<LoginRegister>()
