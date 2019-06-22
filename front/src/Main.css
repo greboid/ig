@@ -1,0 +1,25 @@
+.contentContainer {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: row;
+  justify-content: center;
+  align-items: stretch;
+  align-content: stretch;
+}
+.item {
+  flex: 0 0 auto;
+  margin: 0px;
+}
+.itemimage {
+  width: 100px;
+  height: 100px;
+  display: block;
+}
+@media	only screen and (min-width: 160em) {
+	.itemimage {
+		width: 200px;
+    height: 200px;
+	}
+}
