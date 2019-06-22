@@ -8,6 +8,9 @@
   align-items: stretch;
   align-content: stretch;
 }
+.ril__toolbar {
+  display: none !important;
+}
 .item {
   flex: 0 0 auto;
   margin: 0px;

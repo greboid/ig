@@ -2,10 +2,11 @@ import React from 'react';
 
 const VideoImage = (source) => (
   <video controls style={{
-      maxWidth: '97%',
+      maxWidth: '90%',
+      maxHeight: '90%',
       position: 'absolute',
-      width: '97%',
-      height: '97%',
+      width: '90%',
+      height: '90%',
       left: 0,
       right: 0,
       margin: 'auto',

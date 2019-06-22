@@ -35,9 +35,10 @@ const MainPage = (props) => {
 	}
 	var lightbox = images.map((image, i) => {
 		if (image.url.match(".*mp4.*")) {
-			var img = {url: (
-				VideoImage(image.url)
-			)}
+			var img = {
+				url: (VideoImage(image.url)),
+				caption: image.caption
+			}
 			return img
 		} else {
 			return image
@@ -52,6 +53,10 @@ const MainPage = (props) => {
 	            mainSrc={lightbox[lightboxIndex].url}
 	            nextSrc={lightbox[(lightboxIndex + 1) % lightbox.length].url}
 	            prevSrc={lightbox[(lightboxIndex + lightbox.length - 1) % lightbox.length].url}
+	            imageCaption={lightbox[lightboxIndex].caption}
+	            enableZoom={false}
+	            animationOnKeyInput={true}
+	            animationDuration={50}
 	            onCloseRequest={() => setIsOpen(false) }
 	            onMovePrevRequest={() =>setLightboxIndex((lightboxIndex + lightbox.length - 1) % lightbox.length) }
 	            onMoveNextRequest={() =>setLightboxIndex((lightboxIndex + 1) % lightbox.length) }
