@@ -18,7 +18,7 @@ const MainPage = (props) => {
 	const [images, setImages] = useState([])
 	useEffect(() => {
 		var pathName = props.location.pathname.split('/')
-		if (pathName[1] == 'user') {
+		if (pathName[1] === 'user') {
 			getUserImages(setImages, pathName[2])
 		} else {
 			getProfileImages(setImages, pathName[2])
