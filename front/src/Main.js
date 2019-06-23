@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import MenuBar from './MenuBar'
 import './Main.css'
-import Lightbox from 'lightbox-react'
-import 'lightbox-react/style.css'
 import VideoImage from './VideoImage'
 
 function getProfileImages(setImages, profile, offset=0) {
@@ -14,13 +12,26 @@ function getProfileImages(setImages, profile, offset=0) {
 function getUserImages(setImages, profile, offset=0) {
 	fetch(process.env.REACT_APP_API_URL+'igposts/?start='+offset+'&count='+(offset+150)+'&user='+profile)
       .then(response => response.json())
-      .then(json => setImages(Array.prototype.slice.call(json)))
+      .then(json => Array.prototype.slice.call(json))
+      .then(images => {
+      	setImages(images.map((image, i) => {
+			if (image.url.match(".*mp4.*")) {
+				return {
+					source: (VideoImage(image.url)),
+					caption: image.caption
+				}
+			} else {
+				return {
+					source: image.url,
+					caption: image.caption
+				}
+			}
+		}))
+      })
 }
 
 const MainPage = (props) => {
 	const [images, setImages] = useState([])
-	const [isOpen, setIsOpen] = useState(false);
-	const [lightboxIndex, setLightboxIndex] = useState(1);
 	useEffect(() => {
 		var pathName = props.location.pathname.split('/')
 		if (pathName[1] === 'user') {
@@ -29,44 +40,13 @@ const MainPage = (props) => {
 			getProfileImages(setImages, pathName[2])
 		}
 	}, [props.location.pathname]);
-	function openLightbox(index) {
-		setIsOpen(true)
-		setLightboxIndex(index)
-	}
-	var lightbox = images.map((image, i) => {
-		if (image.url.match(".*mp4.*")) {
-			var img = {
-				url: (VideoImage(image.url)),
-				caption: image.caption
-			}
-			return img
-		} else {
-			return image
-		}
-	})
-	console.log(lightbox)
 	return (
 		<React.Fragment>
 			<MenuBar />
-			{isOpen && (
-	          <Lightbox
-	            mainSrc={lightbox[lightboxIndex].url}
-	            nextSrc={lightbox[(lightboxIndex + 1) % lightbox.length].url}
-	            prevSrc={lightbox[(lightboxIndex + lightbox.length - 1) % lightbox.length].url}
-	            imageCaption={lightbox[lightboxIndex].caption}
-	            enableZoom={false}
-	            animationOnKeyInput={true}
-	            animationDuration={50}
-	            onCloseRequest={() => setIsOpen(false) }
-	            onMovePrevRequest={() =>setLightboxIndex((lightboxIndex + lightbox.length - 1) % lightbox.length) }
-	            onMoveNextRequest={() =>setLightboxIndex((lightboxIndex + 1) % lightbox.length) }
-	          />
-	        )}
 			<div id="app" className="contentContainer">
 			    {images.map((image, i) => { 
 			    	return (
 			    		<a 
-			    			onClick={ (event) => { event.preventDefault(); openLightbox(i) } } 
 			    			key={i+1} 
 			    			className="item" 
 			    			href={image.url} 
