@@ -1,45 +1,45 @@
 import React, { useState, useEffect } from 'react'
 import MenuBar from './MenuBar'
 import './Main.css'
-import VideoImage from './VideoImage'
-
-function getProfileImages(setImages, profile, offset=0) {
-	fetch(process.env.REACT_APP_API_URL+'igposts/?start='+offset+'&count='+(offset+150)+'&profile='+profile)
-      .then(response => response.json())
-      .then(json => setImages(Array.prototype.slice.call(json)))
-}
-
-function getUserImages(setImages, profile, offset=0) {
-	fetch(process.env.REACT_APP_API_URL+'igposts/?start='+offset+'&count='+(offset+150)+'&user='+profile)
-      .then(response => response.json())
-      .then(json => Array.prototype.slice.call(json))
-      .then(images => {
-      	setImages(images.map((image, i) => {
-			if (image.url.match(".*mp4.*")) {
-				return {
-					source: (VideoImage(image.url)),
-					caption: image.caption
-				}
-			} else {
-				return {
-					source: image.url,
-					caption: image.caption
-				}
-			}
-		}))
-      })
-}
+import useInfiniteScroll from './useInfiniteScroll'
 
 const MainPage = (props) => {
 	const [images, setImages] = useState([])
+	const [isFetching, setIsFetching] = useInfiniteScroll(fetchMoreListItems);
+	function fetchMoreListItems() {
+		getImages(props.location.pathname.split('/'), images.length)
+		setIsFetching(false)
+	}
 	useEffect(() => {
-		var pathName = props.location.pathname.split('/')
-		if (pathName[1] === 'user') {
-			getUserImages(setImages, pathName[2])
-		} else {
-			getProfileImages(setImages, pathName[2])
-		}
+		getImages(props.location.pathname.split('/'), images.length, true)
 	}, [props.location.pathname]);
+	useEffect(() => {
+		if (document.documentElement.scrollTop === 0) {
+			getImages(props.location.pathname.split('/'), images.length)
+		}
+	}, [images])
+	function getImages(path, offset=0, firstCall=false) {
+		if (path[1] === 'user') {
+			getUserImages(path[2], offset, true)
+		} else {
+			getProfileImages(path[2], offset, true)
+		}
+	}
+	function getProfileImages(profile, offset=0) {
+		fetch(process.env.REACT_APP_API_URL+'igposts/?start='+offset+'&count='+(offset+150)+'&profile='+profile)
+	      .then(response => response.json())
+	      .then(json => {
+	      	setImages(images.concat(Array.prototype.slice.call(json)))
+	      })
+	}
+
+	function getUserImages(profile, offset=0) {
+		fetch(process.env.REACT_APP_API_URL+'igposts/?start='+offset+'&count='+(offset+150)+'&user='+profile)
+	      .then(response => response.json())
+	      .then(json => {
+	      	setImages(images.concat(Array.prototype.slice.call(json)))
+	      })
+	}
 	return (
 		<React.Fragment>
 			<MenuBar />
