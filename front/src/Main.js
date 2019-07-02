@@ -11,10 +11,10 @@ const MainPage = (props) => {
 		setIsFetching(false)
 	}
 	useEffect(() => {
-		getImages(props.location.pathname.split('/'), images.length, true)
+		setImages([])
 	}, [props.location.pathname]);
 	useEffect(() => {
-		if (document.documentElement.scrollTop === 0) {
+		if (document.documentElement.scrollTopMax === 0) {
 			getImages(props.location.pathname.split('/'), images.length)
 		}
 	}, [images])
@@ -26,18 +26,22 @@ const MainPage = (props) => {
 		}
 	}
 	function getProfileImages(profile, offset=0) {
-		fetch(process.env.REACT_APP_API_URL+'igposts/?start='+offset+'&count='+(offset+150)+'&profile='+profile)
+		fetch(process.env.REACT_APP_API_URL+'igposts/?start='+offset+'&count='+60+'&profile='+profile)
 	      .then(response => response.json())
 	      .then(json => {
-	      	setImages(images.concat(Array.prototype.slice.call(json)))
+	      	if (json.length !== 0) {
+	      		setImages(images.concat(Array.prototype.slice.call(json)))
+	      	}
 	      })
 	}
 
 	function getUserImages(profile, offset=0) {
-		fetch(process.env.REACT_APP_API_URL+'igposts/?start='+offset+'&count='+(offset+150)+'&user='+profile)
+		fetch(process.env.REACT_APP_API_URL+'igposts/?start='+offset+'&count='+60+'&user='+profile)
 	      .then(response => response.json())
 	      .then(json => {
-	      	setImages(images.concat(Array.prototype.slice.call(json)))
+	      	if (json.length !== 0) {
+	      		setImages(images.concat(Array.prototype.slice.call(json)))
+	      	}
 	      })
 	}
 	return (
