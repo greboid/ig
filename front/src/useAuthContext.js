@@ -1,7 +1,6 @@
 import {useState} from "react";
 import { useSession } from  'react-use-session';
 import createUseContext from "constate";
-import moment from 'moment';
 
 function useAuthState() {
   const { session, save, clear } = useSession('ig')
@@ -47,7 +46,7 @@ function useAuthState() {
 }
 
 function backgroundCheck(expires, token, setToken, setExpires) {
-  var next = moment(expires * 1000).subtract(10, 'minutes').diff(moment())
+  var next = expires * 1000 - Date.now() - (10 * 60 * 1000)
   if (next > 0) {
     return setTimeout(function(){ 
       renewToken(token, setToken, setExpires)
