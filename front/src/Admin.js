@@ -8,7 +8,6 @@ import Button from 'react-bootstrap/Button'
 import './Admin.css';
 import MenuBar from './MenuBar'
 import 'bootstrap/dist/css/bootstrap.min.css';
-import '@fortawesome/fontawesome-free/css/all.min.css';
 import useAuthContext from './useAuthContext';
 
 function handleSave(getToken, users, categories, categoryMap) {

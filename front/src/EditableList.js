@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import FontAwesome from 'react-fontawesome';
+import { FaHistory, FaTrashAlt } from 'react-icons/fa';
 
 function handleChange(event, setNewItem) {
   setNewItem(event.target.value)
@@ -40,9 +40,9 @@ function ListItem(item, showHistory, onRemove) {
       <React.Fragment>
         <span className="list-item-value">{item}</span>
         {showHistory &&
-          <FontAwesome className="list-item-history" name="history" onClick={() => onHistory(item)} />
+          <FaHistory className="list-item-history" onClick={() => onHistory(item)} />
         }
-        <FontAwesome className="list-item-remove" name="trash-alt" onClick={() => onRemove(item)} />
+        <FaTrashAlt className="list-item-remove" onClick={() => onRemove(item)} />
       </React.Fragment>
   );
 }
