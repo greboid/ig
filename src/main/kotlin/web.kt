@@ -288,7 +288,7 @@ class Web(
                         ContentType.Text.Xml)
                     )
                 }
-                static("/") {
+                static("/{...}") {
                     resources("/admin")
                     defaultResource("index.html", "/admin")
                 }
