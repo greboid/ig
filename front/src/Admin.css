@@ -17,3 +17,19 @@
 .assign-list {
 	width: 100%;
 }
+div.row {
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+}
+div.col {
+	padding: 0 10em 0 10em;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	flex-grow: 1;
+}
+
+div.col.grow {
+	flex-grow: 2;
+}

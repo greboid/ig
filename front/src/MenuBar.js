@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { Navbar, Nav } from 'react-bootstrap'
 import useAuthContext from './useAuthContext'
+import './MenuBar.css'
 
 function getCategories(setCategories) {
 	fetch(process.env.REACT_APP_API_URL+'profiles')
@@ -17,24 +17,23 @@ export default function MenuBar() {
 	}, []);
     return (
       <React.Fragment>
-      	<Navbar>
-		  <Navbar.Brand>IG</Navbar.Brand>
-		  <Nav className="mr-auto">
+      	<nav>
+		  <div className="left">
 			{categories.map((category, i) => {
-		    	return (<Nav.Link key={i} as={Link} to={'/category/'+category}>{category}</Nav.Link>)
+		    	return (<Link key={i} to={'/category/'+category}>{category}</Link>)
 			})}
-		  </Nav>
-		  <Nav>
+		  </div>
+		  <div className="right">
 		  	{authed ?
 		  		<React.Fragment>
-			  		<Nav.Link as={Link} to='/admin'>Admin</Nav.Link>
-			  		<Nav.Link as={Link} to='#' onClick={() => setLoggedOut()}>Logout</Nav.Link>
+			  		<Link to='/admin'>Admin</Link>
+			  		<Link to='#' onClick={() => setLoggedOut()}>Logout</Link>
 		  		</React.Fragment>
 		  	:
-		  		<Nav.Link as={Link} to='/login'>Login</Nav.Link>
+		  		<Link to='/login'>Login</Link>
 		  	}
-		  </Nav>
-		</Navbar>
+		  </div>
+		</nav>
       </React.Fragment>
     )
 }

@@ -1,13 +1,8 @@
 import React, { useState, useEffect } from 'react'
-import Container from 'react-bootstrap/Container'
-import Row from 'react-bootstrap/Row'
-import Col from 'react-bootstrap/Col'
 import List from './EditableList.js'
 import PickList from './picklist.js'
-import Button from 'react-bootstrap/Button'
 import './Admin.css';
 import MenuBar from './MenuBar'
-import 'bootstrap/dist/css/bootstrap.min.css';
 import useAuthContext from './useAuthContext';
 
 function handleSave(getToken, users, categories, categoryMap) {
@@ -88,28 +83,28 @@ function AdminPage() {
       <React.Fragment>
         {
           <React.Fragment>
-            <Container fluid={true}>
+            <div className="container">
               <MenuBar />
-              <Row className="justify-content-md-center">
-                <Col sm="auto">
+              <div className="row justify-content-md-center">
+                <div className="col">
                   <h2>User and Category Management</h2>
                   <ol>
                     <li>Add users you want to follow</li>
                     <li>Add categories to organise them</li>
                     <li>Assign users to categories so you can view them</li>
                   </ol>
-                </Col>
-              </Row>
-              <Row className="justify-content-md-center">
-                <Col sm="3">
+                </div>
+              </div>
+              <div className="row justify-content-md-center">
+                <div className="col">
                   <h2>Users</h2>
                   {List(users, setUsers, true)}
-                </Col>
-                <Col sm="3">
+                </div>
+                <div className="col">
                   <h2>Categories</h2>
                   {List(categories, setCategories, false)}
-                </Col>
-                <Col sm="3">
+                </div>
+                <div className="col grow">
                   <h2>Assignment</h2>
                   <PickList 
                     users={users}
@@ -117,14 +112,14 @@ function AdminPage() {
                     categoryMap={categoryMap}
                     setCategoryMap={setCategoryMap}
                   />
-                </Col>
-              </Row>
-              <Row className="justify-content-md-center">
-                <Col sm="auto">
-                  <Button onClick={() => handleSave(getToken, users, categories, categoryMap)}>Save</Button>
-                </Col>
-              </Row>
-            </Container>
+                </div>
+              </div>
+              <div className="row justify-content-md-center">
+                <div className="col">
+                  <button onClick={() => handleSave(getToken, users, categories, categoryMap)}>Save</button>
+                </div>
+              </div>
+            </div>
           </React.Fragment>
         }
       </React.Fragment>
