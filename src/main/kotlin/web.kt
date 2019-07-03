@@ -34,7 +34,6 @@ import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.content.defaultResource
 import io.ktor.http.content.files
-import io.ktor.http.content.resolveResource
 import io.ktor.http.content.resources
 import io.ktor.http.content.static
 import io.ktor.request.receive
@@ -142,12 +141,6 @@ class Web(
                 }
             }
             routing {
-                static("/js") {
-                    resources("js")
-                }
-                static("/css") {
-                    resources("css")
-                }
                 static("/thumbs") {
                     files("thumbs")
                 }
@@ -182,9 +175,6 @@ class Web(
                             )
                         )
                     }
-                }
-                get("/favicon.ico") {
-                    call.respond(call.resolveResource("/favicon.ico", "") ?: HttpStatusCode.NotFound)
                 }
                 get("/logout") {
                     call.sessions.clear<IGSession>()
@@ -298,51 +288,9 @@ class Web(
                         ContentType.Text.Xml)
                     )
                 }
-                get ("/template/image/{shortcode}/{ord?}") {
-                    val shortcode = call.parameters["shortcode"] ?: ""
-                    val ord = call.parameters["ord"]?.toInt() ?: 0
-                    if (shortcode.isBlank()) {
-                        call.respond(HttpStatusCode.NotFound, "Shortcode not found")
-                    }
-                    call.respond(getImageLightbox(database.getIGPost(shortcode, ord)))
-                }
-                get("/category/{profile}") {
-                    val profile = call.parameters["profile"] ?: ""
-                    call.respond(FreeMarkerContent("index.ftl",
-                        mapOf("profiles" to database.getProfiles(),
-                            "images" to database.getIGPost(profile=profile, start = 0, count=50),
-                            "feedURL" to "/rss/category/${profile}",
-                            "feedTitle" to "RSS - Category: ${profile}",
-                            "username" to call.sessions.get<IGSession>()?.user
-                        )))
-                }
-                get("/user/{user}") {
-                    val user = call.parameters["user"] ?: ""
-                    call.respond(FreeMarkerContent("index.ftl",
-                        mapOf("profiles" to database.getProfiles(),
-                            "images" to database.getUserIGPost(user=user, start = 0, count=50),
-                            "feedURL" to "/rss/category/${user}",
-                            "feedTitle" to "RSS - User: ${user}",
-                            "username" to call.sessions.get<IGSession>()?.user
-                        )))
-                }
-                get("/video/{shortcode}/{ord?}") {
-                    val shortcode = call.parameters["shortcode"] ?: ""
-                    val ord = call.parameters["ord"]?.toInt() ?: 0
-                    val post = database.getIGPost(shortcode, ord)
-                    call.respond(FreeMarkerContent("video.ftl",
-                        mapOf("profiles" to database.getProfiles(),
-                            "source" to post.url,
-                            "username" to call.sessions.get<IGSession>()?.user
-                        )))
-                }
-                get("/") {
-                    val profiles = database.getProfiles()
-                    if (profiles.isNotEmpty()) {
-                        call.respondRedirect("/category/${database.getProfiles().first()}#", false)
-                    } else {
-                        call.respondRedirect("/admin", false)
-                    }
+                static("/") {
+                    resources("/admin")
+                    defaultResource("index.html", "/admin")
                 }
             }
         }
