@@ -17,7 +17,7 @@ const MainPage = (props) => {
 		if (document.documentElement.scrollTopMax === 0) {
 			getImages(props.location.pathname.split('/'), images.length)
 		}
-	}, [images])
+	}, [images, props.location.pathname])
 	function getImages(path, offset=0, firstCall=false) {
 		if (path[1] === 'user') {
 			getUserImages(path[2], offset, true)
@@ -65,6 +65,7 @@ const MainPage = (props) => {
 			    	)
 			    })}
 			</div>
+			{isFetching && <p>Loading more posts.</p>}
 		</React.Fragment>
 	);
 }
