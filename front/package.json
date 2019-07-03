@@ -1,7 +1,7 @@
 {
-  "name": "ig-font",
+  "name": "ig-front",
   "version": "0.1.0",
-  "homepage": "/admin",
+  "homepage": "/",
   "private": true,
   "dependencies": {
     "constate": "^1.1.1",
