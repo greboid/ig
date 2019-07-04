@@ -141,22 +141,6 @@ class Web(
                 }
             }
             routing {
-                static("/thumbs") {
-                    files("thumbs")
-                }
-                static("/static/") {
-                    resources("/admin/static")
-                }
-                static("/static/css") {
-                    resources("/admin/static/css")
-                }
-                static("/static/js") {
-                    resources("/admin/static/js")
-                }
-                static("/{...}/{...}") {
-                    resources("/admin")
-                    defaultResource("index.html", "/admin")
-                }
                 post("/login") {
                     try {
                         val credentials = call.receive<LoginRegister>()
@@ -300,6 +284,22 @@ class Web(
                         null,
                         ContentType.Text.Xml)
                     )
+                }
+                static("/thumbs") {
+                    files("thumbs")
+                }
+                static("/static/") {
+                    resources("/admin/static")
+                }
+                static("/static/css") {
+                    resources("/admin/static/css")
+                }
+                static("/static/js") {
+                    resources("/admin/static/js")
+                }
+                static("/{...}/{...}") {
+                    resources("/admin")
+                    defaultResource("index.html", "/admin")
                 }
             }
         }
