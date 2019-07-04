@@ -153,7 +153,7 @@ class Web(
                 static("/static/js") {
                     resources("/admin/static/js")
                 }
-                static("/") {
+                static("/{...}/{...}") {
                     resources("/admin")
                     defaultResource("index.html", "/admin")
                 }
