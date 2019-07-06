@@ -66,7 +66,7 @@ const MainPage = (props) => {
 	}
 	return (
 		<React.Fragment>
-		{images.length > 0 && <Lightbox src={images[0].url} alt={images[0].caption} caption={images[0].caption} close={closeLightbox} />}
+		<Lightbox src={lightboxData.src} alt={lightboxData.caption} caption={lightboxData.caption} close={closeLightbox} />
 			<MenuBar />
 			<div id="app" className="contentContainer">
 			    {images.map((image, i) => { 

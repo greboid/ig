@@ -1,8 +1,10 @@
 import React, { useState } from 'react'
 import './Lightbox.css'
+import useWindowSize from '@rehooks/window-size';
 
 const Lightbox = (props) => {
 	const [closed, setClosed] = useState(false)
+	let windowSize = useWindowSize();
 	function handleClick(event) {
 		if (event.target === event.currentTarget) { 
 			props.close()
@@ -27,12 +29,11 @@ const Lightbox = (props) => {
 				>
 					&times;
 				</span>
-				<div id="lightbox-content">
-					<div className="lightbox-image" style={{backgroundImage: `url(${props.src})`}}>
+					<div id="lightbox-content" style={{height: (0.85 * windowSize.innerHeight)}}>
+						<img id="lightbox-image" src={props.src} alt={props.alt} />
+						<p id="lightbox-caption">{props.caption}</p>
 					</div>
-					<p id="lightbox-caption">{props.caption}</p>
 				</div>
-			</div>
 		</React.Fragment>
 	)
 }
