@@ -3,8 +3,10 @@ import MenuBar from './MenuBar'
 import Lightbox from './Lightbox'
 import './Main.css'
 import useInfiniteScroll from './useInfiniteScroll'
+import useWindowSize from '@rehooks/window-size'
 
 const MainPage = (props) => {
+	let windowSize = useWindowSize()
 	const [images, setImages] = useState([])
 	const [isFetching, setIsFetching] = useInfiniteScroll(fetchMoreListItems);
 	const [lightboxData, setLightboxData] = useState({
@@ -20,10 +22,10 @@ const MainPage = (props) => {
 		setImages([])
 	}, [props.location.pathname]);
 	useEffect(() => {
-		if ((window.pageYOffset || document.documentElement.scrollTop) === 0) {
+		if ((window.scrollMaxY || (document.body.scrollHeight - window.innerHeight)) === 0) {
 			getImages(props.location.pathname.split('/'), images.length)
 		}
-	}, [images])
+	}, [images, windowSize])
 	function getImages(path, offset=0, firstCall=false) {
 		if (path[1] === 'user') {
 			getUserImages(path[2], offset, true)
@@ -32,7 +34,7 @@ const MainPage = (props) => {
 		}
 	}
 	function getProfileImages(profile, offset=0) {
-		fetch(process.env.REACT_APP_API_URL+'igposts/?start='+offset+'&count='+60+'&profile='+profile)
+		fetch(process.env.REACT_APP_API_URL+'igposts/?start='+offset+'&count='+10+'&profile='+profile)
 	      .then(response => response.json())
 	      .then(json => {
 	      	if (json.length !== 0) {
@@ -42,7 +44,7 @@ const MainPage = (props) => {
 	}
 
 	function getUserImages(profile, offset=0) {
-		fetch(process.env.REACT_APP_API_URL+'igposts/?start='+offset+'&count='+60+'&user='+profile)
+		fetch(process.env.REACT_APP_API_URL+'igposts/?start='+offset+'&count='+10+'&user='+profile)
 	      .then(response => response.json())
 	      .then(json => {
 	      	if (json.length !== 0) {
