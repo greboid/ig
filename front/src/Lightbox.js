@@ -14,7 +14,7 @@ const Lightbox = ({src, caption, alt, close}) => {
 		if (src.match(".*mp4.*")) {
 			return <VideoImage id="lightbox-image" src={src} />
 		} else {
-			return <img id="lightbox-image" src={src} alt={alt} />
+			return (<div id="lightbox-image" style={{backgroundImage: `url(${src})`}} />)
 		}
 	}
 	useEffect(() => {
