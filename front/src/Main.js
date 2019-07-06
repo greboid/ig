@@ -1,11 +1,17 @@
 import React, { useState, useEffect } from 'react'
 import MenuBar from './MenuBar'
+import Lightbox from './Lightbox'
 import './Main.css'
 import useInfiniteScroll from './useInfiniteScroll'
 
 const MainPage = (props) => {
 	const [images, setImages] = useState([])
 	const [isFetching, setIsFetching] = useInfiniteScroll(fetchMoreListItems);
+	const [lightboxData, setLightboxData] = useState({
+		src: "",
+		caption: "",
+		alt: ""
+	})
 	function fetchMoreListItems() {
 		getImages(props.location.pathname.split('/'), images.length)
 		setIsFetching(false)
@@ -44,8 +50,23 @@ const MainPage = (props) => {
 	      	}
 	      })
 	}
+	function showLightbox(i) {
+		setLightboxData({
+			src: images[i].url,
+			caption: images[i].caption,
+			alt: images[i].caption
+		})
+	}
+	function closeLightbox() {
+		setLightboxData({
+			src: "",
+			caption: "",
+			alt: ""
+		})
+	}
 	return (
 		<React.Fragment>
+		{images.length > 0 && <Lightbox src={images[0].url} alt={images[0].caption} caption={images[0].caption} close={closeLightbox} />}
 			<MenuBar />
 			<div id="app" className="contentContainer">
 			    {images.map((image, i) => { 
@@ -60,6 +81,7 @@ const MainPage = (props) => {
 				    			key={i} 
 				    			src={process.env.REACT_APP_API_URL+image.thumb} 
 				    			alt={image.source + ' ' + image.shortcode} 
+				    			onClick={(event) => { showLightbox(i); event.preventDefault() } }
 				    		/>
 			    		</a>
 			    	)
