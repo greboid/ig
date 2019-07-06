@@ -20,10 +20,10 @@ const MainPage = (props) => {
 		setImages([])
 	}, [props.location.pathname]);
 	useEffect(() => {
-		if (document.documentElement.scrollTopMax === 0) {
+		if ((window.pageYOffset || document.documentElement.scrollTop) === 0) {
 			getImages(props.location.pathname.split('/'), images.length)
 		}
-	}, [images, props.location.pathname])
+	}, [images])
 	function getImages(path, offset=0, firstCall=false) {
 		if (path[1] === 'user') {
 			getUserImages(path[2], offset, true)
