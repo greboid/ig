@@ -33,11 +33,12 @@
 	display: none !important;
 }
 
-.lightbox-close {
-  position: fixed;
-  color: #aaa;
-  top: 0em;
-  right: 0.25em;
-  font-size: 2em;
-  font-weight: bold;
+#lightbox-close {
+	display: block;
+	position: fixed;
+	color: #aaa;
+	top: 0em;
+	right: 0.25em;
+	font-size: 2em;
+	font-weight: bold;
 }
