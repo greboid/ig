@@ -15,6 +15,7 @@ import io.ktor.auth.Authentication
 import io.ktor.auth.UserIdPrincipal
 import io.ktor.auth.authenticate
 import io.ktor.auth.jwt.jwt
+import io.ktor.features.AutoHeadResponse
 import io.ktor.features.CORS
 import io.ktor.features.Compression
 import io.ktor.features.ConditionalHeaders
@@ -34,6 +35,7 @@ import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.content.defaultResource
 import io.ktor.http.content.files
+import io.ktor.http.content.resource
 import io.ktor.http.content.resources
 import io.ktor.http.content.static
 import io.ktor.request.receive
@@ -107,6 +109,7 @@ class Web(
                 allowCredentials = true
                 anyHost()
             }
+            install(AutoHeadResponse)
             install(DefaultHeaders)
             install(PartialContent)
             install(Compression)
@@ -296,6 +299,12 @@ class Web(
                 }
                 static("/static/js") {
                     resources("/admin/static/js")
+                }
+                static("/manifest.json") {
+                    resource("manifest.json", "admin")
+                }
+                static("/") {
+                    resource("index.html", "/admin")
                 }
                 static("/{...}/{...}") {
                     resources("/admin")
