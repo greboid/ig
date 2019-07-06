@@ -33,6 +33,7 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
+import io.ktor.http.content.default
 import io.ktor.http.content.defaultResource
 import io.ktor.http.content.files
 import io.ktor.http.content.resource
@@ -291,24 +292,12 @@ class Web(
                 static("/thumbs") {
                     files("thumbs")
                 }
-                static("/static/") {
-                    resources("/admin/static")
-                }
-                static("/static/css") {
-                    resources("/admin/static/css")
-                }
-                static("/static/js") {
-                    resources("/admin/static/js")
-                }
-                static("/manifest.json") {
-                    resource("manifest.json", "admin")
-                }
+                resource("","admin/index.html")
+                resource("/admin","admin/index.html")
+                resource("/{type}/{name}","admin/index.html")
                 static("/") {
-                    resource("index.html", "/admin")
-                }
-                static("/{...}/{...}") {
-                    resources("/admin")
-                    defaultResource("index.html", "/admin")
+                    resources("admin")
+                    default("admin/index.html")
                 }
             }
         }
