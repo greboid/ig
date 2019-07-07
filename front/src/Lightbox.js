@@ -7,7 +7,7 @@ const Lightbox = ({src, caption, alt, close}) => {
 	let windowSize = useWindowSize();
 	function handleClick(event) {
 		if (event.target.id === 'lightbox-image' || event.target.id === 'lightbox-caption') { return }
-		close()
+		if (isFunction(close)) { close() }
 	}
 	
 	function renderImage(src, alt) {
@@ -18,7 +18,7 @@ const Lightbox = ({src, caption, alt, close}) => {
 		}
 	}
 	useEffect(() => {
-		const handleEscape = (event) => { if (event.key === 'Escape') { close() } }
+		const handleEscape = (event) => { if (event.key === 'Escape') { if (isFunction(close)) { close() } } }
 		window.addEventListener("keydown", handleEscape)
 		return () => window.removeEventListener("keydown", handleEscape)
 	}, [close]);
@@ -39,4 +39,9 @@ const Lightbox = ({src, caption, alt, close}) => {
 		</React.Fragment>
 	)
 }
+
+function isFunction(functionToCheck) {
+ return functionToCheck && {}.toString.call(functionToCheck) === '[object Function]';
+}
+
 export default Lightbox
