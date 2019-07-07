@@ -12,7 +12,8 @@ const MainPage = (props) => {
 	const [lightboxData, setLightboxData] = useState({
 		src: "",
 		caption: "",
-		alt: ""
+		alt: "",
+		index: -1
 	})
 	function fetchMoreListItems() {
 		getImages(props.location.pathname.split('/'), images.length)
@@ -53,22 +54,32 @@ const MainPage = (props) => {
 	      })
 	}
 	function showLightbox(i) {
+		if (i >= images.length || i < 0) { return }
 		setLightboxData({
 			src: images[i].url,
 			caption: images[i].caption,
-			alt: images[i].caption
+			alt: images[i].caption,
+			index: i
 		})
 	}
 	function closeLightbox() {
 		setLightboxData({
 			src: "",
 			caption: "",
-			alt: ""
+			alt: "",
+			index: -1
 		})
 	}
 	return (
 		<React.Fragment>
-		<Lightbox src={lightboxData.src} alt={lightboxData.caption} caption={lightboxData.caption} close={closeLightbox} />
+		<Lightbox 
+			src={lightboxData.src}
+			alt={lightboxData.caption}
+			caption={lightboxData.caption}
+			close={closeLightbox}
+			prev={() => showLightbox(lightboxData.index -1)}
+			next={() => showLightbox(lightboxData.index +1)}
+		/>
 			<MenuBar />
 			<div id="app" className="contentContainer">
 			    {images.map((image, i) => { 

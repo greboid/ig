@@ -3,7 +3,7 @@ import './Lightbox.css'
 import useWindowSize from '@rehooks/window-size'
 import VideoImage from './VideoImage'
 
-const Lightbox = ({src, caption, alt, close}) => {
+const Lightbox = ({src, caption, alt, close, next, prev}) => {
 	let windowSize = useWindowSize();
 	function handleClick(event) {
 		if (event.target.id === 'lightbox-image' || event.target.id === 'lightbox-caption') { return }
@@ -18,10 +18,20 @@ const Lightbox = ({src, caption, alt, close}) => {
 		}
 	}
 	useEffect(() => {
-		const handleEscape = (event) => { if (event.key === 'Escape') { if (isFunction(close)) { close() } } }
+		const handleEscape = (event) => { 
+			if (event.key === 'Escape') { 
+				if (isFunction(close)) { close() } 
+			}
+			if (event.key === 'ArrowRight') {
+				if (isFunction(next)) { next() } 
+			}
+			if (event.key === 'ArrowLeft') {
+				if (isFunction(next)) { prev() } 
+			}
+		}
 		window.addEventListener("keydown", handleEscape)
 		return () => window.removeEventListener("keydown", handleEscape)
-	}, [close]);
+	}, [close, next, prev]);
 	return(
 		<React.Fragment>
 			<div 
