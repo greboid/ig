@@ -31,7 +31,7 @@ const Lightbox = ({src, caption, alt, close}) => {
 				tabIndex={0}
 			>
 				<span id="lightbox-close" onClick={handleClick}>&times;</span>
-				<div id="lightbox-content" style={{height: (0.85 * windowSize.innerHeight)}}>
+				<div id="lightbox-content" style={{height: (0.85 * windowSize.innerHeight), width: (0.85 * windowSize.innerWidth)}}>
 					{renderImage(src, alt)}
 					<p id="lightbox-caption">{caption}</p>
 				</div>
