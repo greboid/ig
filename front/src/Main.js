@@ -26,7 +26,8 @@ const MainPage = (props) => {
 		if ((window.scrollMaxY || (document.body.scrollHeight - window.innerHeight)) === 0) {
 			getImages(props.location.pathname.split('/'), images.length)
 		}
-	}, [images, windowSize])
+	// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [images, windowSize, getImages])
 	function getImages(path, offset=0, firstCall=false) {
 		if (path[1] === 'user') {
 			getUserImages(path[2], offset, true)
