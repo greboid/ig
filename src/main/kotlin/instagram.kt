@@ -165,7 +165,7 @@ class Instagram {
             element.data().startsWith("window._sharedData")
         }?.data()?.substringBeforeLast(';')?.substringAfter("=")?.trim()
         val csrf = Gson().fromJson(jsonData, InstagramSharedData::class.java).config?.csrf_token ?: ""
-        val data = postURL("$ig/accounts/login/ajax/",
+        postURL("$ig/accounts/login/ajax/",
             contents = mapOf(
                 "username" to username,
                 "password" to password,
