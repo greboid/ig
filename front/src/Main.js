@@ -60,6 +60,8 @@ const MainPage = (props) => {
 			src: images[i].url,
 			caption: images[i].caption,
 			alt: images[i].caption,
+			source: images[i].source,
+			shortcode: images[i].shortcode,
 			index: i
 		})
 	}
@@ -68,6 +70,8 @@ const MainPage = (props) => {
 			src: "",
 			caption: "",
 			alt: "",
+			source: "",
+			shortcode: "",
 			index: -1
 		})
 	}
@@ -77,6 +81,8 @@ const MainPage = (props) => {
 			src={lightboxData.src}
 			alt={lightboxData.caption}
 			caption={lightboxData.caption}
+			source={lightboxData.source}
+			shortcode={lightboxData.shortcode}
 			close={closeLightbox}
 			prev={() => showLightbox(lightboxData.index -1)}
 			next={() => showLightbox(lightboxData.index +1)}
