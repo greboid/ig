@@ -2,7 +2,7 @@ package com.greboid.scraper
 
 import com.google.gson.Gson
 import okhttp3.FormBody
-import okhttp3.HttpUrl
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.JavaNetCookieJar
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -35,7 +35,7 @@ class Instagram {
         val client = OkHttpClient().newBuilder()
             .cookieJar(cookieManager)
             .build()
-        val httpBuider = HttpUrl.parse(url)?.newBuilder() ?: return null
+        val httpBuider = url.toHttpUrlOrNull()?.newBuilder() ?: return null
         for (param in params) {
             httpBuider.addQueryParameter(param.key, param.value)
         }
@@ -46,7 +46,7 @@ class Instagram {
         }
         requestBuilder.addHeader("User-Agent", userAgent)
         return client.newCall(requestBuilder.build()).execute().use {
-            it.body()?.string()
+            it.body?.string()
         }
     }
 
@@ -59,7 +59,7 @@ class Instagram {
         val client = OkHttpClient().newBuilder()
             .cookieJar(cookieManager)
             .build()
-        val httpBuider = HttpUrl.parse(url)?.newBuilder() ?: return ""
+        val httpBuider = url.toHttpUrlOrNull()?.newBuilder() ?: return ""
         for (param in params) {
             httpBuider.addQueryParameter(param.key, param.value)
         }
@@ -77,7 +77,7 @@ class Instagram {
         val request = requestBuilder.build()
         val call = client.newCall(request)
         call.execute().use {
-            return it.body()?.string() ?: ""
+            return it.body?.string() ?: ""
         }
     }
 
