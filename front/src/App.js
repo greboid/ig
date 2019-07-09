@@ -15,8 +15,7 @@ export default function App() {
 					<Route exact path="/" component={FirstCategory} />
 					<PrivateRoute exact path="/admin" component={AdminPage} />
 					<Route exact path="/login" component={LoginForm} />
-					<Route path="/user" component={MainPage} />
-					<Route path="/category" component={MainPage} />
+					<Route path="/:type/:name" component={MainPage} />
 				</Switch>
 			</Router>
 		</useAuthContext.Provider>

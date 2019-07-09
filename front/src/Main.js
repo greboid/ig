@@ -5,7 +5,9 @@ import './Main.css'
 import useInfiniteScroll from './useInfiniteScroll'
 import useWindowSize from '@rehooks/window-size'
 
-const MainPage = (props) => {
+const MainPage = ({match}) => {
+	let type = match.params.type
+	let name = match.params.name
 	let windowSize = useWindowSize()
 	const [images, setImages] = useState([])
 	const [isFetching, setIsFetching] = useInfiniteScroll(fetchMoreListItems);
@@ -16,23 +18,23 @@ const MainPage = (props) => {
 		index: -1
 	})
 	function fetchMoreListItems() {
-		getImages(props.location.pathname.split('/'), images.length)
+		getImages(images.length)
 		setIsFetching(false)
 	}
 	useEffect(() => {
 		setImages([])
-	}, [props.location.pathname]);
+	}, [type, name]);
 	useEffect(() => {
 		if ((window.scrollMaxY || (document.body.scrollHeight - window.innerHeight)) === 0) {
-			getImages(props.location.pathname.split('/'), images.length)
+			getImages(images.length)
 		}
 	// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [images, windowSize, getImages])
-	function getImages(path, offset=0, firstCall=false) {
-		if (path[1] === 'user') {
-			getUserImages(path[2], offset, true)
+	function getImages(offset=0, firstCall=false) {
+		if (type === 'user') {
+			getUserImages(name, offset, true)
 		} else {
-			getProfileImages(path[2], offset, true)
+			getProfileImages(name, offset, true)
 		}
 	}
 	function getProfileImages(profile, offset=0) {
