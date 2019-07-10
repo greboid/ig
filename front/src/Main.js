@@ -38,7 +38,7 @@ const MainPage = ({match}) => {
 		}
 	}
 	function getProfileImages(profile, offset=0) {
-		fetch(process.env.REACT_APP_API_URL+'igposts/?start='+offset+'&count='+10+'&profile='+profile)
+		fetch(process.env.REACT_APP_API_URL+'igposts/?start='+offset+'&count='+150+'&profile='+profile)
 	      .then(response => response.json())
 	      .then(json => {
 	      	if (json.length !== 0) {
@@ -48,7 +48,7 @@ const MainPage = ({match}) => {
 	}
 
 	function getUserImages(profile, offset=0) {
-		fetch(process.env.REACT_APP_API_URL+'igposts/?start='+offset+'&count='+10+'&user='+profile)
+		fetch(process.env.REACT_APP_API_URL+'igposts/?start='+offset+'&count='+150+'&user='+profile)
 	      .then(response => response.json())
 	      .then(json => {
 	      	if (json.length !== 0) {
