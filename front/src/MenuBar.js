@@ -9,7 +9,10 @@ function getCategories(setCategories) {
       .then(json => setCategories(Array.prototype.slice.call(json)))
 }
 
-export default function MenuBar() {
+const MenuBar = ({isFetching}) => {
+	if (isFetching === 'undefined') {
+		isFetching = false
+	}
 	const { authed, setLoggedOut } = useAuthContext();
 	const [categories, setCategories] = useState([])
 	useEffect(() => {
@@ -20,7 +23,7 @@ export default function MenuBar() {
       	<nav>
 		  <div className="left">
 			{categories.map((category, i) => {
-		    	return (<Link key={i} to={'/category/'+category}>{category}</Link>)
+		    	return (<Link key={i} to={'/category/'+category} disabled={isFetching}>{category}</Link>)
 			})}
 		  </div>
 		  <div className="right">
@@ -37,3 +40,5 @@ export default function MenuBar() {
       </React.Fragment>
     )
 }
+
+export default MenuBar

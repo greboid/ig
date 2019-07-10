@@ -25,12 +25,19 @@ const MainPage = ({match}) => {
 		setImages([])
 	}, [type, name]);
 	useEffect(() => {
-		if ((window.scrollMaxY || (document.body.scrollHeight - window.innerHeight)) === 0) {
+		if (isFetching) return
+		if (images.length === 0) {
+			setIsFetching(false)
 			getImages(images.length)
+		} else {
+			if ((window.scrollMaxY || (document.body.scrollHeight - window.innerHeight)) === 0) {
+				getImages(images.length)
+			}
 		}
 	// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [images, getImages])
 	function getImages(offset=0, firstCall=false) {
+		setIsFetching(true)
 		if (type === 'user') {
 			getUserImages(name, offset, true)
 		} else {
@@ -89,7 +96,7 @@ const MainPage = ({match}) => {
 			prev={() => showLightbox(lightboxData.index -1)}
 			next={() => showLightbox(lightboxData.index +1)}
 		/>
-			<MenuBar />
+			<MenuBar isFetching={isFetching} />
 			<div id="app" className="contentContainer">
 			    {images.map((image, i) => { 
 			    	return (
