@@ -29,7 +29,7 @@ const MainPage = ({match}) => {
 			getImages(images.length)
 		}
 	// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [images, windowSize, getImages])
+	}, [images, getImages])
 	function getImages(offset=0, firstCall=false) {
 		if (type === 'user') {
 			getUserImages(name, offset, true)
