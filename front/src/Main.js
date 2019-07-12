@@ -4,12 +4,15 @@ import Lightbox from './Lightbox'
 import './Main.css'
 import useInfiniteScroll from './useInfiniteScroll'
 import useWindowSize from '@rehooks/window-size'
+import useDeepCompareEffect from 'use-deep-compare-effect'
 
 const MainPage = ({match}) => {
 	let type = match.params.type
 	let name = match.params.name
+	let typeName = type + "/" + name
 	let windowSize = useWindowSize()
-	const [images, setImages] = useState([])
+	const [images, setImages] = useState({
+	})
 	const [isFetching, setIsFetching] = useInfiniteScroll(fetchMoreListItems);
 	const [lightboxData, setLightboxData] = useState({
 		src: "",
@@ -18,20 +21,24 @@ const MainPage = ({match}) => {
 		index: -1
 	})
 	function fetchMoreListItems() {
-		getImages(images.length)
+		if (images[typeName] === undefined) return
+		getImages(images[typeName].length)
 		setIsFetching(false)
 	}
 	useEffect(() => {
-		setImages([])
+		setImages({
+			[typeName]: []
+		})
 	}, [type, name]);
-	useEffect(() => {
+	useDeepCompareEffect(() => {
 		if (isFetching) return
-		if (images.length === 0) {
+		if (images[typeName] === undefined) return
+		if (images[typeName].length === 0) {
 			setIsFetching(false)
-			getImages(images.length)
+			getImages(0)
 		} else {
 			if ((window.scrollMaxY || (document.body.scrollHeight - window.innerHeight)) === 0) {
-				getImages(images.length)
+				getImages(images[typeName].length)
 			}
 		}
 	// eslint-disable-next-line react-hooks/exhaustive-deps
@@ -45,32 +52,36 @@ const MainPage = ({match}) => {
 		}
 	}
 	function getProfileImages(profile, offset=0) {
-		fetch(process.env.REACT_APP_API_URL+'igposts/?start='+offset+'&count='+150+'&profile='+profile)
+		fetch(process.env.REACT_APP_API_URL+'igposts/?start='+offset+'&count='+50+'&profile='+profile)
 	      .then(response => response.json())
 	      .then(json => {
 	      	if (json.length !== 0) {
-	      		setImages(images.concat(Array.prototype.slice.call(json)))
+	      		let tempImages = Object.assign({}, images)
+	      		tempImages[typeName] = tempImages[typeName].concat(Array.prototype.slice.call(json))
+	      		setImages(tempImages)
 	      	}
 	      })
 	}
 
 	function getUserImages(profile, offset=0) {
-		fetch(process.env.REACT_APP_API_URL+'igposts/?start='+offset+'&count='+150+'&user='+profile)
+		fetch(process.env.REACT_APP_API_URL+'igposts/?start='+offset+'&count='+50+'&user='+profile)
 	      .then(response => response.json())
 	      .then(json => {
 	      	if (json.length !== 0) {
-	      		setImages(images.concat(Array.prototype.slice.call(json)))
+	      		let tempImages = Object.assign({}, images)
+	      		tempImages[typeName] = tempImages[typeName].concat(Array.prototype.slice.call(json))
+	      		setImages(tempImages)
 	      	}
 	      })
 	}
 	function showLightbox(i) {
-		if (i >= images.length || i < 0) { return }
+		if (i >= images[typeName].length || i < 0) { return }
 		setLightboxData({
-			src: images[i].url,
-			caption: images[i].caption,
-			alt: images[i].caption,
-			source: images[i].source,
-			shortcode: images[i].shortcode,
+			src: images[typeName][i].url,
+			caption: images[typeName][i].caption,
+			alt: images[typeName][i].caption,
+			source: images[typeName][i].source,
+			shortcode: images[typeName][i].shortcode,
 			index: i
 		})
 	}
@@ -96,9 +107,9 @@ const MainPage = ({match}) => {
 			prev={() => showLightbox(lightboxData.index -1)}
 			next={() => showLightbox(lightboxData.index +1)}
 		/>
-			<MenuBar isFetching={isFetching} />
+			<MenuBar />
 			<div id="app" className="contentContainer">
-			    {images.map((image, i) => { 
+			    {images[typeName] !== undefined && images[typeName].map((image, i) => { 
 			    	return (
 			    		<a 
 			    			key={i+1} 
@@ -116,7 +127,6 @@ const MainPage = ({match}) => {
 			    	)
 			    })}
 			</div>
-			{isFetching && <p>Loading more posts.</p>}
 		</React.Fragment>
 	);
 }

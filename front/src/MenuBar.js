@@ -23,7 +23,7 @@ const MenuBar = ({isFetching}) => {
       	<nav>
 		  <div className="left">
 			{categories.map((category, i) => {
-		    	return (<Link key={i} to={'/category/'+category} disabled={isFetching}>{category}</Link>)
+		    	return (<Link key={i} to={'/category/'+category}>{category}</Link>)
 			})}
 		  </div>
 		  <div className="right">
