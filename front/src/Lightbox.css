@@ -19,13 +19,23 @@
 	justify-content: center;
 	flex-direction: column;
 }
-
+.outter {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-direction: row;
+	width: 100%;
+	height: 100%;
+}
+.inner {
+	flex-grow: 0.5;
+}
 #lightbox-image {
 	height: 100%;
-	width: 100%;
 	background-repeat: no-repeat;
 	background-size: contain;
 	background-position: center;
+	flex-grow: 1;
 }
 
 #lightbox-caption {
