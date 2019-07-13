@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react'
 import MenuBar from './MenuBar'
 import Lightbox from './Lightbox'
 import './Main.css'
-import useInfiniteScroll from './useInfiniteScroll'
 import useWindowSize from '@rehooks/window-size'
 
 const MainPage = ({match}) => {
@@ -13,7 +12,6 @@ const MainPage = ({match}) => {
 	let bigger = window.matchMedia('(max-device-width: 480px) or (min-width: 2000px)').matches
 	const [images, setImages] = useState({
 	})
-	const [isFetching, setIsFetching] = useInfiniteScroll(fetchMoreListItems);
 	const [lightboxData, setLightboxData] = useState({
 		src: "",
 		caption: "",
@@ -25,22 +23,21 @@ const MainPage = ({match}) => {
 		getImages(images[typeName].length)
 	}
 	useEffect(() => {
-		setIsFetching(false)
 		if (bigger) {
-			getImages(0, parseInt(windowSize.innerHeight/200 * windowSize.innerWidth/200 + 10))
+			getImages(0, parseInt(windowSize.innerHeight/200 * windowSize.innerWidth/200), true)
 		} else {
-			getImages(0, parseInt(windowSize.innerHeight/100 * windowSize.innerWidth/100 + 10))
+			getImages(0, parseInt(windowSize.innerHeight/100 * windowSize.innerWidth/100), true)
 		}
-	}, [type, name, typeName]);
-	function getImages(offset=0, count=150) {
-		setIsFetching(true)
+	// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [typeName, windowSize, bigger]);
+	function getImages(offset=0, count=150, first=false) {
 		if (type === 'user') {
-			getUserImages(name, offset, count)
+			getUserImages(name, offset, count, first)
 		} else {
-			getProfileImages(name, offset, count)
+			getProfileImages(name, offset, count, first)
 		}
 	}
-	function getProfileImages(profile, offset=0, count=150) {
+	function getProfileImages(profile, offset=0, count=150, first=false) {
 		fetch(process.env.REACT_APP_API_URL+'igposts/?start='+offset+'&count='+count+'&profile='+profile)
 	      .then(response => response.json())
 	      .then(json => {
@@ -49,15 +46,18 @@ const MainPage = ({match}) => {
 	      		if (tempImages[typeName] === undefined) {
 	      			tempImages[typeName] = []
 	      		}
-	      		tempImages[typeName] = tempImages[typeName].concat(Array.prototype.slice.call(json))
-	      		setIsFetching(false)
+	      		if (!first) {
+	      			tempImages[typeName] = tempImages[typeName].concat(Array.prototype.slice.call(json))
+	      		} else {
+	      			tempImages[typeName] = Array.prototype.slice.call(json)
+	      		}
 	      		setImages(tempImages)
 	      	}
 	      })
 	      .catch(error => console.log(error))
 	}
 
-	function getUserImages(profile, offset=0, count=150) {
+	function getUserImages(profile, offset=0, count=150, first=false) {
 		fetch(process.env.REACT_APP_API_URL+'igposts/?start='+offset+'&count='+count+'&user='+profile)
 	      .then(response => response.json())
 	      .then(json => {
@@ -66,8 +66,11 @@ const MainPage = ({match}) => {
 	      		if (tempImages[typeName] === undefined) {
 	      			tempImages[typeName] = []
 	      		}
-	      		tempImages[typeName] = tempImages[typeName].concat(Array.prototype.slice.call(json))
-	      		setIsFetching(false)
+	      		if (!first) {
+	      			tempImages[typeName] = tempImages[typeName].concat(Array.prototype.slice.call(json))
+	      		} else {
+	      			tempImages[typeName] = Array.prototype.slice.call(json)
+	      		}
 	      		setImages(tempImages)
 	      	}
 	      })
@@ -111,13 +114,13 @@ const MainPage = ({match}) => {
 			    {images[typeName] !== undefined && images[typeName].map((image, i) => { 
 			    	return (
 			    		<a 
-			    			key={i+1} 
+			    			key={image.shortcode+image.ord} 
 			    			className="item" 
 			    			href={image.url} 
 			    		>
 				    		<img 
 				    			className="itemimage" 
-				    			key={i} 
+				    			key={image.shortcode+image.ord} 
 				    			src={process.env.REACT_APP_API_URL+image.thumb} 
 				    			alt={image.source + ' ' + image.shortcode} 
 				    			onClick={(event) => { showLightbox(i); event.preventDefault() } }
@@ -126,6 +129,7 @@ const MainPage = ({match}) => {
 			    	)
 			    })}
 			</div>
+			<button className="more" onClick={fetchMoreListItems}>Load More</button>
 		</React.Fragment>
 	);
 }
