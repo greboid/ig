@@ -9,10 +9,7 @@ function getCategories(setCategories) {
       .then(json => setCategories(Array.prototype.slice.call(json)))
 }
 
-const MenuBar = ({isFetching}) => {
-	if (isFetching === 'undefined') {
-		isFetching = false
-	}
+const MenuBar = () => {
 	const { authed, setLoggedOut } = useAuthContext();
 	const [categories, setCategories] = useState([])
 	useEffect(() => {
