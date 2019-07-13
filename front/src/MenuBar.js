@@ -9,7 +9,7 @@ function getCategories(setCategories) {
       .then(json => setCategories(Array.prototype.slice.call(json)))
 }
 
-export default function MenuBar() {
+const MenuBar = () => {
 	const { authed, setLoggedOut } = useAuthContext();
 	const [categories, setCategories] = useState([])
 	useEffect(() => {
@@ -37,3 +37,5 @@ export default function MenuBar() {
       </React.Fragment>
     )
 }
+
+export default MenuBar

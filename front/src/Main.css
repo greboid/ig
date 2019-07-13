@@ -20,15 +20,9 @@
   height: 100px;
   display: block;
 }
-@media	only screen and (max-device-width: 480px) {
+@media	only screen and (max-device-width: 480px) or (min-width: 2000px) {
 	.itemimage {
 		width: 200px;
     height: 200px;
 	}
-}
-@media only screen and (min-width: 2000px) {
-  .itemimage {
-    width: 200px;
-    height: 200px;
-  }
 }

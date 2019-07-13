@@ -8,8 +8,11 @@ import useWindowSize from '@rehooks/window-size'
 const MainPage = ({match}) => {
 	let type = match.params.type
 	let name = match.params.name
+	let typeName = type + "/" + name
 	let windowSize = useWindowSize()
-	const [images, setImages] = useState([])
+	let bigger = window.matchMedia('(max-device-width: 480px) or (min-width: 2000px)').matches
+	const [images, setImages] = useState({
+	})
 	const [isFetching, setIsFetching] = useInfiniteScroll(fetchMoreListItems);
 	const [lightboxData, setLightboxData] = useState({
 		src: "",
@@ -18,52 +21,66 @@ const MainPage = ({match}) => {
 		index: -1
 	})
 	function fetchMoreListItems() {
-		getImages(images.length)
+		if (images[typeName] === undefined) return
+		getImages(images[typeName].length)
+	}
+	useEffect(() => {
 		setIsFetching(false)
-	}
-	useEffect(() => {
-		setImages([])
-	}, [type, name]);
-	useEffect(() => {
-		if ((window.scrollMaxY || (document.body.scrollHeight - window.innerHeight)) === 0) {
-			getImages(images.length)
-		}
-	// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [images, windowSize, getImages])
-	function getImages(offset=0, firstCall=false) {
-		if (type === 'user') {
-			getUserImages(name, offset, true)
+		if (bigger) {
+			getImages(0, parseInt(windowSize.innerHeight/200 * windowSize.innerWidth/200 + 10))
 		} else {
-			getProfileImages(name, offset, true)
+			getImages(0, parseInt(windowSize.innerHeight/100 * windowSize.innerWidth/100 + 10))
+		}
+	}, [type, name, typeName]);
+	function getImages(offset=0, count=150) {
+		setIsFetching(true)
+		if (type === 'user') {
+			getUserImages(name, offset, count)
+		} else {
+			getProfileImages(name, offset, count)
 		}
 	}
-	function getProfileImages(profile, offset=0) {
-		fetch(process.env.REACT_APP_API_URL+'igposts/?start='+offset+'&count='+150+'&profile='+profile)
+	function getProfileImages(profile, offset=0, count=150) {
+		fetch(process.env.REACT_APP_API_URL+'igposts/?start='+offset+'&count='+count+'&profile='+profile)
 	      .then(response => response.json())
 	      .then(json => {
 	      	if (json.length !== 0) {
-	      		setImages(images.concat(Array.prototype.slice.call(json)))
+	      		let tempImages = Object.assign({}, images)
+	      		if (tempImages[typeName] === undefined) {
+	      			tempImages[typeName] = []
+	      		}
+	      		tempImages[typeName] = tempImages[typeName].concat(Array.prototype.slice.call(json))
+	      		setIsFetching(false)
+	      		setImages(tempImages)
 	      	}
 	      })
+	      .catch(error => console.log(error))
 	}
 
-	function getUserImages(profile, offset=0) {
-		fetch(process.env.REACT_APP_API_URL+'igposts/?start='+offset+'&count='+150+'&user='+profile)
+	function getUserImages(profile, offset=0, count=150) {
+		fetch(process.env.REACT_APP_API_URL+'igposts/?start='+offset+'&count='+count+'&user='+profile)
 	      .then(response => response.json())
 	      .then(json => {
 	      	if (json.length !== 0) {
-	      		setImages(images.concat(Array.prototype.slice.call(json)))
+	      		let tempImages = Object.assign({}, images)
+	      		if (tempImages[typeName] === undefined) {
+	      			tempImages[typeName] = []
+	      		}
+	      		tempImages[typeName] = tempImages[typeName].concat(Array.prototype.slice.call(json))
+	      		setIsFetching(false)
+	      		setImages(tempImages)
 	      	}
 	      })
+	      .catch(error => console.log(error))
 	}
 	function showLightbox(i) {
-		if (i >= images.length || i < 0) { return }
+		if (i >= images[typeName].length || i < 0) { return }
 		setLightboxData({
-			src: images[i].url,
-			caption: images[i].caption,
-			alt: images[i].caption,
-			source: images[i].source,
-			shortcode: images[i].shortcode,
+			src: images[typeName][i].url,
+			caption: images[typeName][i].caption,
+			alt: images[typeName][i].caption,
+			source: images[typeName][i].source,
+			shortcode: images[typeName][i].shortcode,
 			index: i
 		})
 	}
@@ -91,7 +108,7 @@ const MainPage = ({match}) => {
 		/>
 			<MenuBar />
 			<div id="app" className="contentContainer">
-			    {images.map((image, i) => { 
+			    {images[typeName] !== undefined && images[typeName].map((image, i) => { 
 			    	return (
 			    		<a 
 			    			key={i+1} 
@@ -109,7 +126,6 @@ const MainPage = ({match}) => {
 			    	)
 			    })}
 			</div>
-			{isFetching && <p>Loading more posts.</p>}
 		</React.Fragment>
 	);
 }
