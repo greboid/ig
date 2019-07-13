@@ -4,7 +4,6 @@ import Lightbox from './Lightbox'
 import './Main.css'
 import useInfiniteScroll from './useInfiniteScroll'
 import useWindowSize from '@rehooks/window-size'
-import useDeepCompareEffect from 'use-deep-compare-effect'
 
 const MainPage = ({match}) => {
 	let type = match.params.type
@@ -24,26 +23,15 @@ const MainPage = ({match}) => {
 	function fetchMoreListItems() {
 		if (images[typeName] === undefined) return
 		getImages(images[typeName].length)
-		setIsFetching(false)
 	}
 	useEffect(() => {
-		setImages({
-			[typeName]: []
-		})
-	}, [type, name, typeName]);
-	useDeepCompareEffect(() => {
-		if (isFetching) return
-		if (images[typeName] === undefined) return
 		setIsFetching(false)
-		if (images[typeName].length === 0) {
-			if (bigger) {
-				getImages(0, parseInt(windowSize.innerHeight/200 * windowSize.innerWidth/200 + 10))
-			} else {
-				getImages(0, parseInt(windowSize.innerHeight/100 * windowSize.innerWidth/100 + 10))
-			}
+		if (bigger) {
+			getImages(0, parseInt(windowSize.innerHeight/200 * windowSize.innerWidth/200 + 10))
+		} else {
+			getImages(0, parseInt(windowSize.innerHeight/100 * windowSize.innerWidth/100 + 10))
 		}
-	// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [images, getImages])
+	}, [type, name, typeName]);
 	function getImages(offset=0, count=150) {
 		setIsFetching(true)
 		if (type === 'user') {
@@ -58,7 +46,11 @@ const MainPage = ({match}) => {
 	      .then(json => {
 	      	if (json.length !== 0) {
 	      		let tempImages = Object.assign({}, images)
+	      		if (tempImages[typeName] === undefined) {
+	      			tempImages[typeName] = []
+	      		}
 	      		tempImages[typeName] = tempImages[typeName].concat(Array.prototype.slice.call(json))
+	      		setIsFetching(false)
 	      		setImages(tempImages)
 	      	}
 	      })
@@ -71,7 +63,11 @@ const MainPage = ({match}) => {
 	      .then(json => {
 	      	if (json.length !== 0) {
 	      		let tempImages = Object.assign({}, images)
+	      		if (tempImages[typeName] === undefined) {
+	      			tempImages[typeName] = []
+	      		}
 	      		tempImages[typeName] = tempImages[typeName].concat(Array.prototype.slice.call(json))
+	      		setIsFetching(false)
 	      		setImages(tempImages)
 	      	}
 	      })
