@@ -11,6 +11,7 @@ const MainPage = ({match}) => {
 	let name = match.params.name
 	let typeName = type + "/" + name
 	let windowSize = useWindowSize()
+	let bigger = window.matchMedia('(max-device-width: 480px) or (min-width: 2000px)').matches
 	const [images, setImages] = useState({
 	})
 	const [isFetching, setIsFetching] = useInfiniteScroll(fetchMoreListItems);
@@ -29,30 +30,30 @@ const MainPage = ({match}) => {
 		setImages({
 			[typeName]: []
 		})
-	}, [type, name]);
+	}, [type, name, typeName]);
 	useDeepCompareEffect(() => {
 		if (isFetching) return
 		if (images[typeName] === undefined) return
+		setIsFetching(false)
 		if (images[typeName].length === 0) {
-			setIsFetching(false)
-			getImages(0)
-		} else {
-			if ((window.scrollMaxY || (document.body.scrollHeight - window.innerHeight)) === 0) {
-				getImages(images[typeName].length)
+			if (bigger) {
+				getImages(0, parseInt(windowSize.innerHeight/200 * windowSize.innerWidth/200 + 10))
+			} else {
+				getImages(0, parseInt(windowSize.innerHeight/100 * windowSize.innerWidth/100 + 10))
 			}
 		}
 	// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [images, getImages])
-	function getImages(offset=0, firstCall=false) {
+	function getImages(offset=0, count=150) {
 		setIsFetching(true)
 		if (type === 'user') {
-			getUserImages(name, offset, true)
+			getUserImages(name, offset, count)
 		} else {
-			getProfileImages(name, offset, true)
+			getProfileImages(name, offset, count)
 		}
 	}
-	function getProfileImages(profile, offset=0) {
-		fetch(process.env.REACT_APP_API_URL+'igposts/?start='+offset+'&count='+50+'&profile='+profile)
+	function getProfileImages(profile, offset=0, count=150) {
+		fetch(process.env.REACT_APP_API_URL+'igposts/?start='+offset+'&count='+count+'&profile='+profile)
 	      .then(response => response.json())
 	      .then(json => {
 	      	if (json.length !== 0) {
@@ -61,10 +62,11 @@ const MainPage = ({match}) => {
 	      		setImages(tempImages)
 	      	}
 	      })
+	      .catch(error => console.log(error))
 	}
 
-	function getUserImages(profile, offset=0) {
-		fetch(process.env.REACT_APP_API_URL+'igposts/?start='+offset+'&count='+50+'&user='+profile)
+	function getUserImages(profile, offset=0, count=150) {
+		fetch(process.env.REACT_APP_API_URL+'igposts/?start='+offset+'&count='+count+'&user='+profile)
 	      .then(response => response.json())
 	      .then(json => {
 	      	if (json.length !== 0) {
@@ -73,6 +75,7 @@ const MainPage = ({match}) => {
 	      		setImages(tempImages)
 	      	}
 	      })
+	      .catch(error => console.log(error))
 	}
 	function showLightbox(i) {
 		if (i >= images[typeName].length || i < 0) { return }
