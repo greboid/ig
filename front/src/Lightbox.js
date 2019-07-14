@@ -9,7 +9,7 @@ const Lightbox = ({src, caption, alt, source, shortcode, close, next, prev}) => 
 	function handleClick(event) {
 		if (event.target.id === 'lightbox-image' 
 			|| event.target.id === 'lightbox-caption' 
-			|| event.target.tagName === 'A' ) { 
+			|| event.target.className === 'external-link' ) { 
 				return 
 		}
 		if (isFunction(close)) { close() }
@@ -54,7 +54,7 @@ const Lightbox = ({src, caption, alt, source, shortcode, close, next, prev}) => 
 				<span id="lightbox-close" onClick={handleClick}>&times;</span>
 				<div id="lightbox-content" style={{height: (0.85 * windowSize.innerHeight), width: (0.85 * windowSize.innerWidth)}}>
 					{renderImage(src, alt)}
-					<p id="lightbox-caption"><Link to={`/user/${source}`}>{source}</Link> - <a href={`https://instagram.com/p/${shortcode}`}>{shortcode}</a><br />{caption}</p>
+					<p id="lightbox-caption"><Link to={`/user/${source}`}>{source}</Link> - <a className="external-link" href={`https://instagram.com/p/${shortcode}`}>{shortcode}</a><br />{caption}</p>
 				</div>
 			</div>
 		</React.Fragment>
