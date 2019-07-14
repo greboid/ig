@@ -24,6 +24,9 @@ const MainPage = ({match}) => {
 		getImages(images[typeName].length)
 	}
 	useEffect(() => {
+		document.title = "IG: " + type + "/" + name;
+	}, [type, name])
+	useEffect(() => {
 		if (bigger) {
 			getImages(0, parseInt(windowSize.innerHeight/200 * windowSize.innerWidth/200), true)
 		} else {
