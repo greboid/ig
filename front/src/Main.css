@@ -8,6 +8,19 @@
   align-items: stretch;
   align-content: stretch;
 }
+.more {
+  margin: 0.5em auto 2em auto;
+  display:block;
+  text-align: center;
+}
+button.more {
+    border: 0;
+    border-radius: 0;
+    background: none;
+}
+button.more:focus {
+  outline: none;
+}
 .ril__toolbar {
   display: none !important;
 }
