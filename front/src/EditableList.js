@@ -52,7 +52,7 @@ function InputField(items, setItems) {
   return (
     <form onSubmit={(event) => handleAdd(event, newItem, items, setItems, setNewItem)} className="form-inline">
       <div className="form-group">
-        <input className="form-control" type="text" value={newItem} onChange={(event) => handleChange(event, setNewItem)} />
+        <input className="form-control" maxlength="50" type="text" value={newItem} onChange={(event) => handleChange(event, setNewItem)} />
         <input className="btn btn-light" type="submit" value="Add" />
       </div>
     </form>
