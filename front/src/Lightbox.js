@@ -7,7 +7,11 @@ import { Link } from 'react-router-dom'
 const Lightbox = ({src, caption, alt, source, shortcode, close, next, prev}) => {
 	let windowSize = useWindowSize();
 	function handleClick(event) {
-		if (event.target.id === 'lightbox-image' || event.target.id === 'lightbox-caption') { return }
+		if (event.target.id === 'lightbox-image' 
+			|| event.target.id === 'lightbox-caption' 
+			|| event.target.tagName === 'A' ) { 
+				return 
+		}
 		if (isFunction(close)) { close() }
 	}
 	
