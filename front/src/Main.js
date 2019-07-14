@@ -106,7 +106,7 @@ const MainPage = ({match}) => {
 		if (isFetching) {
 			return (<p className="more">Loading...</p>)
 		} else {
-			return (<button className="more" onClick={fetchMoreListItems} disable={isFetching}>Load More</button>)
+			return (<button className="more" onClick={fetchMoreListItems} disabled={isFetching}>Load More</button>)
 		}
 	}
 	return (
