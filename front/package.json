@@ -12,7 +12,7 @@
     "react-icons": "^3.7.0",
     "react-router-dom": "^5.0.0",
     "react-scripts": "3.0.1",
-    "react-select": "^2.4.3",
+    "react-select": "^3.0.4",
     "react-use-session": "^1.1.0",
     "use-debounce": "^2.1.0"
   },
