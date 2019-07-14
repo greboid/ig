@@ -43,22 +43,26 @@ const Lightbox = ({src, caption, alt, source, shortcode, close, next, prev}) => 
 		window.addEventListener("keydown", handleEscape)
 		return () => window.removeEventListener("keydown", handleEscape)
 	}, [close, next, prev]);
-	return(
-		<React.Fragment>
-			<div 
-				id="lightbox"
-				className={src === 'undefined' || src === "" ? 'lightbox-hidden' : ''} 
-				onClick={handleClick}
-				tabIndex={0}
-			>
-				<span id="lightbox-close" onClick={handleClick}>&times;</span>
-				<div id="lightbox-content" style={{height: (0.85 * windowSize.innerHeight), width: (0.85 * windowSize.innerWidth)}}>
-					{renderImage(src, alt)}
-					<p id="lightbox-caption"><Link to={`/user/${source}`}>{source}</Link> - <a className="external-link" href={`https://instagram.com/p/${shortcode}`}>{shortcode}</a><br />{caption}</p>
+	if (src === 'undefined' || src === "") {
+		return (<React.Fragment></React.Fragment>)
+	} else {
+		return(
+			<React.Fragment>
+				<div 
+					id="lightbox"
+					className={src === 'undefined' || src === "" ? 'lightbox-hidden' : ''} 
+					onClick={handleClick}
+					tabIndex={0}
+				>
+					<span id="lightbox-close" onClick={handleClick}>&times;</span>
+					<div id="lightbox-content" style={{height: (0.85 * windowSize.innerHeight), width: (0.85 * windowSize.innerWidth)}}>
+						{renderImage(src, alt)}
+						<p id="lightbox-caption"><Link to={`/user/${source}`}>{source}</Link> - <a className="external-link" href={`https://instagram.com/p/${shortcode}`}>{shortcode}</a><br />{caption}</p>
+					</div>
 				</div>
-			</div>
-		</React.Fragment>
-	)
+			</React.Fragment>
+		)
+	}
 }
 
 function isFunction(functionToCheck) {
