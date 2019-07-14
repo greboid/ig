@@ -12,6 +12,7 @@ const MainPage = ({match}) => {
 	let bigger = window.matchMedia('(max-device-width: 480px) or (min-width: 2000px)').matches
 	const [images, setImages] = useState({
 	})
+	const [isFetching, setFetching] = useState(false)
 	const [lightboxData, setLightboxData] = useState({
 		src: "",
 		caption: "",
@@ -31,6 +32,8 @@ const MainPage = ({match}) => {
 	// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [typeName, windowSize, bigger]);
 	function getImages(offset=0, count=150, first=false) {
+		if (isFetching) return
+		setFetching(true)
 		if (type === 'user') {
 			getUserImages(name, offset, count, first)
 		} else {
@@ -54,6 +57,7 @@ const MainPage = ({match}) => {
 	      		setImages(tempImages)
 	      	}
 	      })
+	      .then(empty => setFetching(false))
 	      .catch(error => console.log(error))
 	}
 
@@ -74,6 +78,7 @@ const MainPage = ({match}) => {
 	      		setImages(tempImages)
 	      	}
 	      })
+	      .then(empty => setFetching(false))
 	      .catch(error => console.log(error))
 	}
 	function showLightbox(i) {
@@ -96,6 +101,13 @@ const MainPage = ({match}) => {
 			shortcode: "",
 			index: -1
 		})
+	}
+	function renderLoadMore() {
+		if (isFetching) {
+			return (<p className="more">Loading...</p>)
+		} else {
+			return (<button className="more" onClick={fetchMoreListItems} disable={isFetching}>Load More</button>)
+		}
 	}
 	return (
 		<React.Fragment>
@@ -129,7 +141,7 @@ const MainPage = ({match}) => {
 			    	)
 			    })}
 			</div>
-			<button className="more" onClick={fetchMoreListItems}>Load More</button>
+			{renderLoadMore()}			
 		</React.Fragment>
 	);
 }

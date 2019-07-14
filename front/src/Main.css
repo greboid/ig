@@ -11,6 +11,7 @@
 .more {
   margin: 0.5em auto 2em auto;
   display:block;
+  text-align: center;
 }
 button.more {
     border: 0;
