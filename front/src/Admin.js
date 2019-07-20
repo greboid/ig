@@ -85,38 +85,40 @@ function AdminPage() {
           <React.Fragment>
             <div className="container">
               <MenuBar />
-              <div className="row justify-content-md-center">
-                <div className="col">
-                  <h2>User and Category Management</h2>
-                  <ol>
-                    <li>Add users you want to follow</li>
-                    <li>Add categories to organise them</li>
-                    <li>Assign users to categories so you can view them</li>
-                  </ol>
+              <div className="adminContainer">
+                <div className="row justify-content-md-center">
+                  <div className="col center">
+                    <h2>User and Category Management</h2>
+                    <ol>
+                      <li>Add users you want to follow</li>
+                      <li>Add categories to organise them</li>
+                      <li>Assign users to categories so you can view them</li>
+                    </ol>
+                  </div>
                 </div>
-              </div>
-              <div className="row justify-content-md-center">
-                <div className="col">
-                  <h2>Users</h2>
-                  {List(users, setUsers, true)}
+                <div className="row justify-content-md-center">
+                  <div className="col">
+                    <h2>Users</h2>
+                    {List(users, setUsers, true)}
+                  </div>
+                  <div className="col">
+                    <h2>Categories</h2>
+                    {List(categories, setCategories, false)}
+                  </div>
+                  <div className="col ">
+                    <h2>Assignment</h2>
+                    <PickList 
+                      users={users}
+                      categories={categories}
+                      categoryMap={categoryMap}
+                      setCategoryMap={setCategoryMap}
+                    />
+                  </div>
                 </div>
-                <div className="col">
-                  <h2>Categories</h2>
-                  {List(categories, setCategories, false)}
-                </div>
-                <div className="col grow">
-                  <h2>Assignment</h2>
-                  <PickList 
-                    users={users}
-                    categories={categories}
-                    categoryMap={categoryMap}
-                    setCategoryMap={setCategoryMap}
-                  />
-                </div>
-              </div>
-              <div className="row justify-content-md-center">
-                <div className="col">
-                  <button onClick={() => handleSave(getToken, users, categories, categoryMap)}>Save</button>
+                <div className="row justify-content-md-center">
+                  <div className="col center">
+                    <button className="saveButton" onClick={() => handleSave(getToken, users, categories, categoryMap)}>Save</button>
+                  </div>
                 </div>
               </div>
             </div>
