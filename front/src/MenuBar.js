@@ -18,12 +18,12 @@ const MenuBar = () => {
     return (
       <React.Fragment>
       	<nav>
-		  <div className="left">
+		  <div>
 			{categories.map((category, i) => {
 		    	return (<Link key={i} to={'/category/'+category}>{category}</Link>)
 			})}
 		  </div>
-		  <div className="right">
+		  <div>
 		  	{authed ?
 		  		<React.Fragment>
 			  		<Link to='/admin'>Admin</Link>
