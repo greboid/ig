@@ -265,6 +265,14 @@ class Database(private val config: Config) {
         return returnValue
     }
 
+    fun setStringSetting(name: String, value: String) {
+        connection.setAndUpdate(Schema.updateSetting, listOf(name, value, value))
+    }
+
+    fun setIntSetting(name: String, value: Int) {
+        connection.setAndUpdate(Schema.updateSetting, listOf(name, value, value))
+    }
+
     internal object Schema {
         val version = 3
         internal val deleteProfileFromUser = """
@@ -366,7 +374,10 @@ class Database(private val config: Config) {
         """
         internal val selectSetting = """
             SELECT value from settings where name = ?
-        """.trimIndent()
+        """
+        internal val updateSetting = """
+            INSERT INTO settings VALUES (?, ?) ON DUPLICATE KEY UPDATE `value` = ?;
+        """
         private val createProfiles = """
             CREATE TABLE IF NOT EXISTS profiles (
             id INTEGER PRIMARY KEY AUTO_INCREMENT,
