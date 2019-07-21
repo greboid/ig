@@ -47,15 +47,10 @@ import io.ktor.routing.route
 import io.ktor.routing.routing
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
-import io.ktor.sessions.SessionStorageMemory
-import io.ktor.sessions.SessionTransportTransformerMessageAuthentication
-import io.ktor.sessions.Sessions
 import io.ktor.sessions.clear
-import io.ktor.sessions.cookie
 import io.ktor.sessions.get
 import io.ktor.sessions.sessions
 import io.ktor.util.KtorExperimentalAPI
-import io.ktor.util.hex
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.security.Security
@@ -116,11 +111,6 @@ class Web(
             install(ContentNegotiation) {
                 gson {
                     setPrettyPrinting()
-                }
-            }
-            install(Sessions) {
-                cookie<IGSession>("session", SessionStorageMemory()) {
-                    transform(SessionTransportTransformerMessageAuthentication(hex(config.sessionKey), "HmacSHA256"))
                 }
             }
             install(StatusPages) {

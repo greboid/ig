@@ -53,7 +53,6 @@ class Config(
     val dbport: Int = 3306,
     val adminUsername: String = "admin",
     val adminPassword: String = randomString(('0'..'9') + ('a'..'f'), 16),
-    val sessionKey: String = randomString(('0'..'9') + ('a'..'f'), 32),
     val jwtKey: String = randomString(('0'..'9') + ('a'..'f'), 32),
     val webPort: Int = 80,
     val refreshDelay: Int = 15,
