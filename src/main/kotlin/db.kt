@@ -265,11 +265,29 @@ class Database(private val config: Config) {
         return returnValue
     }
 
+    fun getBoolSetting(name: String, default: Boolean? = null): Boolean? {
+        val s = connection.prepareStatement(Schema.selectSetting)
+        s.setString(1, name)
+        val results = s.executeQuery()
+        if (results.isMyResultSetEmpty()) {
+            return default
+        }
+        results.next()
+        val returnValue = results.getBoolean(1)
+        results.close()
+        s.close()
+        return returnValue
+    }
+
     fun setStringSetting(name: String, value: String) {
         connection.setAndUpdate(Schema.updateSetting, listOf(name, value, value))
     }
 
     fun setIntSetting(name: String, value: Int) {
+        connection.setAndUpdate(Schema.updateSetting, listOf(name, value, value))
+    }
+
+    fun setBoolSetting(name: String, value: Boolean) {
         connection.setAndUpdate(Schema.updateSetting, listOf(name, value, value))
     }
 
