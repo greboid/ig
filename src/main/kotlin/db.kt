@@ -234,7 +234,7 @@ class Database(private val config: Config) {
     }
 
     internal object Schema {
-        val version = 2
+        val version = 3
         internal val deleteProfileFromUser = """
             delete from profile_users where userID=? AND profileID=?
         """
@@ -386,9 +386,20 @@ class Database(private val config: Config) {
         private val oneToTwoVersion = """
             update version SET version=2 where id=1;
         """
-        private val createAllTables: List<String> = listOf(createVersion, createProfiles, createProfileUsers, createUsers, createIGPosts)
+        private val twoToThreeChange = """
+            CREATE TABLE IF NOT EXISTS settings (
+            `name` VARCHAR(255) NOT NULL,
+            `value` VARCHAR(255) NOT NULL,
+            UNIQUE INDEX `uniqueName` (`name`)
+            ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+        """
+        private val twoToThreeVersion = """
+            update version SET version=3 where id=1;
+        """
+        private val createSettings = twoToThreeChange
+        private val createAllTables: List<String> = listOf(createVersion, createProfiles, createProfileUsers, createUsers, createIGPosts, createSettings)
         fun init(connection: Connection) {
-            Schema.createAllTables.forEach {
+            createAllTables.forEach {
                 connection.createStatement().executeUpdate(it)
             }
             var currentVersion = connection.getAllInt(getVersion, "version").first()
@@ -400,6 +411,10 @@ class Database(private val config: Config) {
             if (currentVersion == 1) {
                 connection.createStatement().executeUpdate(oneToTwoChange)
                 connection.createStatement().executeUpdate(oneToTwoVersion)
+            }
+            if (currentVersion == 2) {
+                connection.createStatement().executeUpdate(twoToThreeChange)
+                connection.createStatement().executeUpdate(twoToThreeVersion)
             }
         }
     }
