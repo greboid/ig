@@ -174,13 +174,13 @@ class Web(
                         val profile: String = call.request.queryParameters["profile"] ?: ""
                         val user: String = call.request.queryParameters["user"] ?: ""
                         when {
-                            profile.isNotEmpty() -> call.respondText(
-                                Gson().toJson(database.getIGPost(profile, start, count)), ContentType.Application.Json
+                            profile.isNotEmpty() -> call.respond(
+                                database.getIGPost(profile, start, count)
                             )
-                            user.isNotEmpty() -> call.respondText(
-                                Gson().toJson(database.getUserIGPost(user, start, count)), ContentType.Application.Json
+                            user.isNotEmpty() -> call.respond(
+                                database.getUserIGPost(user, start, count)
                             )
-                            else -> call.respondText("", ContentType.Application.Json)
+                            else -> call.respond(HttpStatusCode.BadRequest, mapOf("message" to "No input specified"))
                         }
                     }
                     get("/profiles") {
@@ -192,23 +192,17 @@ class Web(
                     get("/ProfileUsers/{profile?}") {
                         val profile = call.parameters["profile"] ?: ""
                         if (profile.isEmpty()) {
-                            call.respond(HttpStatusCode.NotFound, "Page not found.")
+                            call.respond(HttpStatusCode.NotFound, mapOf("message" to "Page not found."))
                         } else {
-                            call.respondText(
-                                Gson().toJson(database.getProfileUsers(profile)),
-                                ContentType.Application.Json
-                            )
+                            call.respond(database.getProfileUsers(profile))
                         }
                     }
                     get("/userprofiles/{user?}") {
                         val user = call.parameters["user"] ?: ""
                         if (user.isEmpty()) {
-                            call.respond(HttpStatusCode.NotFound, "Page not found.")
+                            call.respond(HttpStatusCode.NotFound, mapOf("message" to "Page not found."))
                         } else {
-                            call.respondText(
-                                Gson().toJson(database.getUserProfiles(user)),
-                                ContentType.Application.Json
-                            )
+                            call.respond(database.getUserProfiles(user))
                         }
                     }
                     authenticate("auth") {
@@ -224,7 +218,7 @@ class Web(
                                 usersToRemove.forEach { user -> database.delUserProfile(user, currentCategory) }
                                 usersToAdd.forEach { user -> database.addUserProfile(user, currentCategory) }
                             }
-                            call.respond(HttpStatusCode.Accepted)
+                            call.respond(HttpStatusCode.Accepted, mapOf("message" to "Accepted"))
                         }
                         post("/users") {
                             val newUsers = Gson().fromJson(call.receive<String>(), Array<String>::class.java).toList()
@@ -236,7 +230,7 @@ class Web(
                                 database.addUser(user)
                                 retriever.retrieve(user)
                             }
-                            call.respond(HttpStatusCode.Accepted)
+                            call.respond(HttpStatusCode.Accepted, mapOf("message" to "Accepted"))
                         }
                         post("/profiles") {
                             val newProfiles =
@@ -246,7 +240,7 @@ class Web(
                             val profilesToAdd = newProfiles.subtract(currentProfiles)
                             profilesToRemove.forEach { profile -> database.delProfile(profile) }
                             profilesToAdd.forEach { profile -> database.addProfile(profile) }
-                            call.respond(HttpStatusCode.Accepted)
+                            call.respond(HttpStatusCode.Accepted, mapOf("message" to "Accepted"))
                         }
                         get("/backfill/{user}/{number}") {
                             val user = call.parameters["user"] ?: ""
