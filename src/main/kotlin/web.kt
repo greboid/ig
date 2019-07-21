@@ -7,8 +7,6 @@ import com.google.gson.Gson
 import com.google.gson.JsonParseException
 import com.greboid.scraper.retrievers.IGRetriever
 import freemarker.cache.ClassTemplateLoader
-import freemarker.template.Configuration
-import freemarker.template.Configuration.DEFAULT_INCOMPATIBLE_IMPROVEMENTS
 import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.auth.Authentication
@@ -60,7 +58,6 @@ import io.ktor.util.KtorExperimentalAPI
 import io.ktor.util.hex
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import java.io.StringWriter
 import java.security.Security
 import java.time.Instant
 import java.time.LocalDateTime
@@ -315,16 +312,6 @@ class Web(
             }
         }
         server.start(wait = true)
-    }
-
-    fun getImageLightbox(image: IGPost): String {
-        val cfg = Configuration(DEFAULT_INCOMPATIBLE_IMPROVEMENTS)
-        cfg.setClassForTemplateLoading(this::class.java, "/templates/")
-        cfg.defaultEncoding = "UTF-8"
-        val template = cfg.getTemplate("image.ftl")
-        val out = StringWriter()
-        template.process(mapOf("image" to image), out)
-        return out.buffer.toString()
     }
 }
 
