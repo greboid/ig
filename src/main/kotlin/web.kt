@@ -47,8 +47,8 @@ import io.ktor.routing.get
 import io.ktor.routing.post
 import io.ktor.routing.route
 import io.ktor.routing.routing
-import io.ktor.server.cio.CIO
 import io.ktor.server.engine.embeddedServer
+import io.ktor.server.netty.Netty
 import io.ktor.sessions.SessionStorageMemory
 import io.ktor.sessions.SessionTransportTransformerMessageAuthentication
 import io.ktor.sessions.Sessions
@@ -98,7 +98,7 @@ class Web(
         System.setProperty("io.ktor.random.secure.random.provider", "DRBG")
         Security.setProperty("securerandom.drbg.config", "HMAC_DRBG,SHA-512,256,pr_and_reseed")
         val simpleJwt = SimpleJWT(config.jwtKey)
-        val server = embeddedServer(CIO, port = config.webPort) {
+        val server = embeddedServer(Netty, port = config.webPort) {
             install(CORS) {
                 method(HttpMethod.Options)
                 method(HttpMethod.Get)
