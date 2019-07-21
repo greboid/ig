@@ -2,6 +2,7 @@ package com.greboid.scraper
 
 import com.greboid.scraper.retrievers.IGRetriever
 import io.ktor.util.KtorExperimentalAPI
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.time.delay
@@ -38,7 +39,7 @@ fun main() {
         val retriever = IGRetriever(database, config)
         logger.info("Connecting to database")
         database.connect()
-        val web = launch {
+        val web = GlobalScope.launch {
             logger.info("Launching web server")
             Web(database, config, retriever).start()
         }

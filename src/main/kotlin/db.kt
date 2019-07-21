@@ -155,8 +155,8 @@ class Database(private val config: Config) {
 
     fun addIGPost(shortcode: String, ord: Int, userID: Int, thumbnailURL: String,
                   imageURL: String, caption: String, timestamp: Int): Boolean {
-        return checkIGPost(shortcode, ord) && connection.setAndUpdate(Schema.addIGPost,
-                listOf(shortcode, ord, userID, thumbnailURL, imageURL, caption, timestamp)) == 1
+        return connection.setAndUpdate(Schema.addIGPost,
+                listOf(shortcode, ord, userID, thumbnailURL, imageURL, caption, timestamp, imageURL)) == 1
     }
 
     fun getIGPost(shortcode: String, ord: Int = 0): IGPost {
@@ -349,7 +349,8 @@ class Database(private val config: Config) {
         internal val addIGPost = """
             insert into igposts
             (shortcode,ord,userID,thumbnailURL,imageURL,caption,timestamp)
-            values (?,?,?,?,?,?,?)
+            values (?,?,?,?,?,?,?) 
+            ON DUPLICATE KEY UPDATE `imageURL` = ?
         """
         internal val selectIGPost = """
             SELECT shortcode, users.username, thumbnailURL, imageURL, caption, timestamp, ord
