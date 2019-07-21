@@ -233,6 +233,38 @@ class Database(private val config: Config) {
         return returnValue
     }
 
+    fun getStringSetting(name: String, default: String? = null): String? {
+        val s = connection.prepareStatement(Schema.selectSetting)
+        s.setString(1, name)
+        val results = s.executeQuery()
+        if (results.isMyResultSetEmpty()) {
+            return default
+        }
+        results.next()
+        val returnValue = results.getString(1)
+        results.close()
+        s.close()
+        return returnValue
+    }
+
+    fun getIntSetting(name: String, default: Int? = null): Int? {
+        val s = connection.prepareStatement(Schema.selectSetting)
+        s.setString(1, name)
+        val results = s.executeQuery()
+        if (results.isMyResultSetEmpty()) {
+            return default
+        }
+        results.next()
+        val returnValue = try {
+            results.getInt(1)
+        } catch (e: NumberFormatException) {
+            default
+        }
+        results.close()
+        s.close()
+        return returnValue
+    }
+
     internal object Schema {
         val version = 3
         internal val deleteProfileFromUser = """
@@ -332,6 +364,9 @@ class Database(private val config: Config) {
             LIMIT ?
             OFFSET ?
         """
+        internal val selectSetting = """
+            SELECT value from settings where name = ?
+        """.trimIndent()
         private val createProfiles = """
             CREATE TABLE IF NOT EXISTS profiles (
             id INTEGER PRIMARY KEY AUTO_INCREMENT,
@@ -423,6 +458,10 @@ class Database(private val config: Config) {
 data class IGPost(val shortcode: String, val source: String,
                   val thumb: String, val url: String,
                   val caption: String, val timestamp: Int, val ord: Int, val date: String)
+
+fun ResultSet.isMyResultSetEmpty(): Boolean {
+    return !isBeforeFirst && row == 0
+}
 
 fun ResultSet.getAllString(fieldName: String) = sequence {
     use {
