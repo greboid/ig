@@ -183,18 +183,14 @@ class Web(
                         val count: Int = call.request.queryParameters["count"]?.toInt() ?: 5
                         val profile: String = call.request.queryParameters["profile"] ?: ""
                         val user: String = call.request.queryParameters["user"] ?: ""
-                        if (profile.isNotEmpty()) {
-                            call.respondText(
-                                Gson().toJson(database.getIGPost(profile, start, count)),
-                                ContentType.Application.Json
+                        when {
+                            profile.isNotEmpty() -> call.respondText(
+                                Gson().toJson(database.getIGPost(profile, start, count)), ContentType.Application.Json
                             )
-                        } else if (user.isNotEmpty()) {
-                            call.respondText(
-                                Gson().toJson(database.getUserIGPost(user, start, count)),
-                                ContentType.Application.Json
+                            user.isNotEmpty() -> call.respondText(
+                                Gson().toJson(database.getUserIGPost(user, start, count)), ContentType.Application.Json
                             )
-                        } else {
-                            call.respondText("", ContentType.Application.Json)
+                            else -> call.respondText("", ContentType.Application.Json)
                         }
                     }
                     get("/profiles") {
