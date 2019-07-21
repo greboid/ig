@@ -145,81 +145,88 @@ class Web(
                 }
             }
             routing {
-                post("/login") {
-                    try {
-                        val credentials = call.receive<LoginRegister>()
-                        if (credentials.user == config.adminUsername && credentials.password == config.adminPassword) {
-                            val token = simpleJwt.sign(credentials.user)
+                route("api/v1/") {
+                    post("/login") {
+                        try {
+                            val credentials = call.receive<LoginRegister>()
+                            if (credentials.user == config.adminUsername && credentials.password == config.adminPassword) {
+                                val token = simpleJwt.sign(credentials.user)
+                                call.respond(
+                                    mapOf(
+                                        "token" to token.token, "expires" to token.expires.toInstant().epochSecond
+                                    )
+                                )
+                            } else {
+                                call.respond(
+                                    HttpStatusCode.Unauthorized, mapOf("message" to "Invalid Credentials")
+                                )
+                            }
+                        } catch (e: JsonParseException) {
+                            call.respond(HttpStatusCode.BadRequest, mapOf("message" to "Bad payload"))
+                        } catch (e: ContentTransformationException) {
+                            call.respond(HttpStatusCode.BadRequest, mapOf("message" to "Bad payload"))
+                        }
+                    }
+                    authenticate("auth") {
+                        get("/refreshtoken") {
+                            val token = simpleJwt.sign(call.sessions.get<IGSession>()?.user ?: "")
                             call.respond(
                                 mapOf(
                                     "token" to token.token, "expires" to token.expires.toInstant().epochSecond
                                 )
                             )
+                        }
+                    }
+                    get("/logout") {
+                        call.sessions.clear<IGSession>()
+                        call.respondRedirect("/", false)
+                    }
+                    get("/igposts") {
+                        val start: Int = call.request.queryParameters["start"]?.toInt() ?: 0
+                        val count: Int = call.request.queryParameters["count"]?.toInt() ?: 5
+                        val profile: String = call.request.queryParameters["profile"] ?: ""
+                        val user: String = call.request.queryParameters["user"] ?: ""
+                        if (profile.isNotEmpty()) {
+                            call.respondText(
+                                Gson().toJson(database.getIGPost(profile, start, count)),
+                                ContentType.Application.Json
+                            )
+                        } else if (user.isNotEmpty()) {
+                            call.respondText(
+                                Gson().toJson(database.getUserIGPost(user, start, count)),
+                                ContentType.Application.Json
+                            )
                         } else {
-                            call.respond(
-                                HttpStatusCode.Unauthorized, mapOf("message" to "Invalid Credentials")
+                            call.respondText("", ContentType.Application.Json)
+                        }
+                    }
+                    get("/profiles") {
+                        call.respondText(Gson().toJson(database.getProfiles()), ContentType.Application.Json)
+                    }
+                    get("/users") {
+                        call.respondText(Gson().toJson(database.getUsers()), ContentType.Application.Json)
+                    }
+                    get("/ProfileUsers/{profile?}") {
+                        val profile = call.parameters["profile"] ?: ""
+                        if (profile.isEmpty()) {
+                            call.respond(HttpStatusCode.NotFound, "Page not found.")
+                        } else {
+                            call.respondText(
+                                Gson().toJson(database.getProfileUsers(profile)),
+                                ContentType.Application.Json
                             )
                         }
-                    } catch (e: JsonParseException) {
-                        call.respond(HttpStatusCode.BadRequest, mapOf("message" to "Bad payload"))
-                    } catch (e: ContentTransformationException) {
-                        call.respond(HttpStatusCode.BadRequest, mapOf("message" to "Bad payload"))
                     }
-                }
-                authenticate("auth") {
-                    get("/refreshtoken") {
-                        val token = simpleJwt.sign(call.sessions.get<IGSession>()?.user ?: "")
-                        call.respond(
-                            mapOf(
-                                "token" to token.token,
-                                "expires" to token.expires.toInstant().epochSecond
+                    get("/userprofiles/{user?}") {
+                        val user = call.parameters["user"] ?: ""
+                        if (user.isEmpty()) {
+                            call.respond(HttpStatusCode.NotFound, "Page not found.")
+                        } else {
+                            call.respondText(
+                                Gson().toJson(database.getUserProfiles(user)),
+                                ContentType.Application.Json
                             )
-                        )
-                    }
-                }
-                get("/logout") {
-                    call.sessions.clear<IGSession>()
-                    call.respondRedirect("/", false)
-                }
-                get("/igposts") {
-                    val start: Int = call.request.queryParameters["start"]?.toInt() ?: 0
-                    val count: Int = call.request.queryParameters["count"]?.toInt() ?: 5
-                    val profile: String = call.request.queryParameters["profile"] ?: ""
-                    val user: String = call.request.queryParameters["user"] ?: ""
-                    if (profile.isNotEmpty()) {
-                        call.respondText(Gson().toJson(database.getIGPost(profile, start, count)), ContentType.Application.Json)
-                    } else if (user.isNotEmpty()) {
-                        call.respondText(Gson().toJson(database.getUserIGPost(user, start, count)), ContentType.Application.Json)
-                    } else {
-                        call.respondText("", ContentType.Application.Json)
-                    }
-                }
-                get("/profiles") {
-                    call.respondText(Gson().toJson(database.getProfiles()), ContentType.Application.Json)
-                }
-                get("/users") {
-                    call.respondText(Gson().toJson(database.getUsers()), ContentType.Application.Json)
-                }
-                get("/ProfileUsers/{profile?}") {
-                    val profile = call.parameters["profile"] ?: ""
-                    if (profile.isEmpty()) {
-                        call.respond(HttpStatusCode.NotFound, "Page not found.")
-                    } else {
-                        call.respondText(Gson().toJson(database.getProfileUsers(profile)), ContentType.Application.Json)
-                    }
-                }
-                get("/userprofiles/{user?}") {
-                    val user = call.parameters["user"] ?: ""
-                    if (user.isEmpty()) {
-                        call.respond(HttpStatusCode.NotFound, "Page not found.")
-                    } else {
-                        call.respondText(Gson().toJson(database.getUserProfiles(user)), ContentType.Application.Json)
-                    }
-                }
-                route("/admin") {
-                    static("/") {
-                        resources("/admin")
-                        defaultResource("index.html", "/admin")
+                        }
                     }
                     authenticate("auth") {
                         post("/ProfileUsers") {
@@ -267,6 +274,15 @@ class Web(
                             call.respondRedirect("/admin", false)
                         }
                     }
+                    static("/thumbs") {
+                        files("thumbs")
+                    }
+                }
+                route("/admin") {
+                    static("/") {
+                        resources("/admin")
+                        defaultResource("index.html", "/admin")
+                    }
                 }
                 get ("/rss/category/{profile}") {
                     val profile = call.parameters["profile"] ?: ""
@@ -288,9 +304,6 @@ class Web(
                         null,
                         ContentType.Text.Xml)
                     )
-                }
-                static("/thumbs") {
-                    files("thumbs")
                 }
                 resource("","admin/index.html")
                 resource("/admin","admin/index.html")
