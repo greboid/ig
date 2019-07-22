@@ -7,7 +7,7 @@ import useAuthContext from './useAuthContext';
 
 function handleSave(getToken, users, categories, categoryMap) {
     fetch(
-      process.env.REACT_APP_API_URL+'admin/users', {
+      process.env.REACT_APP_API_URL+'users', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -16,7 +16,7 @@ function handleSave(getToken, users, categories, categoryMap) {
         body: JSON.stringify(users)
     })
     fetch(
-      process.env.REACT_APP_API_URL+'admin/profiles', {
+      process.env.REACT_APP_API_URL+'profiles', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -25,7 +25,7 @@ function handleSave(getToken, users, categories, categoryMap) {
         body: JSON.stringify(categories)
     })
     fetch(
-      process.env.REACT_APP_API_URL+'admin/ProfileUsers', {
+      process.env.REACT_APP_API_URL+'ProfileUsers', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
