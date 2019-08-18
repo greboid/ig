@@ -20,6 +20,11 @@ const MainPage = ({match}) => {
 		index: -1
 	})
 	function fetchMoreListItems() {
+		if (bigger) {
+			getImages(images[typeName].length, parseInt(windowSize.innerHeight/200 * windowSize.innerWidth/200))
+		} else {
+			getImages(images[typeName].length, parseInt(windowSize.innerHeight/100 * windowSize.innerWidth/100))
+		}
 	}
 	useEffect(() => {
 		document.title = "IG: " + type + "/" + name;
@@ -64,7 +69,9 @@ const MainPage = ({match}) => {
 
 	function getUserImages(profile, offset=0, count=150, first=false) {
 		fetch(process.env.REACT_APP_API_URL+'igposts/?start='+offset+'&count='+count+'&user='+profile)
-	      .then(response => response.json())
+	      .then(response => {
+	      	return response.json()
+	      })
 	      .then(json => {
 	      	if (json.length !== 0) {
 	      		let tempImages = Object.assign({}, images)
