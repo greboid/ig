@@ -8259,10 +8259,10 @@ react-transition-group@^2.2.1:
     prop-types "^15.6.2"
     react-lifecycles-compat "^3.0.4"
 
-react-use-session@^1.1.0:
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/react-use-session/-/react-use-session-1.1.0.tgz#5237e37a7c00f5d93a6a127f8e1455a0a3705cbf"
-  integrity sha512-cIUd4FX/O22pU4eizj4nVSbvErBekpv8ldtmkv/BFwy0fupyMGKdxdfvpQNl2jPo6lN4h6Xj0rKAPSDhOPET8g==
+react-use-session@^1.2.0:
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/react-use-session/-/react-use-session-1.2.0.tgz#9afd83d4da79a2290df4e7db48d26ea3db91f335"
+  integrity sha512-mOwikE2i+1q+K9KqiFIptdnN+CltTRw3aPRR9+pC+iODLJjWFbsiyy6+JP7jAoTOfPWPV5u7U+tTPloNK8WdNA==
 
 react@^16.7.0-alpha.0, react@^16.9.0:
   version "16.9.0"
