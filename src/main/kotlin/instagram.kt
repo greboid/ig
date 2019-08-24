@@ -125,7 +125,12 @@ class Instagram {
         } catch (e: IOException) {
             return null
         }
-        val stuff = doc.select("script:containsData(window._sharedData)")
+        val stuff = try {
+            doc.select("script:containsData(window._sharedData)")
+        } catch (ex: Exception) {
+            println(doc)
+            return null
+        }
         val jsonData = try {
             stuff.find { element ->
                 element.data().startsWith("window._sharedData")
