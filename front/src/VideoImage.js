@@ -1,10 +1,10 @@
 import React from 'react'
 
-const VideoImage = (props) => {
+const VideoImage = ({id, src}) => {
   return (
-    <video controls>
+    <video key={src} controls>
       <source
-        src={props.src} 
+        src={src} 
         type="video/mp4"
       />
     </video>
