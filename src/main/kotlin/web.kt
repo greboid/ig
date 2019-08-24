@@ -100,6 +100,7 @@ class Web(
                 method(HttpMethod.Patch)
                 header(HttpHeaders.Authorization)
                 allowCredentials = true
+                allowNonSimpleContentTypes = true
                 anyHost()
             }
             install(AutoHeadResponse)
