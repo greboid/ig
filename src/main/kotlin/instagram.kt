@@ -27,7 +27,7 @@ class Instagram {
     private val cookieManager = JavaNetCookieJar(CookieManager().apply {
         setCookiePolicy(CookiePolicy.ACCEPT_ALL)
     })
-    private val userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:64.0) Gecko/20100101 Firefox/64.0"
+    private val userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:68.0) Gecko/20100101 Firefox/68.0"
 
     internal fun getURL(
         url: String,
