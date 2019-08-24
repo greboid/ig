@@ -1,6 +1,7 @@
 package com.greboid.scraper
 
 import com.google.gson.Gson
+import com.greboid.scraper.PostType.VIDEO
 import okhttp3.FormBody
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.JavaNetCookieJar
@@ -105,7 +106,10 @@ class Instagram {
             data.display_url,
             when (data.getPostType()) {
                 PostType.SIDECAR -> data.edge_sidecar_to_children?.edges?.map {
-                    it.node.display_url
+                    when(it.node.getPostType()) {
+                        VIDEO -> it.node.video_url ?: it.node.display_url
+                        else -> it.node.display_url
+                    }
                 }?.toList() ?: emptyList()
                 PostType.VIDEO -> listOf(data.video_url ?: URL("http://instagram.com"))
                 else -> listOf(data.display_url)
@@ -274,7 +278,15 @@ enum class PostType {
 }
 
 internal fun ShortcodeMedia.getPostType(): PostType {
-    return when (__typename) {
+    return getPostType(__typename)
+}
+
+internal fun Node.getPostType(): PostType {
+    return getPostType(__typename)
+}
+
+internal fun getPostType(typename: String): PostType {
+    return when (typename) {
         "GraphImage" -> PostType.IMAGE
         "GraphSidecar" -> PostType.SIDECAR
         "GraphVideo" -> PostType.VIDEO
