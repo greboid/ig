@@ -149,7 +149,12 @@ class Instagram {
         }
         val data = Gson().fromJson(jsonData, InstagramSharedData::class.java)
         currentData = jsonData
-        val userData = data.entry_data.ProfilePage.first().graphql.user
+        val userData = try  {
+            data.entry_data.ProfilePage.first().graphql.user
+        } catch (ex: Exception) {
+            println(doc)
+            return null
+        }
         return Profile(
             userData.username,
             userData.id,
