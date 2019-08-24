@@ -99,11 +99,11 @@ function AdminPage() {
                 <div className="row justify-content-md-center">
                   <div className="col">
                     <h2>Users</h2>
-                    {List(users, setUsers, true)}
+                    {List(users, setUsers, true, getToken)}
                   </div>
                   <div className="col">
                     <h2>Categories</h2>
-                    {List(categories, setCategories, false)}
+                    {List(categories, setCategories, false, getToken)}
                   </div>
                   <div className="col ">
                     <h2>Assignment</h2>

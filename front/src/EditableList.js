@@ -13,34 +13,39 @@ function handleAdd(event, newItem, items, setItems, setNewItem) {
   setNewItem("")
 }
 
-function onHistory(user) {
+function onHistory(user, getToken) {
   var count = prompt("History")
-    fetch(process.env.REACT_APP_API_URL+'admin/backfill/'+user+'/'+count)
+    fetch(process.env.REACT_APP_API_URL+'/backfill/'+user+'/'+count, {
+      method: 'GET',
+        headers: {
+          'Authorization': 'Bearer '+getToken()
+        }
+    })
 }
 
 function onRemove(value, items, setItems) {
   setItems(items.filter(item => item !== value))
 }
 
-function List(items, setItems, showHistory) {
+function List(items, setItems, showHistory, getToken) {
   return (
     <React.Fragment>
       {InputField(items, setItems)}
       <ul className="list-group sorted"> 
           {items.map(function(value){
-             return <li className="list-group-item" key={value}>{ListItem(value, showHistory, () => onRemove(value, items, setItems))}</li>;
+             return <li className="list-group-item" key={value}>{ListItem(value, showHistory, () => onRemove(value, items, setItems), getToken)}</li>;
            }, this)} 
       </ul>
     </React.Fragment>
   );
 }
 
-function ListItem(item, showHistory, onRemove) {
+function ListItem(item, showHistory, onRemove, getToken) {
   return (
       <React.Fragment>
         <span className="list-item-value">{item}</span>
         {showHistory &&
-          <FaHistory className="list-item-history" onClick={() => onHistory(item)} />
+          <FaHistory className="list-item-history" onClick={() => onHistory(item, getToken)} />
         }
         <FaTrashAlt className="list-item-remove" onClick={() => onRemove(item)} />
       </React.Fragment>
