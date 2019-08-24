@@ -125,9 +125,15 @@ class Instagram {
         } catch (e: IOException) {
             return null
         }
-        val jsonData = doc.select("script:containsData(window._sharedData)").find { element ->
-            element.data().startsWith("window._sharedData")
-        }?.data()?.substringBeforeLast(';')?.substringAfter("=")?.trim()
+        val stuff = doc.select("script:containsData(window._sharedData)")
+        val jsonData = try {
+            stuff.find { element ->
+                element.data().startsWith("window._sharedData")
+            }?.data()?.substringBeforeLast(';')?.substringAfter("=")?.trim()
+        } catch (ex: Exception) {
+            println(stuff)
+            return null
+        }
         val data = Gson().fromJson(jsonData, InstagramSharedData::class.java)
         currentData = jsonData
         val userData = data.entry_data.ProfilePage.first().graphql.user
