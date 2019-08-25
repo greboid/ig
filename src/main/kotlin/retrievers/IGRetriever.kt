@@ -31,6 +31,8 @@ class IGRetriever(
         if (config.igLogin) {
             logger.info("Logging in")
             instagram.login(config.igUsername, config.igPassword)
+        } else {
+            instagram.getURL("https://instagram.com")
         }
         while (isActive.get()) {
             retrieveAll()
