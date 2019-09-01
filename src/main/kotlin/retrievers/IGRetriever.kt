@@ -67,7 +67,7 @@ class IGRetriever(
                 }
             }
             logger.trace("Sleeping for $delay before next user")
-            delay(Duration.ofSeconds(delay.toLong()))
+            delay(Duration.ofSeconds(delay.toLong() + (0..720).random()))
         }
     }
 
