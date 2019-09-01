@@ -47,7 +47,7 @@ class IGRetriever(
 
     override suspend fun retrieveAll() {
         logger.info("Retrieving all users")
-        val users = database.getUsers()
+        val users = database.getUsers().shuffled()
         val delay = if (users.isEmpty()) {
             config.refreshDelay
         } else {
