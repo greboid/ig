@@ -369,7 +369,7 @@ class Database(private val config: Config) {
             LEFT JOIN users on users.id=igposts.userID
             LEFT JOIN profile_users on profile_users.userid=users.id
             LEFT JOIN profiles on profile_users.profileid=profiles.id
-            ORDER BY retrieved DESC
+            ORDER BY retrieved DESC, timestamp desc
             LIMIT ?
             OFFSET ?
         """
@@ -378,7 +378,7 @@ class Database(private val config: Config) {
             FROM igposts
             LEFT JOIN users on users.id=igposts.userID
             WHERE users.username=?
-            ORDER BY retrieved DESC
+            ORDER BY retrieved DESC, timestamp desc
             LIMIT ?
             OFFSET ?
         """
@@ -389,7 +389,7 @@ class Database(private val config: Config) {
             LEFT JOIN profile_users on profile_users.userid=users.id
             LEFT JOIN profiles on profile_users.profileid=profiles.id
             WHERE profiles.name=?
-            ORDER BY retrieved DESC
+            ORDER BY retrieved DESC, timestamp desc
             LIMIT ?
             OFFSET ?
         """
