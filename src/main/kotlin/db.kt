@@ -156,7 +156,7 @@ class Database(private val config: Config) {
     fun addIGPost(shortcode: String, ord: Int, userID: Int, thumbnailURL: String,
                   imageURL: String, caption: String, timestamp: Int): Boolean {
         return connection.setAndUpdate(Schema.addIGPost,
-                listOf(shortcode, ord, userID, thumbnailURL, imageURL, caption, timestamp, imageURL)) == 1
+                listOf(shortcode, ord, userID, thumbnailURL, imageURL, caption, timestamp, System.currentTimeMillis()/1000, imageURL)) == 1
     }
 
     fun getIGPost(shortcode: String, ord: Int = 0): IGPost {
@@ -174,7 +174,8 @@ class Database(private val config: Config) {
                 timestamp = results.getInt(6),
                 ord = results.getInt(7),
                 date = Instant.ofEpochMilli(results.getInt(6).toLong() * 1000)
-                        .atZone(ZoneId.of("UTC")).format(DateTimeFormatter.RFC_1123_DATE_TIME)
+                        .atZone(ZoneId.of("UTC")).format(DateTimeFormatter.RFC_1123_DATE_TIME),
+                retrieved = results.getInt(8)
         )
         results.close()
         s.close()
@@ -225,7 +226,8 @@ class Database(private val config: Config) {
                     timestamp = results.getInt(6),
                     ord = results.getInt(7),
                     date = Instant.ofEpochMilli(results.getInt(6).toLong() * 1000)
-                        .atZone(ZoneId.of("UTC")).format(DateTimeFormatter.RFC_1123_DATE_TIME)
+                        .atZone(ZoneId.of("UTC")).format(DateTimeFormatter.RFC_1123_DATE_TIME),
+                    retrieved = results.getInt(8)
                 ))
             }
         }.toList()
@@ -348,12 +350,12 @@ class Database(private val config: Config) {
         """
         internal val addIGPost = """
             insert into igposts
-            (shortcode,ord,userID,thumbnailURL,imageURL,caption,timestamp)
-            values (?,?,?,?,?,?,?) 
+            (shortcode,ord,userID,thumbnailURL,imageURL,caption,timestamp,retrieved)
+            values (?,?,?,?,?,?,?,?) 
             ON DUPLICATE KEY UPDATE `imageURL` = ?
         """
         internal val selectIGPost = """
-            SELECT shortcode, users.username, thumbnailURL, imageURL, caption, timestamp, ord
+            SELECT shortcode, users.username, thumbnailURL, imageURL, caption, timestamp, ord, retrieved
             FROM igposts
             LEFT JOIN users on users.id=igposts.userID
             LEFT JOIN profile_users on profile_users.userid=users.id
@@ -362,32 +364,32 @@ class Database(private val config: Config) {
             AND igposts.ord=?
         """
         internal val selectAllIGPosts = """
-            SELECT shortcode, users.username, thumbnailURL, imageURL, caption, timestamp, ord
+            SELECT shortcode, users.username, thumbnailURL, imageURL, caption, timestamp, ord, retrieved
             FROM igposts
             LEFT JOIN users on users.id=igposts.userID
             LEFT JOIN profile_users on profile_users.userid=users.id
             LEFT JOIN profiles on profile_users.profileid=profiles.id
-            ORDER BY timestamp DESC
+            ORDER BY retrieved DESC
             LIMIT ?
             OFFSET ?
         """
         internal val selectUserIGPosts = """
-            SELECT shortcode, users.username, thumbnailURL, imageURL, caption, timestamp, ord
+            SELECT shortcode, users.username, thumbnailURL, imageURL, caption, timestamp, ord, retrieved
             FROM igposts
             LEFT JOIN users on users.id=igposts.userID
             WHERE users.username=?
-            ORDER BY timestamp DESC
+            ORDER BY retrieved DESC
             LIMIT ?
             OFFSET ?
         """
         internal val selectIGPosts = """
-            SELECT shortcode, users.username, thumbnailURL, imageURL, caption, timestamp, ord
+            SELECT shortcode, users.username, thumbnailURL, imageURL, caption, timestamp, ord, retrieved
             FROM igposts
             LEFT JOIN users on users.id=igposts.userID
             LEFT JOIN profile_users on profile_users.userid=users.id
             LEFT JOIN profiles on profile_users.profileid=profiles.id
             WHERE profiles.name=?
-            ORDER BY timestamp DESC
+            ORDER BY retrieved DESC
             LIMIT ?
             OFFSET ?
         """
@@ -461,6 +463,12 @@ class Database(private val config: Config) {
         private val twoToThreeVersion = """
             update version SET version=3 where id=1;
         """
+        private val threeToFourChange = """
+            ALTER TABLE `igposts` ADD COLUMN `retrieved` INT(11) NULL DEFAULT NULL AFTER `timestamp`;
+        """
+        private val threeToFourVersion = """
+            update version SET version=4 where id=1;
+        """
         private val createSettings = twoToThreeChange
         private val createAllTables: List<String> = listOf(createVersion, createProfiles, createProfileUsers, createUsers, createIGPosts, createSettings)
         fun init(connection: Connection) {
@@ -476,10 +484,17 @@ class Database(private val config: Config) {
             if (currentVersion == 1) {
                 connection.createStatement().executeUpdate(oneToTwoChange)
                 connection.createStatement().executeUpdate(oneToTwoVersion)
+                currentVersion = 2
             }
             if (currentVersion == 2) {
                 connection.createStatement().executeUpdate(twoToThreeChange)
                 connection.createStatement().executeUpdate(twoToThreeVersion)
+                currentVersion = 3
+            }
+            if (currentVersion == 3) {
+                connection.createStatement().executeUpdate(threeToFourChange)
+                connection.createStatement().executeUpdate(threeToFourVersion)
+                currentVersion = 4
             }
         }
     }
@@ -487,7 +502,7 @@ class Database(private val config: Config) {
 
 data class IGPost(val shortcode: String, val source: String,
                   val thumb: String, val url: String,
-                  val caption: String, val timestamp: Int, val ord: Int, val date: String)
+                  val caption: String, val timestamp: Int, val ord: Int, val date: String, val retrieved: Int)
 
 fun ResultSet.isMyResultSetEmpty(): Boolean {
     return !isBeforeFirst && row == 0
