@@ -8,7 +8,7 @@ buildscript {
     }
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.3.50"
-        classpath 'name.remal:gradle-plugins:1.0.161'
+        classpath 'name.remal:gradle-plugins:1.0.162'
     }
 }
 
