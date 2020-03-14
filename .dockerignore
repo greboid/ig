@@ -3,3 +3,8 @@ LICENSE
 README.md
 /config
 /database
+/build
+/.gradle
+/.idea
+/thumbs
+/front/node_modules
