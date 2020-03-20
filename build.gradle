@@ -50,7 +50,7 @@ dependencies {
     implementation 'com.squareup.okhttp3:okhttp:4.4.1'
     implementation 'com.squareup.okhttp3:okhttp-urlconnection:4.4.1'
     implementation 'org.slf4j:slf4j-jdk14:1.7.30'
-    implementation 'io.github.microutils:kotlin-logging:1.7.8'
+    implementation 'io.github.microutils:kotlin-logging:1.7.9'
     runtime "mysql:mysql-connector-java:8.0.19"
 
     testImplementation "com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0"
