@@ -116,10 +116,13 @@ class Database(private val config: Config) {
     fun getUserID(name: String): Int? {
         val statement = connection.prepareStatement(Schema.getUserID) ?: return null
         statement.setString(1, name)
-        val result = statement.executeQuery()
-        result.first()
-        val returnValue = result.getInt(1)
-        result.close()
+        val results = statement.executeQuery()
+        val result = results.next()
+        if (!result) {
+            return null
+        }
+        val returnValue = results.getInt(1)
+        results.close()
         statement.close()
         return returnValue
     }
@@ -127,13 +130,13 @@ class Database(private val config: Config) {
     fun getProfileID(name: String): Int? {
         val statement = connection.prepareStatement(Schema.getProfileID) ?: return null
         statement.setString(1, name)
-        val result = statement.executeQuery()
-        val check = result.first()
-        if (!check) {
+        val results = statement.executeQuery()
+        val result = results.next()
+        if (!result) {
             return null
         }
-        val returnValue = result.getInt(1)
-        result.close()
+        val returnValue = results.getInt(1)
+        results.close()
         statement.close()
         return returnValue
     }
@@ -145,10 +148,13 @@ class Database(private val config: Config) {
         val statement = connection.prepareStatement(Schema.checkIGPost) ?: return false
         statement.setString(1, shortcode)
         statement.setInt(2, ord)
-        val result = statement.executeQuery()
-        result.first()
-        val returnValue = result.getInt(1)
-        result.close()
+        val results = statement.executeQuery()
+        val result = results.next()
+        if (!result) {
+            return false
+        }
+        val returnValue = results.getInt(1)
+        results.close()
         statement.close()
         return returnValue < 1
     }
@@ -351,7 +357,7 @@ class Database(private val config: Config) {
         internal val addIGPost = """
             insert into igposts
             (shortcode,ord,userID,thumbnailURL,imageURL,caption,timestamp,retrieved)
-            values (?,?,?,?,?,?,?,?) 
+            values (?,?,?,?,?,?,?,?)
             ON DUPLICATE KEY UPDATE `imageURL` = ?
         """
         internal val selectIGPost = """
