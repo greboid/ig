@@ -24,6 +24,7 @@ const MenuBar = () => {
 			})}
 		  </div>
 		  <div>
+              <Link to='/raw'>IG Links</Link>
 		  	{authed ?
 		  		<React.Fragment>
 			  		<Link to='/admin'>Admin</Link>
