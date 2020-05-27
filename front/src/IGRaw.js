@@ -23,7 +23,7 @@ function IGRaw() {
                 <ul>
                 {users.map((user, i) => {
                     return (
-                        <li><a href="https://instagram.com/{user}">{user}</a></li>
+                        <li key={user}><a href={`https://instagram.com/${user}`}>{user}</a></li>
                     )
                 })}
                 </ul>
