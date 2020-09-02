@@ -48,7 +48,7 @@ dependencies {
     implementation 'org.jsoup:jsoup:1.13.1'
     implementation 'com.google.code.gson:gson:2.8.6'
     implementation 'com.squareup.okhttp3:okhttp:4.8.0'
-    implementation 'com.squareup.okhttp3:okhttp-urlconnection:4.8.0'
+    implementation 'com.squareup.okhttp3:okhttp-urlconnection:4.8.1'
     implementation 'org.slf4j:slf4j-jdk14:1.7.30'
     implementation 'io.github.microutils:kotlin-logging:1.8.3'
     runtime "mysql:mysql-connector-java:8.0.21"
