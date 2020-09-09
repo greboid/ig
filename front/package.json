@@ -5,7 +5,7 @@
   "private": true,
   "dependencies": {
     "@rehooks/window-size": "^1.0.2",
-    "constate": "^2.0.0",
+    "constate": "^3.0.1",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-icons": "^3.11.0",
